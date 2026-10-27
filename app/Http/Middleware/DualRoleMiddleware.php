@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Middleware;
+
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,16 +13,16 @@ class DualRoleMiddleware
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             abort(403, 'Belum login');
         }
 
-        if ($user->role === 'atasan' && $user->role2 === 'penerima') {
+        $allowedSecondaryRoles = ['penerima', 'ppk', 'keuangan'];
+
+        if ($user->role === 'atasan' && in_array($user->role2, $allowedSecondaryRoles, true)) {
             return $next($request);
         }
 
         abort(403, 'Akses ditolak');
     }
 }
-
-

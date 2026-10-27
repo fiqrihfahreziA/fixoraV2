@@ -1,11 +1,11 @@
-@extends('layouts.pengadaan.atasan')
+@extends('layouts.pengadaan.direktur')
 
 @section('content')
 <div class="container mt-4">
     <h1 class="mb-4">Laporan Pengadaan</h1>
 
     <!-- Form Filter & Preview & Export -->
-    <form action="{{ route('atasan.reportPengadaan') }}" method="GET" target="_blank" class="mb-4">
+    <form action="{{ route('direktur.reportPengadaan') }}" method="GET" target="_blank" class="mb-4">
         <div class="row">
             <!-- Filter TAHUN -->
             <div class="col-md-3">

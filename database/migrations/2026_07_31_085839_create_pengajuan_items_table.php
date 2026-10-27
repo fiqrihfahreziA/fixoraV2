@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('pengajuan_id')->constrained('pengajuans')->cascadeOnDelete();
             $table->string('nama_barang');
             $table->text('spesifikasi')->nullable();
+            $table->string('dokumen_upload')->nullable();
             $table->string('satuan')->nullable();
             $table->integer('jumlah');
             $table->unsignedBigInteger('harga')->nullable();

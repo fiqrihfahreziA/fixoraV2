@@ -9,7 +9,7 @@ class pengajuan_item extends Model
 {
       protected $table = 'pengajuan_items';
    protected $fillable = [
-    'pengajuan_id', 'nama_barang', 'spesifikasi', 'satuan', 'jumlah', 'harga_satuan', 'harga','jumlah_disetujui','harga_disetujui'];
+    'pengajuan_id', 'nama_barang', 'spesifikasi', 'satuan', 'jumlah', 'harga_satuan', 'harga','jumlah_disetujui','harga_disetujui','dokumen_upload'];
 
     
      public function pengajuan()

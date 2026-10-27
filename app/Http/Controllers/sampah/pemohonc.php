@@ -854,6 +854,28 @@ public function updatePengadaan(Request $request, $id)
             ->with('error', '❌ Gagal memperbarui pengajuan: ' . $e->getMessage());
     }
 }
+
+public function selesai(Request $request, $id)
+{
+    try {
+        $pengajuan = Pengajuan::findOrFail($id);
+
+        // Validasi agar hanya pengajuan yang 'disetujui' yang bisa diubah
+        if ($pengajuan->status !== 'disetujui') {
+            return back()->with('error', 'Status pengajuan tidak valid untuk diselesaikan.');
+        }
+
+        $pengajuan->update([
+            'status' => 'selesai',
+            'selesai_at' => now(), // Mengisi tanggal & waktu saat ini
+        ]);
+
+        return back()->with('success', '✅ Pengajuan berhasil diselesaikan dan barang telah diterima.');
+
+    } catch (\Exception $e) {
+        return back()->with('error', '❌ Gagal menyelesaikan pengajuan: ' . $e->getMessage());
+    }
+}
 /**
  * Submit pengajuan (ubah status dari draft ke diajukan)
  *//**

@@ -20,7 +20,7 @@ Route::middleware(['auth', 'role:atasan'])
     ->name('atasan.')
     ->group(function () {
 
-        Route::get('/', [AtasanController::class, 'index'])
+        Route::get('/p', [AtasanController::class, 'index'])
             ->name('dashboard');
          
         Route::get('/permintaann/atasan', [AtasanController::class, 'showpermintaann'])
@@ -44,7 +44,7 @@ Route::middleware(['auth', 'role:atasan'])
         Route::get('/pengadaan/chart-data', [AtasanController::class, 'getChartData'])
                 ->name('pengadaan.chart-data');
 
-        Route::get('/chart/pengadaan', [AtasanController::class, 'pengadaanshow'])
+        Route::get('/', [AtasanController::class, 'pengadaanshow'])
             ->name('pengadaan');
         
         Route::get('/pengadaan/{id}', [AtasanController::class, 'showpengadaan'])->name('pengadaan.show');
@@ -54,6 +54,11 @@ Route::middleware(['auth', 'role:atasan'])
         Route::get('/reporta/pengadaan', [AtasanController::class, 'reportPengadaan'])->name('reportPengadaan');
 
         Route::get('/chartssa/pengadaan', [AtasanController::class, 'chartspengadaan'])->name('chartPengadaan');
+        Route::get('/atasan/pengadaan/{id}/edit-item', [AtasanController::class, 'editItem'])
+        ->name('pengadaan.editItem');
+
+        Route::put('/pengadaan/{id}/update-item', [AtasanController::class, 'updateItem'])
+            ->name('pengadaan.updateItem');
 
     });
 

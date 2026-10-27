@@ -19,10 +19,10 @@ Route::middleware(['auth', 'role:direktur'])
     ->name('direktur.')
     ->group(function () {
 
-        Route::get('/', [direkturController::class, 'index'])
+        Route::get('/p', [direkturController::class, 'index'])
             ->name('dashboard');
          
-        Route::get('/permintaann', [direkturController::class, 'showpengadaan'])
+        Route::get('/', [direkturController::class, 'showpengadaan'])
             ->name('pengadaan');
         Route::get('/pengadaan/{id}/detail', [direkturController::class, 'detail'])->name('pengadaan.detail');
         
@@ -31,8 +31,8 @@ Route::middleware(['auth', 'role:direktur'])
         Route::put('/pengadaan/{id}/tunda', [direkturController::class, 'tunda'])->name('tunda');
         Route::put('/pengadaan/{id}/tolak', [direkturController::class, 'tolak'])->name('tolak');
         Route::get('pengadaan/{id}/cetak', [direkturController::class, 'cetak'])->name('pengadaan.cetak');
-        Route::get('/report/pengadaan', [direkturController::class, 'reportPengadaan'])->name('reportPengadaan');
-        Route::get('/pengadaan/export', [direkturController::class, 'exportExcel'])
+        Route::get('/reporth/pengadaan', [direkturController::class, 'reportPengadaan'])->name('reportPengadaan');
+        Route::get('/pengadaannn/export', [direkturController::class, 'exportExcel'])
             ->name('export.csv');
       
 

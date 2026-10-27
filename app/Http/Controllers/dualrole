@@ -1,0 +1,456 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\RequestModel;
+
+
+class DualroleController extends Controller
+{
+    public function index(){
+        $authUser = Auth::user();
+
+        return view('dualrole.dashboard', [
+           'authuser' => $authUser,
+        ]);
+    }
+
+        public function penerima()
+    {
+        return redirect()->route('penerima.permintaan');
+    }
+
+    public function ppk()
+    {
+        return redirect()->route('ppk.permintaan'); // sesuaikan nama route
+    }
+
+    public function keuangan()
+    {
+        return redirect()->route('keuangan.permintaan');
+    }
+
+//      public function Showpermintaann(Request $request)
+// {
+//     $authUser = Auth::user();
+//     $bidangId = Auth::user()->karyawan->bidang_id ?? null;
+//     // Ambil query pencarian dari request
+//     $search = $request->input('search', '');
+
+//     // ================= SEMUA DATA (MODAL) =================
+//     $requests = RequestModel::with('detailBarang')
+//         ->whereIn('status', ['verified', 'approved','rejected'])
+        
+//         ->where(function ($query) use ($search) {
+//             $query->where('request_type', 'like', '%' . $search . '%')
+//                 ->orWhereHas('detailBarang', function ($q) use ($search) {
+//                     $q->where('nama_barang', 'like', '%' . $search . '%')
+//                       ->orWhere('deskripsi', 'like', '%' . $search . '%');
+//                 });
+//         })
+//         ->orderBy('created_at', 'desc')
+//         ->get();
+
+//     // ================= PERMINTAAN BARANG =================
+//     $permintaanRequests = RequestModel::with('detailBarang')
+//         ->where('bidang_id', $bidangId)
+//         ->where('request_type', 'permintaan')
+//         ->whereIn('status', ['verified', 'approved','rejected'])
+//         ->where(function ($query) use ($search) {
+//             $query->orWhereHas('detailBarang', function ($q) use ($search) {
+//                 $q->where('nama_barang', 'like', '%' . $search . '%')
+//                   ->orWhere('deskripsi', 'like', '%' . $search . '%');
+//             });
+//         })
+//         ->orderBy('created_at', 'desc')
+//         ->paginate(10);
+
+//     // ================= PERBAIKAN BARANG =================
+//     $perbaikanRequests = RequestModel::with('detailBarang')
+//         ->where('bidang_id', $bidangId)
+//         ->where('request_type', 'perbaikan')
+//         ->whereIn('status', ['verified', 'approved','rejected'])
+//         ->where(function ($query) use ($search) {
+//             $query->orWhereHas('detailBarang', function ($q) use ($search) {
+//                 $q->where('nama_barang', 'like', '%' . $search . '%')
+//                   ->orWhere('deskripsi', 'like', '%' . $search . '%');
+//             });
+//         })
+//         ->orderBy('created_at', 'desc')
+//         ->paginate(10);
+
+//     return view('patasan.permintaan', [
+//         'authUser'           => $authUser,
+//         'modalreq'           => $requests,
+//         'search'             => $search,
+//         'permintaanRequests' => $permintaanRequests,
+//         'perbaikanRequests'  => $perbaikanRequests,
+//     ]);
+// }
+
+// public function edit($id)
+// {
+//     $authUser = Auth::user();
+//     // Ambil permintaan berdasarkan ID
+//     $permintaan = RequestModel::findOrFail($id);
+    
+//     // Kirim data ke halaman edit
+//     return view('patasan.permintaanedit', [
+//         'authUser' => $authUser,
+//         'permintaan' => $permintaan,
+//     ]);
+// }
+
+//  public function view($id)
+//     {
+//         $permintaan = RequestModel::with(['detailBarang', 'user'])->findOrFail($id);
+
+//         return view('form.formpermintaan', compact('permintaan'));
+//     }
+
+// public function update(Request $request, $id)
+// {
+//     $authUser = Auth::user();
+
+//     // ================= VALIDASI UMUM =================
+//     $validated = $request->validate([
+//         'request_type' => 'required|in:permintaan,perbaikan',
+//         'status'       => 'required|in:pending,verified,approved,rejected',
+
+//         // PERMINTAAN BARANG
+//         'nama_barang'  => 'required|string|max:255',
+//         'jumlah'       => 'nullable|integer',
+//         'spesifikasi'  => 'nullable|string',
+//         'alasan'       => 'nullable|string',
+
+//         // PERBAIKAN BARANG
+//         'kode_aset'        => 'nullable|string|max:255',
+//         'deskripsi'        => 'nullable|string',
+//         'tanggal_kerusakan'=> 'nullable|date',
+//     ]);
+
+//     $permintaan = RequestModel::with('detailBarang')->findOrFail($id);
+
+//     // ================= UPDATE STATUS =================
+//     $permintaan->status = $request->status;
+
+//     // ===== Jika Approved / Rejected =====
+//     if (in_array($request->status, ['approved', 'rejected'])) {
+
+//         if ($permintaan->atasan_id === null) {
+//             $permintaan->atasan_id = $authUser->karyawan->id;
+//         }
+
+//     }
+
+//     // ===== Jika Status Kembali ke Pending =====
+//     if ($request->status === 'verified') {
+//         $permintaan->atasan_id = null;
+//     }
+
+//     $permintaan->save();
+
+//     // ================= SIAPKAN DATA DETAIL =================
+//     $dataUpdate = [
+//         'nama_barang' => $request->nama_barang,
+//     ];
+
+//     // ===== LOGIC TANGGAL ACC =====
+//     if (in_array($request->status, ['approved', 'rejected'])) {
+//         if ($permintaan->detailBarang->tanggal_acc === null) {
+//             $dataUpdate['tanggal_acc'] = now();
+//         }
+//     }
+
+//     if ($request->status === 'verified') {
+//         $dataUpdate['tanggal_acc'] = null;
+//     }
+
+//     // ================= LOGIC BERDASARKAN TYPE =================
+//     if ($permintaan->request_type === 'permintaan') {
+
+//         $dataUpdate += [
+//             'jumlah'      => $request->jumlah,
+//             'spesifikasi' => $request->spesifikasi,
+//             'alasan'      => $request->alasan,
+
+//             'kode_aset'         => null,
+//             'deskripsi'         => null,
+//             'tanggal_kerusakan' => null,
+//         ];
+//     }
+
+//     if ($permintaan->request_type === 'perbaikan') {
+
+//         $dataUpdate += [
+//             'kode_aset'         => $request->kode_aset,
+//             'deskripsi'         => $request->deskripsi,
+//             'tanggal_kerusakan' => $request->tanggal_kerusakan,
+
+//             'jumlah'      => null,
+//             'spesifikasi' => null,
+//             'alasan'      => null,
+//         ];
+//     }
+
+//     // ===== UPDATE DETAIL =====
+//     $permintaan->detailBarang->update($dataUpdate);
+
+//     return redirect()
+//         ->route('atasan.permintaan')
+//         ->with('success', 'Permintaan berhasil diupdate');
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// //penerima
+
+//  public function Showpermintaan(Request $request)
+// {
+//     $authUser = Auth::user();
+//      $bidangId = Auth::user()->karyawan->bidang_id ?? null;
+
+//     // Ambil query pencarian dari request
+//     $search = $request->input('search', '');
+
+//     // Query untuk mengambil data permintaan berdasarkan pencarian
+//     $requests = RequestModel::with('detailBarang')
+//         ->where(function ($query) use ($search) {
+//             $query->where('request_type', 'like', '%' . $search . '%')
+//                   ->orWhereHas('detailBarang', function ($q) use ($search) {
+//                       $q->where('nama_barang', 'like', '%' . $search . '%')
+//                         ->orWhere('deskripsi', 'like', '%' . $search . '%');
+//                   });
+//         })
+//         ->orderBy('created_at', 'desc')
+//         ->get();
+
+//     // Fetch Permintaan with pagination
+// $permintaanRequests = RequestModel::with('detailBarang')
+//     ->where('bidang_id', $bidangId)
+//     ->where('request_type', 'permintaan')  // Filter for permintaan
+//     ->where(function ($query) use ($search) {
+//         $query->where('request_type', 'like', '%' . $search . '%')
+//               ->orWhereHas('detailBarang', function ($q) use ($search) {
+//                   $q->where('nama_barang', 'like', '%' . $search . '%')
+//                     ->orWhere('deskripsi', 'like', '%' . $search . '%');
+//               });
+//     })
+//     ->orderBy('created_at', 'desc')
+//     ->paginate(10);  // Pagination for permintaan
+
+// // Fetch Perbaikan with pagination
+// $perbaikanRequests = RequestModel::with('detailBarang')
+//     ->where('bidang_id', $bidangId)
+//     ->where('request_type', 'perbaikan')  // Filter for perbaikan
+//     ->where(function ($query) use ($search) {
+//         $query->where('request_type', 'like', '%' . $search . '%')
+//               ->orWhereHas('detailBarang', function ($q) use ($search) {
+//                   $q->where('nama_barang', 'like', '%' . $search . '%')
+//                     ->orWhere('deskripsi', 'like', '%' . $search . '%');
+//               });
+//     })
+//     ->orderBy('created_at', 'desc')
+//     ->paginate(10);  // Pagination for perbaikan
+
+
+//     return view('penerima.permintaan', [
+//         'authUser' => $authUser,
+//         'modalreq' => $requests,
+//         'search' => $search,  // Pass search query to the view
+//         'permintaanRequests' => $permintaanRequests,
+//         'perbaikanRequests' => $perbaikanRequests,
+//     ]);
+// }
+
+
+// public function editp($id)
+// {
+//     $authUser = Auth::user();
+//     // Ambil permintaan berdasarkan ID
+//     $permintaan = RequestModel::findOrFail($id);
+    
+//     // Kirim data ke halaman edit
+//     return view('penerima.permintaanedit', [
+//         'authUser' => $authUser,
+//         'permintaan' => $permintaan,
+//     ]);
+// }
+
+// public function viewp($id)
+// {
+//     $permintaan = RequestModel::with(['detailBarang', 'user'])->findOrFail($id);
+
+//     return view('form.formpermintaan', compact('permintaan'));
+// }
+
+
+// public function destroyp($id)
+// {
+//     RequestModel::findOrFail($id)->delete();
+
+//     return back()->with('success', 'Data berhasil dihapus');
+// }
+
+// public function laporan(){
+//     $authUser = Auth::user();
+
+//     return view('penerima.laporan', [
+//         'authuser' =>$authUser,
+        
+//     ]);
+
+// }
+
+// public function updateep(Request $request, $id)
+// {
+//     $authUser = Auth::user();
+
+//     // ================= VALIDASI =================
+//     $validated = $request->validate([
+//         'request_type' => 'required|in:permintaan,perbaikan',
+//         'status'       => 'required|in:pending,verified,approved,rejected',
+
+//         // PERMINTAAN
+//         'nama_barang'  => 'required|string|max:255',
+//         'jumlah'       => 'nullable|integer',
+//         'spesifikasi'  => 'nullable|string',
+//         'alasan'       => 'nullable|string',
+
+//         // PERBAIKAN
+//         'kode_aset'         => 'nullable|string|max:255',
+//         'deskripsi'         => 'nullable|string',
+//         'tanggal_kerusakan' => 'nullable|date',
+//     ]);
+
+//     $permintaan = RequestModel::with('detailBarang')->findOrFail($id);
+
+//     // ================= UPDATE STATUS =================
+//     $permintaan->status = $request->status;
+
+//     // 🔵 SAAT VERIFIED
+//     if ($request->status === 'verified') {
+
+//         // set penerima jika belum ada
+//         if ($permintaan->penerima_id === null) {
+//             $permintaan->penerima_id = $authUser->karyawan->id;
+//         }
+
+//         // set tanggal verif di detail barang
+//         if ($permintaan->detailBarang->tanggal_verif === null) {
+//             $permintaan->detailBarang->tanggal_verif = now();
+//         }
+//     }
+
+//     // 🔴 SAAT BALIK KE PENDING
+//     if ($request->status === 'pending') {
+//         $permintaan->penerima_id = null;
+//         $permintaan->detailBarang->tanggal_verif = null;
+//     }
+
+//     $permintaan->save();
+//     $permintaan->detailBarang->save();
+
+//     // ================= AUTO GENERATE NO SURAT =================
+//     if (
+//         $request->status === 'verified' &&
+//         empty($permintaan->detailBarang->no_surat)
+//     ) {
+//         $tahun = now()->year;
+//         $startNumber = 15;
+
+//         $count = \App\Models\detail_barang::whereYear('created_at', $tahun)
+//             ->whereNotNull('no_surat')
+//             ->count();
+
+//         $nomorUrut = $startNumber + $count;
+
+//         $permintaan->detailBarang->no_surat =
+//             $nomorUrut . '/SIMRS/' . $tahun;
+
+//         $permintaan->detailBarang->save();
+//     }
+
+//     // ================= UPDATE DETAIL BARANG =================
+//     if ($permintaan->request_type === 'permintaan') {
+
+//         $permintaan->detailBarang->update([
+//             'nama_barang' => $request->nama_barang,
+//             'jumlah'      => $request->jumlah,
+//             'spesifikasi' => $request->spesifikasi,
+//             'alasan'      => $request->alasan,
+
+//             // reset field perbaikan
+//             'kode_aset'         => null,
+//             'deskripsi'         => null,
+//             'tanggal_kerusakan' => null,
+//         ]);
+//     }
+
+//     if ($permintaan->request_type === 'perbaikan') {
+
+//         $permintaan->detailBarang->update([
+//             'nama_barang'       => $request->nama_barang,
+//             'kode_aset'         => $request->kode_aset,
+//             'deskripsi'         => $request->deskripsi,
+//             'tanggal_kerusakan' => $request->tanggal_kerusakan,
+
+//             // reset field permintaan
+//             'jumlah'      => null,
+//             'spesifikasi' => null,
+//             'alasan'      => null,
+//         ]);
+//     }
+
+//     return redirect()
+//         ->route('penerima.permintaan')
+//         ->with('success', 'Permintaan berhasil diupdate');
+// }
+
+
+// public function preview(Request $request)
+// {
+//     $query = RequestModel::with(['user.karyawan', 'detailBarang'])
+//         ->where('status', 'approved'); // 🔥 hanya data APPROVED
+
+//     // FILTER TAHUN
+//     if ($request->filled('tahun')) {
+//         $query->whereYear('created_at', $request->tahun);
+//     }
+
+//     // FILTER BULAN
+//     if ($request->filled('bulan')) {
+//         $query->whereMonth('created_at', $request->bulan);
+//     }
+
+//     // FILTER TANGGAL
+//     if ($request->filled('tanggal')) {
+//         $query->whereDay('created_at', $request->tanggal);
+//     }
+
+//     // FILTER JENIS PERMINTAAN
+//     if ($request->filled('request_type')) {
+//         $query->where('request_type', $request->request_type);
+//     }
+
+//     $data = $query->orderBy('created_at', 'desc')->get();
+
+//     return view('penerima.preview', compact('data'));
+// }
+
+
+}

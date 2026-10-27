@@ -308,6 +308,7 @@ public function storeuser(Request $request)
         'password'    => 'required|min:6',
         'role'        => 'required',
         'role2'       => 'nullable',
+        'sub_bagian'  => 'nullable',
         'bidang_id'   => 'nullable|exists:bidangs,id',
     ]);
 
@@ -337,6 +338,7 @@ public function storeuser(Request $request)
         'password'    => Hash::make($request->password),
         'role'        => $request->role,
         'role2'       => $request->role2 ?? null,
+        'subrole'  => $request->sub_bagian,
         'is_active'   => true,
     ]);
 

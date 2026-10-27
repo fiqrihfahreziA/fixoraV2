@@ -27,8 +27,19 @@ use App\Traits\StatusTrait;
 
 class AtasanController extends Controller
 {
-    public function index(){
-        return view('patasan.dashboard');
+    public function index()
+    {
+        $authUser = Auth::user();
+        $prefix = $authUser->multirolePrefix();
+
+        if (! $prefix) {
+            abort(403, 'Anda tidak punya role tambahan.');
+        }
+
+        return view('dualrole.dashboard', [
+            'authuser' => $authUser, // <--- Ubah di sini jadi huruf kecil
+            'prefix'   => $prefix,
+        ]);
     }
 
     public function Showpermintaann(Request $request)
@@ -220,147 +231,198 @@ public function update(Request $request, $id)
 
 // pengadaan
 
-   public function pengadaanshow(Request $request)
-    {
-        $authUser = Auth::user();
-        
-        // Ambil bidang_id dari karyawan yang login (PENERIMA)
-        $bidangId = $authUser->karyawan->bidang_id ?? null;
-        $ruangan = $authUser->karyawan->ruangan ?? null;
-        
-        // Ambil bidang untuk filter
-        $bidangs = bidang::all();
+//  public function pengadaanshow(Request $request)
+// {
+//     $authUser = Auth::user();
+//     $bidangId = $authUser->karyawan->bidang_id ?? null;
+//     $ruangan = $authUser->karyawan->ruangan ?? null;
+//     $bidangs = Bidang::all();
 
-        // Ambil query pencarian
-        $search = $request->input('search');
-        $statusFilter = $request->input('status');
-        $bidangFilter = $request->input('bidang');
-        $typeFilter = $request->input('type');
-         $tahunAnggaran = $request->input('tahun_anggaran');
+//     $search        = $request->input('search');
+//     $statusFilter  = $request->input('status');
+//     $bidangFilter  = $request->input('bidang');
+//     $typeFilter    = $request->input('type', 'pengadaan'); // Default ke Pengadaan
+//     $tahunAnggaran = $request->input('tahun_anggaran');
+//     $bulanFilter   = $request->input('bulan');
+//     $tahunpengajuan   = $request->input('tahun_pengajuan');
 
-        /**
-         * ============================
-         * QUERY DASAR PENGADAAN
-         * Filter berdasarkan bidang_id user (PENERIMA)
-         * ============================
-         */
-            $query = pengajuan::with(['items', 'karyawan', 'bidang'])
-            ->where('bidang_id', $bidangId)
-            ->whereNotIn('status', ['draft', 'revisi', 'diajukan'])
-            ->when($search, function ($q) use ($search) {
-                $q->where(function ($query) use ($search) {
-                    $query->where('no_pengajuan', 'like', "%{$search}%")
-                        ->orWhere('dasar_usulan', 'like', "%{$search}%")
-                        ->orWhereHas('items', function ($itemQuery) use ($search) {
-                            $itemQuery->where('nama_barang', 'like', "%{$search}%")
-                                ->orWhere('spesifikasi', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->when($statusFilter, function ($q) use ($statusFilter) {
-                $q->where('status', $statusFilter);
-            })
-            ->when($bidangFilter, function ($q) use ($bidangFilter) {
-                $q->where('bidang_id', $bidangFilter);
-            })
-            ->when($tahunAnggaran, function ($q) use ($tahunAnggaran) { // <-- TAMBAHKAN FILTER TAHUN
-            $q->where('tahun_anggaran', $tahunAnggaran);
+//     // ============================
+//     // QUERY DASAR
+//     // ============================
+//     $baseQuery = Pengajuan::with(['items', 'karyawan', 'bidang'])
+//         ->whereNotIn('status', ['draft', 'revisi', 'diajukan', 'perlu survei perbaikan'])
+//         ->when($search, function ($q) use ($search) {
+//             $q->where(function ($query) use ($search) {
+//                 $query->where('no_pengajuan', 'like', "%{$search}%")
+//                     ->orWhere('dasar_usulan', 'like', "%{$search}%")
+//                     ->orWhereHas('items', function ($itemQuery) use ($search) {
+//                         $itemQuery->where('nama_barang', 'like', "%{$search}%")
+//                             ->orWhere('spesifikasi', 'like', "%{$search}%");
+//                     });
+//             });
+//         })
+//         ->when($statusFilter, fn($q) => $q->where('status', $statusFilter))
+//         ->when($bidangFilter, fn($q) => $q->where('bidang_id', $bidangFilter))
+//         ->when($tahunAnggaran, fn($q) => $q->where('tahun_anggaran', $tahunAnggaran))
+//         ->when($bulanFilter, fn($q) => $q->whereMonth('tanggal_pengajuan', $bulanFilter))
+//         ->when($tahunpengajuan, fn($q) => $q->whereMonth('tanggal_pengajuan', $bulanFilter));
+
+//     // ============================
+//     // FILTER KATEGORI
+//     // ============================
+//     $filterPengadaan = function ($q) {
+//         $q->where('kategori', 'pengadaan');
+//     };
+
+//     $filterPemeliharaan = function ($q) {
+//         $q->where('kategori', 'pemeliharaan');
+//     };
+
+//     // ============================
+//     // DATA PER TAB
+//     // ============================
+//     $pengadaanPengajuan = (clone $baseQuery)
+//         ->where($filterPengadaan)
+//         ->orderBy('created_at', 'desc')
+//         ->paginate(10, ['*'], 'pengadaan_page')
+//         ->appends($request->all());
+
+//     $pemeliharaanPengajuan = (clone $baseQuery)
+//         ->where($filterPemeliharaan)
+//         ->orderBy('created_at', 'desc')
+//         ->paginate(10, ['*'], 'pemeliharaan_page')
+//         ->appends($request->all());
+
+//     // Data tab aktif
+//     $allPengajuan = ($typeFilter === 'pemeliharaan') ? $pemeliharaanPengajuan : $pengadaanPengajuan;
+
+//     // ============================
+//     // STATISTIK DASHBOARD
+//     // ============================
+//     $statsQuery = Pengajuan::query(); 
+
+//     $stats = [
+//         'total'                 => (clone $statsQuery)->count(),
+//         // 'disetujui_koordinator' => (clone $statsQuery)->where('status', 'disetujui_koordinator')->count(),
+//         'disetujui_koordinator' => (clone $statsQuery)
+//         ->where('status', 'menunggu_koordinator')
+//         ->where('acc_kabidPelayanan_at', 'disetujui oleh kabid pelayanan')
+//         ->count(),
+//         'diajukan'              => (clone $statsQuery)->where('status', 'diajukan')->count(),
+//         'disetujui'             => (clone $statsQuery)->where('log_status_direktur', 'disetujui')->count(),
+//         'ditolak'               => (clone $statsQuery)->where('status', 'ditolak')->count(),
+//         'revisi'                => (clone $statsQuery)->where('status', 'revisi')->count(),
+//         'selesai'     => (clone $statsQuery)->where('status', 'selesai')->count(),
+
+//         // Hitungan Badge
+//         'pengadaan_count'       => (clone $statsQuery)->where('kategori', 'pengadaan')->count(),
+//         'pemeliharaan_count'    => (clone $statsQuery)->where('kategori', 'pemeliharaan')->count(),
+//     ];
+
+//     return view('patasan.pengadaan.permintaan', compact(
+//         'authUser', 'allPengajuan', 'pengadaanPengajuan', 'pemeliharaanPengajuan',
+//         'bidangs', 'search', 'statusFilter', 'bidangFilter', 'typeFilter',
+//         'stats', 'tahunAnggaran', 'bidangId', 'ruangan','tahunpengajuan'
+//     ));
+// }
+
+public function pengadaanshow(Request $request)
+{
+    $authUser = Auth::user();
+    $bidangId = $authUser->karyawan->bidang_id ?? null;
+    $ruangan = $authUser->karyawan->ruangan ?? null;
+    $bidangs = Bidang::all();
+
+    $search        = $request->input('search');
+    $statusFilter  = $request->input('status');
+    $bidangFilter  = $request->input('bidang');
+    $typeFilter    = $request->input('type', 'pengadaan'); // Default ke Pengadaan
+    $tahunFilter   = $request->input('tahun'); // Parameter di URL sekarang 'tahun'
+    $bulanFilter   = $request->input('bulan');
+
+    // ============================
+    // AMBIL LIST TAHUN DINAMIS DARI TANGGAL_PENGAJUAN
+    // ============================
+    $listTahun = Pengajuan::selectRaw('YEAR(tanggal_pengajuan) as tahun')
+        ->whereNotNull('tanggal_pengajuan')
+        ->distinct()
+        ->orderBy('tahun', 'desc')
+        ->pluck('tahun');
+
+    // ============================
+    // QUERY DASAR (Untuk Tabel & Statistik)
+    // ============================
+    $baseQuery = Pengajuan::with(['items', 'karyawan', 'bidang'])
+        ->whereNotIn('status', ['draft', 'revisi', 'diajukan', 'perlu survei perbaikan'])
+        ->when($search, function ($q) use ($search) {
+            $q->where(function ($query) use ($search) {
+                $query->where('no_pengajuan', 'like', "%{$search}%")
+                    ->orWhere('dasar_usulan', 'like', "%{$search}%")
+                    ->orWhereHas('items', function ($itemQuery) use ($search) {
+                        $itemQuery->where('nama_barang', 'like', "%{$search}%")
+                            ->orWhere('spesifikasi', 'like', "%{$search}%");
+                    });
             });
+        })
+        ->when($statusFilter, fn($q) => $q->where('status', $statusFilter))
+        ->when($bidangFilter, fn($q) => $q->where('bidang_id', $bidangFilter))
+        
+        // ✅ Filter berdasarkan TAHUN dari tanggal_pengajuan
+        ->when($tahunFilter, fn($q) => $q->whereYear('tanggal_pengajuan', $tahunFilter))
+        
+        ->when($bulanFilter, fn($q) => $q->whereMonth('tanggal_pengajuan', $bulanFilter));
 
-        /**
-         * ============================
-         * DATA UNTUK TABEL SEMUA PENGAJUAN
-         * ============================
-         */
-        $allPengajuan = clone $query;
-        $allPengajuan = $allPengajuan->orderBy('created_at', 'desc')
-            ->paginate(10)
-            ->appends($request->all());
+    // ============================
+    // DATA PER TAB
+    // ============================
+    $pengadaanPengajuan = (clone $baseQuery)
+        ->where('kategori', 'pengadaan')
+        ->orderBy('created_at', 'desc')
+        ->paginate(10, ['*'], 'pengadaan_page')
+        ->appends($request->all());
 
-        /**
-         * ============================
-         * DATA UNTUK TAB PERMINTAAN 
-         * ============================
-         */
-        $permintaanQuery = clone $query;
-        $permintaanPengajuan = $permintaanQuery->where(function($q) {
-                $q->where('dasar_usulan', 'LIKE', '%Program Kerja%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%Kebutuhan Operasional%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%Penambahan Kapasitas Pelayanan%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%Pemenuhan Standar Akreditasi%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%Keselamatan Pasien%')
-                  ->orWhereNull('dasar_usulan');
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10)
-            ->appends($request->all());
+    $pemeliharaanPengajuan = (clone $baseQuery)
+        ->where('kategori', 'pemeliharaan')
+        ->orderBy('created_at', 'desc')
+        ->paginate(10, ['*'], 'pemeliharaan_page')
+        ->appends($request->all());
 
-        /**
-         * ============================
-         * DATA UNTUK TAB PERBAIKAN 
-         * ============================
-         */
-        $perbaikanQuery = clone $query;
-        $perbaikanPengajuan = $perbaikanQuery->where(function($q) {
-                $q->where('dasar_usulan', 'LIKE', '%Penggantian Barang Rusak%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%perbaikan%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%service%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%repair%');
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10)
-            ->appends($request->all());
+    // Data tab aktif
+    $allPengajuan = ($typeFilter === 'pemeliharaan') ? $pemeliharaanPengajuan : $pengadaanPengajuan;
 
-        /**
-         * ============================
-         * STATISTIK DASHBOARD
-         * ============================
-         */
-        $stats = [
-            'total' => Pengajuan::where('bidang_id', $bidangId)->count(),
-            'draft' => Pengajuan::where('bidang_id', $bidangId)->where('status', 'draft')->count(),
-            'diajukan' => Pengajuan::where('bidang_id', $bidangId)->where('status', 'diajukan')->count(),
-            'disetujui' => Pengajuan::where('bidang_id', $bidangId)->where('status', 'disetujui')->count(),
-            'ditolak' => Pengajuan::where('bidang_id', $bidangId)->where('status', 'ditolak')->count(),
-            'revisi' => Pengajuan::where('bidang_id', $bidangId)->where('status', 'revisi')->count(),
-            'menunggu_direktur' => Pengajuan::where('bidang_id', $bidangId)->where('status', 'menunggu_direktur')->count(),
-            
-            'permintaan_count' => Pengajuan::where('bidang_id', $bidangId)
-                ->where(function($q) {
-                    $q->where('dasar_usulan', 'LIKE', '%Program Kerja%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%Kebutuhan Operasional%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%Penambahan Kapasitas Pelayanan%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%Pemenuhan Standar Akreditasi%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%Keselamatan Pasien%')
-                      ->orWhereNull('dasar_usulan');
-                })->count(),
-                
-            'perbaikan_count' => Pengajuan::where('bidang_id', $bidangId)
-                ->where(function($q) {
-                    $q->where('dasar_usulan', 'LIKE', '%Penggantian Barang Rusak%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%perbaikan%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%service%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%repair%');
-                })->count(),
-        ];
+    // ============================
+    // STATISTIK DASHBOARD
+    // ============================
+    // Statistik mengambil dari $baseQuery agar sinkron dengan filter Tahun/Bulan/Bidang
+    $statsQuery = $baseQuery; 
 
-        return view('patasan.pengadaan.permintaan', compact(
-            'authUser',
-            'allPengajuan',
-            'permintaanPengajuan',
-            'perbaikanPengajuan',
-            'bidangs',
-            'search',
-            'statusFilter',
-            'bidangFilter',
-            'typeFilter',
-            'stats',
-            'tahunAnggaran', // <-- TAMBAHKAN INI
-            'bidangId',
-            'ruangan'
-        ));
-    }
+    $stats = [
+        'total'                 => (clone $statsQuery)->count(),
+        
+        // Menghitung data yang statusnya menunggu_koordinator DAN sudah di-ACC kabid pelayanan
+        'disetujui_koordinator' => (clone $statsQuery)
+            ->where('status', 'menunggu_koordinator')
+            ->where('acc_kabidPelayanan_at', 'disetujui oleh kabid pelayanan')
+            ->count(),
+        'diajukan'              => (clone $statsQuery)->where('status', 'diajukan')->count(),
+  
+        'proses'                => (clone $statsQuery)->whereNotIn('status', ['selesai', 'draft', 'ditolak'])->count(),
+        'disetujui'             => (clone $statsQuery)->where('log_status_direktur', 'disetujui')->count(),
+        'ditolak'               => (clone $statsQuery)->where('status', 'ditolak')->count(),
+        'revisi'                => (clone $statsQuery)->where('status', 'revisi')->count(),
+        'selesai'               => (clone $statsQuery)->where('status', 'selesai')->count(),
 
+        // Hitungan Badge Tab (Sinkron dengan filter)
+        'pengadaan_count'       => (clone $statsQuery)->where('kategori', 'pengadaan')->count(),
+        'pemeliharaan_count'    => (clone $statsQuery)->where('kategori', 'pemeliharaan')->count(),
+    ];
+
+    return view('patasan.pengadaan.permintaan', compact(
+        'authUser', 'allPengajuan', 'pengadaanPengajuan', 'pemeliharaanPengajuan',
+        'bidangs', 'search', 'statusFilter', 'bidangFilter', 'typeFilter',
+        'stats', 'listTahun', 'tahunFilter', 'bulanFilter', 'bidangId', 'ruangan'
+    ));
+}
      public function showpengadaan($id)
 {
     $authUser = Auth::user();
@@ -375,42 +437,64 @@ public function update(Request $request, $id)
     return view('patasan.pengadaan.show', compact('pengajuan', 'authUser'));
 }
 
+
 public function verifikasi(Request $request, $id)
 {
     $request->validate([
-        'status_verifikasi' => 'required|in:disetujui_kabid,ditolak,revisi',
+        'status_verifikasi'  => 'required|in:disetujui_kabid,ditolak,revisi,survei',
         'catatan_verifikasi' => 'required|string|min:5',
-        'atasan_id' => 'required',
+        'atasan_id'          => 'required',
     ]);
 
     try {
-        $pengajuan = pengajuan::findOrFail($id);
-        
+        $pengajuan = Pengajuan::findOrFail($id);
+        $authUser  = Auth::user();
+
+        // sesuaikan nama field & value bidangnya
+        $isAlatKesehatan = $pengajuan->bidang === 'alat kesehatan';
+
         // Mapping status untuk konsistensi
         $statusMap = [
             'disetujui_kabid' => 'disetujui_kabid',
-            'ditolak' => 'ditolak_bidang',
-            'revisi' => 'revisi_bidang',
-        ];
-        
-        // Mapping untuk log (CUKUP STATUS SAJA)
-        $logMap = [
-            'disetujui_kabid' => 'disetujui_bidang',
-            'ditolak' => 'ditolak_bidang',
-            'revisi' => 'revisi_bidang',
-        ];
-        
-        $newStatus = $statusMap[$request->status_verifikasi];
-        
-        $data = [
-            'status' => $newStatus,
-            'atasan_id' => $request->atasan_id,
-            'catatan_bidang' => $request->catatan_verifikasi,
-            'log_status_atasan' => $newStatus, // ✅ CUKUP STATUS
+            'ditolak'         => 'ditolak_bidang',
+            'revisi'          => 'revisi_bidang',
+            'survei'          => 'sesuai standard',
         ];
 
+        $newStatus = $statusMap[$request->status_verifikasi];
+
+        $data = [
+            'status'            => $newStatus,
+            'atasan_id'         => $request->atasan_id,
+            'catatan_bidang'    => $request->catatan_verifikasi,
+            'log_status_atasan' => $newStatus,
+        ];
+
+        if ($isAlatKesehatan) {
+            // --- Khusus alat kesehatan: pakai subrole ---
+            if ($authUser->subrole === 'kabid_pelayanan') {
+                $data['id_acc_kabidPelayanan']  = $request->atasan_id;
+                $data['acc_kabidPelayanan_at']  = now();
+                $data['log_acc_kabidPelayanan'] = 'disetujui oleh kabid pelayanan';
+
+            } elseif ($authUser->subrole === 'kabid_penunjang') {
+                $data['id_acc_kabidPenunjang']  = $request->atasan_id;
+                $data['acc_kabidPenunjang_at']  = now();
+                $data['log_acc_kabidPenunjang'] = 'disetujui oleh kabid penunjang';
+
+            } else {
+                // Subrole lain / tidak dikenali: tidak mengisi kolom ACC khusus
+            }
+        } else {
+            // --- Selain alat kesehatan: tetap isi log_acc_kabidPenunjang ---
+            // tanpa peduli subrole-nya apa (kabid tanpa subrole tetap bisa)
+            $data['id_acc_kabidPenunjang']  = $request->atasan_id;
+            $data['acc_kabidPenunjang_at']  = now();
+            $data['log_acc_kabidPenunjang'] = 'disetujui oleh kabid penunjang';
+        }
+
         // Hanya set tanggal jika statusnya disetujui
-        if ($request->status_verifikasi == 'disetujui_kabid') {
+        if (in_array($request->status_verifikasi, ['disetujui_kabid', 'survei'])) {
             $data['disetujui_kabid_at'] = now();
         }
 
@@ -426,6 +510,134 @@ public function verifikasi(Request $request, $id)
             ->with('error', '❌ Gagal verifikasi: ' . $e->getMessage());
     }
 }
+
+// public function verifikasi(Request $request, $id)
+// {
+//     $request->validate([
+//         'status_verifikasi'  => 'required|in:disetujui_kabid,ditolak,revisi,survei',
+//         'catatan_verifikasi' => 'required|string|min:5',
+//         'atasan_id'          => 'required',
+//     ]);
+
+//     try {
+//         $pengajuan = Pengajuan::findOrFail($id);
+//         $authUser  = Auth::user();
+
+//         // Mapping status untuk konsistensi
+//         $statusMap = [
+//             'disetujui_kabid' => 'disetujui_kabid',
+//             'ditolak'         => 'ditolak_bidang',
+//             'revisi'          => 'revisi_bidang',
+//             'survei'          => 'sesuai standard',
+//         ];
+
+//         $newStatus = $statusMap[$request->status_verifikasi];
+
+//         $data = [
+//             'status'            => $newStatus,
+//             'atasan_id'         => $request->atasan_id,
+//             'catatan_bidang'    => $request->catatan_verifikasi,
+//             'log_status_atasan' => $newStatus,
+//         ];
+
+//         // Isi kolom sesuai subrole yang login
+//         if ($authUser->subrole === 'kabid_pelayanan') {
+//             $data['id_acc_kabidPelayanan']  = $request->atasan_id;
+//             $data['acc_kabidPelayanan_at']  = now();
+//             $data['log_acc_kabidPelayanan'] = 'disetujui oleh kabid pelayanan';
+
+//         } elseif ($authUser->subrole === 'kabid_penunjang') {
+//             $data['id_acc_kabidPenunjang']  = $request->atasan_id;
+//             $data['acc_kabidPenunjang_at']  = now();
+//             $data['log_acc_kabidPenunjang'] = 'disetujui oleh kabid penunjang';
+
+//         } else {
+//             // Subrole lain / tidak dikenali: tidak mengisi kolom ACC khusus
+//         }
+
+//         // Hanya set tanggal jika statusnya disetujui
+//         if (in_array($request->status_verifikasi, ['disetujui_kabid', 'survei'])) {
+//             $data['disetujui_kabid_at'] = now();
+//         }
+
+//         $pengajuan->update($data);
+
+//         return redirect()
+//             ->route('atasan.pengadaan')
+//             ->with('success', '✅ Pengajuan berhasil diverifikasi!');
+
+//     } catch (\Exception $e) {
+//         return back()
+//             ->withInput()
+//             ->with('error', '❌ Gagal verifikasi: ' . $e->getMessage());
+//     }
+// }
+
+// public function verifikasi(Request $request, $id)
+// {
+    
+//     $request->validate([
+//         'status_verifikasi' => 'required|in:disetujui_kabid,ditolak,revisi,survei',
+//         'catatan_verifikasi' => 'required|string|min:5',
+//         'atasan_id' => 'required',
+//     ]);
+
+//     try {
+//         $pengajuan = pengajuan::findOrFail($id);
+//          $authUser = Auth::user();
+        
+//         // Mapping status untuk konsistensi
+//         $statusMap = [
+//             'disetujui_kabid' => 'disetujui_kabid',
+//             'ditolak' => 'ditolak_bidang',
+//             'revisi' => 'revisi_bidang',
+//             'survei' => 'sesuai standard',
+//         ];
+        
+//         // Mapping untuk log (CUKUP STATUS SAJA)
+//         $logMap = [
+//             'disetujui_kabid' => 'disetujui_bidang',
+//             'ditolak' => 'ditolak_bidang',
+//             'revisi' => 'revisi_bidang',
+//             'survei' => 'sesuai standard'
+//             ];
+        
+//         $newStatus = $statusMap[$request->status_verifikasi];
+        
+//         $data = [
+//             'status' => $newStatus,
+//             'atasan_id' => $request->atasan_id,
+//             'catatan_bidang' => $request->catatan_verifikasi,
+//             'log_status_atasan' => $newStatus, // ✅ CUKUP STATUS\
+//         ];
+
+//          //  Jika yang login adalah kabid pelayanan, simpan id user-nya
+//         if ($authUser->subrole === 'kabid_pelayanan') {
+//             $data['id_acc_kabidPelayanan'] = $request->atasan_id;
+//             $data['acc_kabidPelayanan_at'] = now();
+//             $data['log_acc_kabidPelayanan'] = 'disetujui oleh kabid pelayanan';
+//         }
+
+//         // Hanya set tanggal jika statusnya disetujui
+//         if (in_array($request->status_verifikasi, ['disetujui_kabid','survei'])) {
+//             $data['disetujui_kabid_at'] = now();
+//         }
+//         // if ($request->status_verifikasi == 'disetujui_kabid') {
+//         //     $data['disetujui_kabid_at'] = now();
+//         // }
+
+//         $pengajuan->update($data);
+
+//         return redirect()
+//             ->route('atasan.pengadaan')
+//             ->with('success', '✅ Pengajuan berhasil diverifikasi!');
+
+//     } catch (\Exception $e) {
+//         return back()
+//             ->withInput()
+//             ->with('error', '❌ Gagal verifikasi: ' . $e->getMessage());
+//     }
+// }
 
 
    public function chartIndex(Request $request)
@@ -475,9 +687,7 @@ public function verifikasi(Request $request, $id)
         ));
     }
 
-    /**
-     * Get chart data for AJAX request
-     */
+ 
     public function getChartData(Request $request)
     {
         try {
@@ -1323,5 +1533,98 @@ public function reportPengadaan(Request $request)
 
         return $statuses[$status] ?? $status;
     }
+
+    /**
+ * Tampilkan halaman edit semua item
+ */
+public function editItem($id)
+{
+    $pengajuan = pengajuan::with('items')->findOrFail($id);
+
+    return view('patasan.pengadaan.edit_item', compact('pengajuan'));
+}
+
+/**
+ * Update semua item sekaligus
+ */
+public function updateItem(Request $request, $id)
+{
+    $pengajuan = pengajuan::findOrFail($id);
+
+    $request->validate([
+        'items'                => 'required|array|min:1',
+        'items.*.id'           => 'nullable|integer|exists:pengajuan_items,id',
+        'items.*.nama_barang'  => 'required|string',
+        'items.*.jumlah'       => 'required|integer|min:1',
+        'items.*.harga_satuan' => 'required|numeric|min:0',
+        'items.*.spesifikasi'  => 'nullable|string',
+        'items.*.satuan'       => 'nullable|string',
+    ]);
+
+    DB::beginTransaction();
+    try {
+        $totalPengajuan = 0;
+        $idsFromRequest = [];
+
+        foreach ($request->items as $itemData) {
+            $totalItem = $itemData['jumlah'] * $itemData['harga_satuan'];
+            $totalPengajuan += $totalItem;
+
+            if (!empty($itemData['id'])) {
+                // Update item lama
+                $item = pengajuan_item::where('pengajuan_id', $pengajuan->id)
+                    ->findOrFail($itemData['id']);
+
+                $item->update([
+                    'nama_barang'  => $itemData['nama_barang'],
+                    'spesifikasi'  => $itemData['spesifikasi'] ?? null,
+                    'satuan'       => $itemData['satuan'] ?? 'Unit',
+                    'jumlah'       => $itemData['jumlah'],
+                    'harga_satuan' => $itemData['harga_satuan'],
+                    'harga'        => $totalItem,
+                ]);
+                $idsFromRequest[] = $item->id;
+            } else {
+                // Create item baru
+                $newItem = pengajuan_item::create([
+                    'pengajuan_id'     => $pengajuan->id,
+                    'nama_barang'      => $itemData['nama_barang'],
+                    'spesifikasi'      => $itemData['spesifikasi'] ?? null,
+                    'satuan'           => $itemData['satuan'] ?? 'Unit',
+                    'jumlah'           => $itemData['jumlah'],
+                    'harga_satuan'     => $itemData['harga_satuan'],
+                    'harga'            => $totalItem,
+                    'jumlah_disetujui' => $itemData['jumlah'],
+                ]);
+                $idsFromRequest[] = $newItem->id;
+            }
+        }
+
+        // Hapus item yang tidak ada di request (user hapus)
+        pengajuan_item::where('pengajuan_id', $pengajuan->id)
+            ->whereNotIn('id', $idsFromRequest)
+            ->delete();
+
+        // Update total pengajuan
+        $pengajuan->update(['total_pengajuan' => $totalPengajuan]);
+
+        DB::commit();
+
+        return redirect()
+            ->route('atasan.pengadaan.show', $pengajuan->id)
+            ->with('success', '✅ Semua item berhasil diperbarui!');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('❌ ERROR UPDATE ITEM:', [
+            'message' => $e->getMessage(),
+            'line'    => $e->getLine(),
+        ]);
+
+        return back()
+            ->withInput()
+            ->with('error', '❌ Gagal: ' . $e->getMessage());
+    }
+}
 
 }

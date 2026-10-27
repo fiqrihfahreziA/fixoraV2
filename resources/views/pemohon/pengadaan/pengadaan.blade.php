@@ -13,7 +13,7 @@
                     <p class="text-muted mb-0">Kelola permintaan dan perbaikan barang Anda</p>
                 </div>
                 <div>
-                    <a href="{{ route('pemohon.pengadaan.create') }}" class="btn btn-primary rounded-pill px-4">
+                    <a href="{{ route('pemohon.pengadaan.create', ['fresh' => 1]) }}" class="btn btn-primary rounded-pill px-4">
                         <i class="bi bi-plus-circle me-2"></i>Buat Pengajuan Baru
                     </a>
                 </div>
@@ -119,7 +119,7 @@
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body p-4">
             <form action="{{ route('pemohon.pengadaan') }}" method="GET" class="row g-3 align-items-end">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label fw-semibold small text-muted">
                         <i class="bi bi-search me-1"></i> Cari
                     </label>
@@ -134,6 +134,19 @@
                                value="{{ request('search') }}">
                     </div>
                 </div>
+
+                <!-- FILTER KATEGORI -->
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold small text-muted">
+                        <i class="bi bi-tag me-1"></i> Kategori
+                    </label>
+                    <select name="kategori" class="form-select bg-light border-0">
+                        <option value="">Semua Kategori</option>
+                        <option value="pemeliharaan" {{ request('kategori') == 'pemeliharaan' ? 'selected' : '' }}>Pemeliharaan</option>
+                        <option value="pengadaan" {{ request('kategori') == 'pengadaan' ? 'selected' : '' }}>Pengadaan</option>
+                    </select>
+                </div>
+
                 <div class="col-md-3">
                     <label class="form-label fw-semibold small text-muted">
                         <i class="bi bi-filter me-1"></i> Status
@@ -144,13 +157,24 @@
                         <option value="revisi" {{ request('status') == 'revisi' ? 'selected' : '' }}>Revisi</option>
                         <option value="diajukan" {{ request('status') == 'diajukan' ? 'selected' : '' }}>Diajukan</option>
                         <option value="disetujui_koordinator" {{ request('status') == 'disetujui_koordinator' ? 'selected' : '' }}>Disetujui Koordinator</option>
+                        <option value="perlu_survei" {{ request('status') == 'perlu_survei' ? 'selected' : '' }}>Perlu Survei</option>
+                        <option value="sesuai kebutuhan" {{ request('status') == 'sesuai kebutuhan' ? 'selected' : '' }}>Sesuai Kebutuhan</option>
                         <option value="disetujui_kabid" {{ request('status') == 'disetujui_kabid' ? 'selected' : '' }}>Disetujui Kabid</option>
+                        <option value="sesuai standard" {{ request('status') == 'sesuai standard' ? 'selected' : '' }}>Sesuai Standard</option>
+                        <option value="dipertimbangkan" {{ request('status') == 'dipertimbangkan' ? 'selected' : '' }}>Dipertimbangkan</option>
+                        <option value="keuangan" {{ request('status') == 'keuangan' ? 'selected' : '' }}>Keuangan</option>
+                        <option value="anggaran tidak tersedia" {{ request('status') == 'anggaran tidak tersedia' ? 'selected' : '' }}>Anggaran Tidak Tersedia</option>
+                        <option value="sebagian anggaran" {{ request('status') == 'sebagian anggaran' ? 'selected' : '' }}>Sebagian Anggaran</option>
+                        <option value="menunggu_keuangan" {{ request('status') == 'menunggu_keuangan' ? 'selected' : '' }}>Menunggu Keuangan</option>
+                        <option value="menunggu_kpa" {{ request('status') == 'menunggu_kpa' ? 'selected' : '' }}>Menunggu KPA</option>
+                        <option value="disetujui_pembuat_komitmen" {{ request('status') == 'disetujui_pembuat_komitmen' ? 'selected' : '' }}>Disetujui Pembuat Komitmen</option>
+                        <option value="disetujui_kuasa_pengguna" {{ request('status') == 'disetujui_kuasa_pengguna' ? 'selected' : '' }}>Disetujui Kuasa Pengguna</option>
                         <option value="menunggu_direktur" {{ request('status') == 'menunggu_direktur' ? 'selected' : '' }}>Menunggu Direktur</option>
                         <option value="disetujui" {{ request('status') == 'disetujui' ? 'selected' : '' }}>Disetujui</option>
                         <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label fw-semibold small text-muted">
                         <i class="bi bi-building me-1"></i> Bidang
                     </label>
@@ -163,10 +187,15 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-2 d-flex gap-2">
                     <button type="submit" class="btn btn-primary w-100 rounded-pill">
                         <i class="bi bi-funnel me-1"></i> Filter
                     </button>
+                    @if(request('search') || request('status') || request('bidang') || request('kategori'))
+                        <a href="{{ route('pemohon.pengadaan') }}" class="btn btn-outline-secondary rounded-pill">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    @endif
                 </div>
             </form>
         </div>
@@ -180,6 +209,18 @@
                     <button class="nav-link active px-4 py-2" data-bs-toggle="tab" data-bs-target="#semua" type="button" role="tab">
                         <i class="bi bi-grid-3x3-gap me-2"></i>Semua
                         <span class="badge bg-primary rounded-pill ms-2">{{ $stats['total'] ?? 0 }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link px-4 py-2" data-bs-toggle="tab" data-bs-target="#pemeliharaan" type="button" role="tab">
+                        <i class="bi bi-tools me-2"></i>Pemeliharaan
+                        <span class="badge bg-warning rounded-pill ms-2">{{ $stats['pemeliharaan_count'] ?? 0 }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link px-4 py-2" data-bs-toggle="tab" data-bs-target="#pengadaan" type="button" role="tab">
+                        <i class="bi bi-cart-plus me-2"></i>Pengadaan
+                        <span class="badge bg-success rounded-pill ms-2">{{ $stats['pengadaan_count'] ?? 0 }}</span>
                     </button>
                 </li>
             </ul>
@@ -196,6 +237,7 @@
                                     <th class="py-3 px-3" width="15%">No Pengajuan</th>
                                     <th class="py-3 px-3" width="15%">Tanggal</th>
                                     <th class="py-3 px-3" width="25%">Nama Barang</th>
+                                    <th class="py-3 px-3" width="25%">Kategori</th>
                                     <th class="py-3 px-3" width="15%">Status</th>
                                     <th class="py-3 px-3" width="10%">Total</th>
                                     <th class="py-3 px-3 text-center" width="15%">Aksi</th>
@@ -226,28 +268,74 @@
                                         @endif
                                     </td>
                                     <td>
+                                        @if($pengajuan->kategori == 'pemeliharaan')
+                                            <span class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill">
+                                                <i class="bi bi-tools me-1"></i>Pemeliharaan
+                                            </span>
+                                        @elseif($pengajuan->kategori == 'pengadaan')
+                                            <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill">
+                                                <i class="bi bi-cart-plus me-1"></i>Pengadaan
+                                            </span>
+                                        @else
+                                            <span class="text-muted small">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         @php
-                                            $statusColor = [
+                                            $statusColorMap = [
                                                 'draft' => 'secondary',
                                                 'revisi' => 'purple',
                                                 'diajukan' => 'warning',
                                                 'disetujui_koordinator' => 'info',
+                                                'perlu_survei' => 'orange',
+                                                'sesuai kebutuhan' => 'info',
                                                 'disetujui_kabid' => 'primary',
-                                                'menunggu_direktur' => 'warning',
+                                                'sesuai standard' => 'primary',
+                                                'dipertimbangkan' => 'primary',
+                                                'keuangan' => 'teal',
+                                                'anggaran tidak tersedia' => 'danger',
+                                                'sebagian anggaran' => 'warning',
+                                                'menunggu_keuangan' => 'teal',
+                                                'menunggu_kpa' => 'teal',
+                                                'disetujui_pembuat_komitmen' => 'primary',
+                                                'disetujui_kuasa_pengguna' => 'primary',
+                                                'menunggu_direktur' => 'purple',
                                                 'disetujui' => 'success',
-                                                'ditolak' => 'danger'
-                                            ][$pengajuan->status] ?? 'secondary';
-                                            
-                                            $statusLabel = [
+                                                'disetujui sebagian' => 'success',
+                                                'ditunda' => 'warning',
+                                                'tersedia layak dan diutamakan' => 'success',
+                                                'tidak direkomendasikan' => 'danger',
+                                                'ditolak' => 'danger',
+                                            ];
+
+                                            $statusLabelMap = [
                                                 'draft' => 'Draft',
                                                 'revisi' => 'Revisi',
                                                 'diajukan' => 'Diajukan',
                                                 'disetujui_koordinator' => 'Disetujui Koordinator',
+                                                'perlu_survei' => 'Perlu Survei',
+                                                'sesuai kebutuhan' => 'Sesuai Kebutuhan',
                                                 'disetujui_kabid' => 'Disetujui Kabid',
+                                                'sesuai standard' => 'Sesuai Standard',
+                                                'dipertimbangkan' => 'Dipertimbangkan',
+                                                'keuangan' => 'Keuangan',
+                                                'anggaran tidak tersedia' => 'Anggaran Tidak Tersedia',
+                                                'sebagian anggaran' => 'Sebagian Anggaran',
+                                                'menunggu_keuangan' => 'Menunggu Keuangan',
+                                                'menunggu_kpa' => 'Menunggu KPA',
+                                                'disetujui_pembuat_komitmen' => 'Disetujui Pembuat Komitmen',
+                                                'disetujui_kuasa_pengguna' => 'Disetujui Kuasa Pengguna',
                                                 'menunggu_direktur' => 'Menunggu Direktur',
                                                 'disetujui' => 'Disetujui',
-                                                'ditolak' => 'Ditolak'
-                                            ][$pengajuan->status] ?? $pengajuan->status;
+                                                'disetujui sebagian' => 'Disetujui Sebagian',
+                                                'ditunda' => 'Ditunda',
+                                                'tersedia layak dan diutamakan' => 'Tersedia Layak & Diutamakan',
+                                                'tidak direkomendasikan' => 'Tidak Direkomendasikan',
+                                                'ditolak' => 'Ditolak',
+                                            ];
+
+                                            $statusColor = $statusColorMap[$pengajuan->status] ?? 'secondary';
+                                            $statusLabel = $statusLabelMap[$pengajuan->status] ?? $pengajuan->status;
                                         @endphp
                                         <span class="badge bg-{{ $statusColor }}-subtle text-{{ $statusColor }} px-3 py-2 rounded-pill">
                                             <i class="bi bi-circle-fill me-1" style="font-size: 6px;"></i>
@@ -259,16 +347,12 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-2 justify-content-center">
-                                            {{-- TOMBOL DETAIL --}}
                                             <button type="button" class="btn btn-sm btn-outline-primary rounded-3" 
                                                     onclick="openModal({{ $pengajuan->id }})" 
                                                     title="Detail">
                                                 <i class="bi bi-eye"></i>
                                             </button>
                                             
-                                          
-                                            
-                                            {{-- TOMBOL AJUKAN - HANYA UNTUK DRAFT --}}
                                             @if($pengajuan->status == 'draft' || $pengajuan->status == 'revisi')
                                                 <button class="btn btn-sm btn-outline-warning rounded-3" 
                                                         onclick="confirmAjukan({{ $pengajuan->id }})" 
@@ -277,21 +361,25 @@
                                                     <i class="bi bi-send"></i>
                                                 </button>
                                             @endif
+                                           
                                             
-    
-                                            
-                                            {{-- TOMBOL CETAK - UNTUK DISETUJUI --}}
-                                            {{-- @if($pengajuan->status == 'disetujui')
+                                            @if(in_array($pengajuan->status, ['disetujui', 'selesai']))
+                                               <a href="{{ route('pemohon.pengadaan.cetak', $pengajuan->id) }}" class="btn btn-sm btn-outline-success rounded-3" data-bs-toggle="tooltip" title="Cetak" target="_blank">
+                                                    <i class="bi bi-printer"></i>
+                                                </a>
+                                            @endif
+
+                                            <!-- @if($pengajuan->status == 'disetujui')
                                                 <a href="{{ route('pemohon.pengadaan.cetak', $pengajuan->id) }}" class="btn btn-sm btn-outline-success rounded-3" data-bs-toggle="tooltip" title="Cetak">
                                                     <i class="bi bi-printer"></i>
                                                 </a>
-                                            @endif --}}
+                                            @endif -->
                                         </div>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="7" class="text-center py-5">
+                                    <td colspan="8" class="text-center py-5">
                                         <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
                                         <h6 class="text-muted">Belum ada data pengajuan</h6>
                                         <p class="text-muted small">Silakan buat pengajuan baru untuk memulai</p>
@@ -302,13 +390,194 @@
                         </table>
                     </div>
                     
-                    <!-- Pagination -->
                     <div class="d-flex justify-content-between align-items-center mt-4">
                         <div class="text-muted small">
                             Menampilkan {{ $allPengajuan->firstItem() ?? 0 }} - {{ $allPengajuan->lastItem() ?? 0 }} 
                             dari {{ $allPengajuan->total() }} data
                         </div>
                         {{ $allPengajuan->links() }}
+                    </div>
+                </div>
+
+                <!-- Tab Pemeliharaan -->
+                <div class="tab-pane fade" id="pemeliharaan" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="py-3 px-3" width="5%">#</th>
+                                    <th class="py-3 px-3" width="15%">No Pengajuan</th>
+                                    <th class="py-3 px-3" width="15%">Tanggal</th>
+                                    <th class="py-3 px-3" width="25%">Nama Barang</th>
+                                    <th class="py-3 px-3" width="15%">Status</th>
+                                    <th class="py-3 px-3" width="10%">Total</th>
+                                    <th class="py-3 px-3 text-center" width="15%">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($pemeliharaanPengajuan as $pengajuan)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>
+                                        <span class="fw-semibold text-primary">{{ $pengajuan->no_pengajuan }}</span>
+                                        <br>
+                                        <small class="text-muted">{{ $pengajuan->bidang->nama_bidang ?? '-' }}</small>
+                                    </td>
+                                    <td>{{ date('d/m/Y', strtotime($pengajuan->tanggal_pengajuan)) }}</td>
+                                    <td>
+                                        @foreach($pengajuan->items->take(2) as $item)
+                                            <div class="d-flex align-items-center gap-2 mb-1">
+                                                <i class="bi bi-dot text-primary"></i>
+                                                <span class="small">{{ $item->nama_barang }}</span>
+                                                <span class="badge bg-light text-dark">x{{ $item->jumlah }}</span>
+                                            </div>
+                                        @endforeach
+                                        @if($pengajuan->items->count() > 2)
+                                            <small class="text-muted">+ {{ $pengajuan->items->count() - 2 }} item lainnya</small>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @php
+                                            $statusColor = $statusColorMap[$pengajuan->status] ?? 'secondary';
+                                            $statusLabel = $statusLabelMap[$pengajuan->status] ?? $pengajuan->status;
+                                        @endphp
+                                        <span class="badge bg-{{ $statusColor }}-subtle text-{{ $statusColor }} px-3 py-2 rounded-pill">
+                                            <i class="bi bi-circle-fill me-1" style="font-size: 6px;"></i>
+                                            {{ $statusLabel }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold">Rp {{ number_format($pengajuan->total_pengajuan, 0, ',', '.') }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <button type="button" class="btn btn-sm btn-outline-primary rounded-3" 
+                                                    onclick="openModal({{ $pengajuan->id }})" 
+                                                    title="Detail">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            @if($pengajuan->status == 'draft' || $pengajuan->status == 'revisi')
+                                                <button class="btn btn-sm btn-outline-warning rounded-3" 
+                                                        onclick="confirmAjukan({{ $pengajuan->id }})">
+                                                    <i class="bi bi-send"></i>
+                                                </button>
+                                            @endif
+                                            @if($pengajuan->status == 'disetujui')
+                                                <a href="{{ route('pemohon.pengadaan.cetak', $pengajuan->id) }}" class="btn btn-sm btn-outline-success rounded-3">
+                                                    <i class="bi bi-printer"></i>
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <i class="bi bi-tools fs-1 text-muted d-block mb-3"></i>
+                                        <h6 class="text-muted">Belum ada data pemeliharaan</h6>
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div class="text-muted small">
+                            Menampilkan {{ $pemeliharaanPengajuan->firstItem() ?? 0 }} - {{ $pemeliharaanPengajuan->lastItem() ?? 0 }} 
+                            dari {{ $pemeliharaanPengajuan->total() }} data
+                        </div>
+                        {{ $pemeliharaanPengajuan->appends(request()->all())->links() }}
+                    </div>
+                </div>
+
+                <!-- Tab Pengadaan -->
+                <div class="tab-pane fade" id="pengadaan" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="py-3 px-3" width="5%">#</th>
+                                    <th class="py-3 px-3" width="15%">No Pengajuan</th>
+                                    <th class="py-3 px-3" width="15%">Tanggal</th>
+                                    <th class="py-3 px-3" width="25%">Nama Barang</th>
+                                    <th class="py-3 px-3" width="15%">Status</th>
+                                    <th class="py-3 px-3" width="10%">Total</th>
+                                    <th class="py-3 px-3 text-center" width="15%">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($pengadaanPengajuan as $pengajuan)
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>
+                                        <span class="fw-semibold text-primary">{{ $pengajuan->no_pengajuan }}</span>
+                                        <br>
+                                        <small class="text-muted">{{ $pengajuan->bidang->nama_bidang ?? '-' }}</small>
+                                    </td>
+                                    <td>{{ date('d/m/Y', strtotime($pengajuan->tanggal_pengajuan)) }}</td>
+                                    <td>
+                                        @foreach($pengajuan->items->take(2) as $item)
+                                            <div class="d-flex align-items-center gap-2 mb-1">
+                                                <i class="bi bi-dot text-primary"></i>
+                                                <span class="small">{{ $item->nama_barang }}</span>
+                                                <span class="badge bg-light text-dark">x{{ $item->jumlah }}</span>
+                                            </div>
+                                        @endforeach
+                                        @if($pengajuan->items->count() > 2)
+                                            <small class="text-muted">+ {{ $pengajuan->items->count() - 2 }} item lainnya</small>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @php
+                                            $statusColor = $statusColorMap[$pengajuan->status] ?? 'secondary';
+                                            $statusLabel = $statusLabelMap[$pengajuan->status] ?? $pengajuan->status;
+                                        @endphp
+                                        <span class="badge bg-{{ $statusColor }}-subtle text-{{ $statusColor }} px-3 py-2 rounded-pill">
+                                            <i class="bi bi-circle-fill me-1" style="font-size: 6px;"></i>
+                                            {{ $statusLabel }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold">Rp {{ number_format($pengajuan->total_pengajuan, 0, ',', '.') }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <button type="button" class="btn btn-sm btn-outline-primary rounded-3" 
+                                                    onclick="openModal({{ $pengajuan->id }})" 
+                                                    title="Detail">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            @if($pengajuan->status == 'draft' || $pengajuan->status == 'revisi')
+                                                <button class="btn btn-sm btn-outline-warning rounded-3" 
+                                                        onclick="confirmAjukan({{ $pengajuan->id }})">
+                                                    <i class="bi bi-send"></i>
+                                                </button>
+                                            @endif
+                                            @if($pengajuan->status == 'disetujui')
+                                                <a href="{{ route('pemohon.pengadaan.cetak', $pengajuan->id) }}" class="btn btn-sm btn-outline-success rounded-3">
+                                                    <i class="bi bi-printer"></i>
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <i class="bi bi-cart-plus fs-1 text-muted d-block mb-3"></i>
+                                        <h6 class="text-muted">Belum ada data pengadaan</h6>
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div class="text-muted small">
+                            Menampilkan {{ $pengadaanPengajuan->firstItem() ?? 0 }} - {{ $pengadaanPengajuan->lastItem() ?? 0 }} 
+                            dari {{ $pengadaanPengajuan->total() }} data
+                        </div>
+                        {{ $pengadaanPengajuan->appends(request()->all())->links() }}
                     </div>
                 </div>
             </div>
@@ -319,30 +588,81 @@
 {{-- ================= MODAL TANPA BACKDROP ================= --}}
 @foreach($allPengajuan as $pengajuan)
 @php
-    $statusColor = [
+    $statusColorMap = [
         'draft' => 'secondary',
-        'revisi' => 'warning',
+        'revisi' => 'purple',
         'diajukan' => 'warning',
         'disetujui_koordinator' => 'info',
+        'perlu_survei' => 'orange',
+        'sesuai kebutuhan' => 'info',
         'disetujui_kabid' => 'primary',
+        'sesuai standard' => 'primary',
+        'dipertimbangkan' => 'primary',
+        'keuangan' => 'teal',
+        'anggaran tidak tersedia' => 'danger',
+        'sebagian anggaran' => 'warning',
+        'menunggu_keuangan' => 'teal',
+        'menunggu_kpa' => 'teal',
+        'disetujui_pembuat_komitmen' => 'primary',
+        'disetujui_kuasa_pengguna' => 'primary',
         'menunggu_direktur' => 'purple',
         'disetujui' => 'success',
-        'ditolak' => 'danger'
-    ][$pengajuan->status] ?? 'secondary';
+        'disetujui sebagian' => 'success',
+        'ditunda' => 'warning',
+        'tersedia layak dan diutamakan' => 'success',
+        'tidak direkomendasikan' => 'danger',
+        'ditolak' => 'danger',
+    ];
 
-    $statusLabel = [
+    $statusLabelMap = [
         'draft' => 'Draft',
         'revisi' => 'Revisi',
         'diajukan' => 'Diajukan',
         'disetujui_koordinator' => 'Disetujui Koordinator',
+        'perlu_survei' => 'Perlu Survei',
+        'sesuai kebutuhan' => 'Sesuai Kebutuhan',
         'disetujui_kabid' => 'Disetujui Kabid',
+        'sesuai standard' => 'Sesuai Standard',
+        'dipertimbangkan' => 'Dipertimbangkan',
+        'keuangan' => 'Keuangan',
+        'anggaran tidak tersedia' => 'Anggaran Tidak Tersedia',
+        'sebagian anggaran' => 'Sebagian Anggaran',
+        'menunggu_keuangan' => 'Menunggu Keuangan',
+        'menunggu_keuangan' => 'Menunggu Keuangan',
+        'disetujui_pembuat_komitmen' => 'Disetujui Pembuat Komitmen',
+        'disetujui_kuasa_pengguna' => 'Disetujui Kuasa Pengguna',
         'menunggu_direktur' => 'Menunggu Direktur',
         'disetujui' => 'Disetujui',
-        'ditolak' => 'Ditolak'
-    ][$pengajuan->status] ?? $pengajuan->status;
+        'disetujui sebagian' => 'Disetujui Sebagian',
+        'ditunda' => 'Ditunda',
+        'tersedia layak dan diutamakan' => 'Tersedia Layak & Diutamakan',
+        'tidak direkomendasikan' => 'Tidak Direkomendasikan',
+        'ditolak' => 'Ditolak',
+    ];
 
-    $steps = ['diajukan', 'disetujui_koordinator', 'disetujui_kabid', 'menunggu_direktur', 'disetujui'];
-    $currentStepIndex = array_search($pengajuan->status, $steps);
+    $statusColor = $statusColorMap[$pengajuan->status] ?? 'secondary';
+    $statusLabel = $statusLabelMap[$pengajuan->status] ?? $pengajuan->status;
+
+    $steps = [
+        ['diajukan'],
+        ['disetujui_koordinator', 'perlu_survei', 'sesuai kebutuhan'],
+        ['disetujui_kabid', 'sesuai standard'],
+        ['menunggu_keuangan'],
+        ['keuangan', 'anggaran tidak tersedia', 'sebagian anggaran'],
+        ['menunggu_kpa', 'dipertimbangkan'],
+        ['menunggu_direktur', 'disetujui'],
+        ['selesai'],
+    ];
+
+    $currentStepIndex = null;
+    foreach ($steps as $idx => $group) {
+        if (in_array($pengajuan->status, $group)) {
+            $currentStepIndex = $idx;
+            break;
+        }
+    }
+
+    $isTrackable = !in_array($pengajuan->status, ['draft', 'revisi', 'ditolak', 'ditunda']);
 @endphp
 <div class="modal fade" id="modalDetail{{ $pengajuan->id }}" 
      tabindex="-1" 
@@ -352,7 +672,6 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 rounded-4 overflow-hidden detail-modal-content">
 
-            <!-- Header -->
             <div class="modal-header-modern border-0 p-4" style="background: linear-gradient(135deg, #f8f9ff 0%, #e8edff 100%);">
                 <button type="button" class="btn-close-modern" data-bs-dismiss="modal" aria-label="Close">
                     <i class="bi bi-x-lg"></i>
@@ -371,7 +690,6 @@
             </div>
 
             <div class="modal-body p-4">
-                <!-- Info Ringkas -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
                         <div class="info-tile">
@@ -387,29 +705,35 @@
                     </div>
                     <div class="col-md-4">
                         <div class="info-tile">
-                            <span class="info-tile-label"><i class="bi bi-cash-coin me-1"></i>Total Pengajuan</span>
-                            <span class="info-tile-value fw-bold text-primary">Rp {{ number_format($pengajuan->total_pengajuan, 0, ',', '.') }}</span>
+                            <span class="info-tile-label"><i class="bi bi-tag me-1"></i>Kategori</span>
+                            <span class="info-tile-value">
+                                @if($pengajuan->kategori == 'pemeliharaan')
+                                    <span class="badge bg-warning-subtle text-warning px-2 py-1 rounded-pill">Pemeliharaan</span>
+                                @elseif($pengajuan->kategori == 'pengadaan')
+                                    <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill">Pengadaan</span>
+                                @else
+                                    -
+                                @endif
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Informasi Pemohon -->
                 <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="info-tile">
+                            <span class="info-tile-label"><i class="bi bi-cash-coin me-1"></i>Total Pengajuan</span>
+                            <span class="info-tile-value fw-bold text-primary">Rp {{ number_format($pengajuan->total_pengajuan, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
                     <div class="col-md-6">
                         <div class="info-tile">
                             <span class="info-tile-label"><i class="bi bi-person me-1"></i>Pemohon</span>
                             <span class="info-tile-value">{{ $pengajuan->karyawan->nama ?? '-' }}</span>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="info-tile">
-                            <span class="info-tile-label"><i class="bi bi-briefcase me-1"></i>Jabatan</span>
-                            <span class="info-tile-value">{{ $pengajuan->karyawan->jabatan ?? '-' }}</span>
-                        </div>
-                    </div>
                 </div>
 
-                <!-- Alasan & Manfaat -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-6">
                         <div class="info-tile">
@@ -425,18 +749,43 @@
                     </div>
                 </div>
 
-                <!-- Progress Status -->
-                @if(!in_array($pengajuan->status, ['draft', 'revisi', 'ditolak']))
+                @if($isTrackable && $currentStepIndex !== null)
                 <div class="mb-4">
                     <h6 class="fw-semibold small text-muted mb-3">
                         <i class="bi bi-signpost-split me-1"></i>Progres Persetujuan
                     </h6>
                     <div class="status-tracker">
-                        @foreach(['diajukan' => 'Diajukan', 'disetujui_koordinator' => 'Koordinator', 'disetujui_kabid' => 'Kabid', 'menunggu_direktur' => 'Direktur', 'disetujui' => 'Selesai'] as $key => $label)
-                            @php $stepIndex = array_search($key, $steps); @endphp
-                            <div class="tracker-step {{ $currentStepIndex !== false && $stepIndex <= $currentStepIndex ? 'active' : '' }}">
+                        @php
+                            $trackerSteps = [
+                                ['label' => 'Diajukan',    'kolom' => 'created_at'],
+                                ['label' => 'Koordinator', 'kolom' => 'diterima_at'],
+                                ['label' => 'Kabid',       'kolom' => 'disetujui_kabid_at'],
+                                ['label' => 'PPK',         'kolom' => 'ppk_at'],
+                                ['label' => 'Keuangan',    'kolom' => 'disetujui_keuangan_at'], 
+                                ['label' => 'KPA',         'kolom' => 'kpa'],
+                                ['label' => 'Direktur',    'kolom' => 'disetujui_direktur_at'],
+                                ['label' => 'Selesai',     'kolom' => 'selesai_at'],
+                            ];
+                        @endphp
+
+                        @foreach($trackerSteps as $i => $step)
+                            @php
+                                $isActive = $i <= $currentStepIndex;
+                                $tanggal  = null;
+
+                                if ($isActive) {
+                                    $tanggal = $pengajuan->{$step['kolom']} ?? null;
+                                }
+                            @endphp
+
+                            <div class="tracker-step {{ $isActive ? 'active' : '' }}">
                                 <div class="tracker-dot"><i class="bi bi-check-lg"></i></div>
-                                <span class="tracker-label">{{ $label }}</span>
+                                <span class="tracker-label">{{ $step['label'] }}</span>
+                                @if($tanggal)
+                                    <span class="tracker-date">
+                                        {{ \Carbon\Carbon::parse($tanggal)->format('d/m/y') }}
+                                    </span>
+                                @endif
                             </div>
                         @endforeach
                     </div>
@@ -446,9 +795,13 @@
                     <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
                     <span class="small text-danger fw-semibold">Pengajuan ini ditolak</span>
                 </div>
+                @elseif($pengajuan->status == 'ditunda')
+                <div class="alert alert-warning-subtle bg-warning-subtle border-0 rounded-3 d-flex align-items-center gap-2 mb-4">
+                    <i class="bi bi-pause-circle-fill text-warning fs-5"></i>
+                    <span class="small text-warning-emphasis fw-semibold">Pengajuan ini ditunda</span>
+                </div>
                 @endif
 
-                <!-- Daftar Barang -->
                 <h6 class="fw-semibold small text-muted mb-3">
                     <i class="bi bi-basket me-1"></i>Daftar Barang
                 </h6>
@@ -486,7 +839,6 @@
                     </table>
                 </div>
 
-                <!-- Dampak -->
                 @if(!empty($pengajuan->dampak))
                 <div class="mt-4">
                     <h6 class="fw-semibold small text-muted mb-2">
@@ -496,7 +848,6 @@
                 </div>
                 @endif
 
-                <!-- Kondisi Barang Lama -->
                 @if(!empty($pengajuan->kondisi_barang_lama) || !empty($pengajuan->ket_barang_lama))
                 <div class="mt-4">
                     <h6 class="fw-semibold small text-muted mb-2">
@@ -519,7 +870,6 @@
                     <i class="bi bi-x-circle me-1"></i>Tutup
                 </button>
                 
-                {{-- TOMBOL EDIT - UNTUK DRAFT ATAU REVISI --}}
                 @if(in_array($pengajuan->status, ['draft', 'revisi']))
                     <a href="{{ route('pemohon.pengadaan.edit', $pengajuan->id) }}" 
                        class="btn {{ $pengajuan->status == 'revisi' ? 'btn-warning' : 'btn-primary' }} rounded-pill px-4 text-white">
@@ -528,61 +878,56 @@
                     </a>
                 @endif
                 
-                {{-- TOMBOL CETAK - UNTUK DISETUJUI --}}
-                @if($pengajuan->status == 'disetujui')
+                
+                @if(in_array($pengajuan->status, ['disetujui', 'selesai']))
+                    <a href="{{ route('direktur.pengadaan.cetak', $pengajuan->id) }}" class="btn btn-sm btn-outline-success rounded-3" data-bs-toggle="tooltip" title="Cetak" target="_blank">
+                        <i class="bi bi-printer"></i>
+                    </a>
+                @endif
+                <!-- @if($pengajuan->status == 'disetujui')
                     <a href="{{ route('pemohon.pengadaan.cetak', $pengajuan->id) }}" class="btn btn-success rounded-pill px-4">
                         <i class="bi bi-printer me-1"></i>Cetak
                     </a>
-                @endif
+                @endif -->
+
+                 @if($pengajuan->status == 'disetujui')
+                <form action="{{ route('pemohon.pengadaan.selesai', $pengajuan->id) }}" method="POST" class="d-inline m-0 p-0">
+                    @csrf
+                    @method('PUT')
+                    <button type="submit" class="btn btn-warning rounded-pill px-4" onclick="return confirm('Apakah Anda yakin barang sudah diterima dan pengajuan ini selesai?')">
+                        <i class="bi bi-check-circle me-1"></i>Selesai
+                    </button>
+                </form>
+@endif
             </div>
         </div>
     </div>
 </div>
 @endforeach
 
-<!-- ============================================
-STYLES
-============================================ -->
 <style>
-/* ===== BASE STYLES ===== */
-.bg-purple {
-    background-color: #6f42c1;
-}
-.bg-purple-subtle {
-    background-color: #e7d8f5 !important;
-}
-.text-purple {
-    color: #6f42c1 !important;
-}
-.bg-success-subtle {
-    background-color: #d4edda !important;
-}
-.bg-danger-subtle {
-    background-color: #f8d7da !important;
-}
-.bg-warning-subtle {
-    background-color: #fff3cd !important;
-}
-.bg-info-subtle {
-    background-color: #d1ecf1 !important;
-}
-.bg-secondary-subtle {
-    background-color: #e2e3e5 !important;
-}
-.bg-primary-subtle {
-    background-color: #cfe2ff !important;
-}
+.bg-purple { background-color: #6f42c1; }
+.bg-purple-subtle { background-color: #e7d8f5 !important; }
+.text-purple { color: #6f42c1 !important; }
+.bg-orange { background-color: #fd7e14 !important; }
+.bg-orange-subtle { background-color: #ffe5d0 !important; }
+.text-orange { color: #fd7e14 !important; }
+.bg-teal { background-color: #20c997 !important; }
+.bg-teal-subtle { background-color: #d2f4ea !important; }
+.text-teal { color: #20c997 !important; }
+.bg-success-subtle { background-color: #d4edda !important; }
+.bg-danger-subtle { background-color: #f8d7da !important; }
+.bg-warning-subtle { background-color: #fff3cd !important; }
+.bg-info-subtle { background-color: #d1ecf1 !important; }
+.bg-secondary-subtle { background-color: #e2e3e5 !important; }
+.bg-primary-subtle { background-color: #cfe2ff !important; }
 
-.hover-shadow {
-    transition: all 0.3s ease;
-}
+.hover-shadow { transition: all 0.3s ease; }
 .hover-shadow:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
 }
-.transition-all {
-    transition: all 0.3s ease;
-}
+.transition-all { transition: all 0.3s ease; }
 
 .nav-tabs-custom .nav-link {
     border: none;
@@ -637,7 +982,6 @@ STYLES
     transform: scale(1.05);
 }
 
-/* Pagination */
 .pagination .page-item .page-link {
     border-radius: 8px;
     margin: 0 3px;
@@ -654,25 +998,13 @@ STYLES
 }
 
 @media (max-width: 768px) {
-    .stats-icon {
-        width: 40px;
-        height: 40px;
-    }
-    .stats-icon i {
-        font-size: 1.2rem !important;
-    }
-    .table-responsive {
-        font-size: 0.85rem;
-    }
-    .btn-sm {
-        padding: 0.2rem 0.4rem;
-    }
+    .stats-icon { width: 40px; height: 40px; }
+    .stats-icon i { font-size: 1.2rem !important; }
+    .table-responsive { font-size: 0.85rem; }
+    .btn-sm { padding: 0.2rem 0.4rem; }
 }
 
-/* ===== MODAL ===== */
-.modal-backdrop {
-    display: none !important;
-}
+.modal-backdrop { display: none !important; }
 
 .modal {
     background: rgba(0,0,0,0.01);
@@ -698,9 +1030,7 @@ body.modal-open {
     padding-right: 0 !important;
 }
 
-.modal-header-modern {
-    position: relative;
-}
+.modal-header-modern { position: relative; }
 .btn-close-modern {
     position: absolute;
     top: 16px;
@@ -745,9 +1075,7 @@ body.modal-open {
     height: 100%;
     transition: all 0.2s ease;
 }
-.info-tile:hover {
-    background: #f1f3f5;
-}
+.info-tile:hover { background: #f1f3f5; }
 .info-tile-label {
     font-size: 0.72rem;
     text-transform: uppercase;
@@ -761,7 +1089,6 @@ body.modal-open {
     font-weight: 600;
 }
 
-/* Status Tracker */
 .status-tracker {
     display: flex;
     align-items: flex-start;
@@ -786,8 +1113,9 @@ body.modal-open {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     flex: 1;
+    min-width: 0;
 }
 .tracker-dot {
     width: 30px;
@@ -802,6 +1130,7 @@ body.modal-open {
     transition: all 0.3s ease;
     border: 3px solid #fff;
     box-shadow: 0 0 0 1px #e9ecef;
+    flex-shrink: 0;
 }
 .tracker-step.active .tracker-dot {
     background: linear-gradient(135deg, #0d6efd, #6610f2);
@@ -813,10 +1142,26 @@ body.modal-open {
     text-align: center;
     color: #adb5bd;
     font-weight: 600;
-    max-width: 70px;
+    max-width: 90px;
+    line-height: 1.2;
+    word-wrap: break-word;
 }
-.tracker-step.active .tracker-label {
+.tracker-step.active .tracker-label { color: #0d6efd; }
+
+.tracker-date {
+    font-size: 0.6rem;
+    color: #6c757d;
+    font-weight: 500;
+    background: #f1f3f5;
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-top: 2px;
+    white-space: nowrap;
+    line-height: 1.1;
+}
+.tracker-step.active .tracker-date {
     color: #0d6efd;
+    background: #e7f1ff;
 }
 
 @media (max-width: 576px) {
@@ -825,17 +1170,17 @@ body.modal-open {
         padding-bottom: 8px;
     }
     .tracker-label {
-        max-width: 55px;
+        max-width: 65px;
         font-size: 0.62rem;
+    }
+    .tracker-date {
+        font-size: 0.55rem;
+        padding: 1px 4px;
     }
 }
 </style>
 
-<!-- ============================================
-SCRIPTS
-============================================ -->
 <script>
-// ===== FUNGSI OPEN MODAL =====
 function openModal(id) {
     var modalElement = document.getElementById('modalDetail' + id);
     if (modalElement) {
@@ -847,13 +1192,9 @@ function openModal(id) {
     }
 }
 
-// ===== FUNGSI CONFIRM AJUKAN =====
 function confirmAjukan(id) {
     if (confirm('Apakah Anda yakin ingin mengajukan pengajuan ini?')) {
-        
         const url = `/pemohon/pengadaan/${id}/submit`;
-        
-        console.log('URL:', url);
         
         fetch(url, {
             method: 'POST',
@@ -863,13 +1204,8 @@ function confirmAjukan(id) {
                 'Accept': 'application/json'
             }
         })
-        .then(response => {
-            console.log('Response status:', response.status);
-            return response.text();
-        })
+        .then(response => response.text())
         .then(text => {
-            console.log('Response text:', text);
-            
             try {
                 const data = JSON.parse(text);
                 if (data.success) {
@@ -890,7 +1226,6 @@ function confirmAjukan(id) {
     }
 }
 
-// ===== FUNGSI CONFIRM DELETE =====
 function confirmDelete(id) {
     if (confirm('Apakah Anda yakin ingin menghapus pengajuan ini?')) {
         const url = `/pemohon/pengadaan/${id}`;
@@ -925,7 +1260,6 @@ function confirmDelete(id) {
     }
 }
 
-// ===== TOOLTIP =====
 document.addEventListener('DOMContentLoaded', function() {
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
@@ -933,7 +1267,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// ===== CLEANUP BACKDROP =====
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.modal').forEach(function(modal) {
         modal.addEventListener('hidden.bs.modal', function() {
@@ -948,3 +1281,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endsection
+
+

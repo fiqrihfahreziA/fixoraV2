@@ -179,7 +179,9 @@
                                 <option value="CSSD/LAUNDRY">CSSD/LAUNDRY</option>
                                 <option value="CODE BLUE">CODE BLUE</option>
                                 <option value="CSSD">CSSD</option>
+                                <option value="Direktur">DIREKTUR</option>
                                 <option value="UNIT HEMODIALISIS">UNIT HEMODIALISIS</option>
+                                <option value="Penunjang">PENUNJANG</option>
                                 <option value="RUANG FLAMBOYAN">RUANG FLAMBOYAN</option>
                                 <option value="IGD">IGD</option>
                                 <option value="IPAL">IPAL</option>
@@ -260,8 +262,8 @@
 
                 @php
                 $daftarRuangan = [
-                    'CSSD/LAUNDRY','CODE BLUE','CSSD','UNIT HEMODIALISIS',
-                    'RUANG FLAMBOYAN','IPAL','INSTALASI PEMELIHARAAN SARANA',
+                    'CSSD/LAUNDRY','CODE BLUE','CSSD','DIREKTUR','UNIT HEMODIALISIS',
+                    'RUANG FLAMBOYAN','IPAL','INSTALASI PEMELIHARAAN SARANA','KEUANGAN',
                     'RUANG BOUGENVILE','RUANG SAKURA','RUANG CEMPAKA',
                     'RUANG MATAHARI','RUANG MAWAR','RUANG MELATI',
                     'RUANG ANGGREK','RUANG KENANGA','RUANG DAHLIA',

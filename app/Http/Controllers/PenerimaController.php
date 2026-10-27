@@ -548,146 +548,719 @@ public function exportCsv(Request $request)
 
 //pengadaan
 
-   public function chartpengadaan(Request $request)
-    {
-        $authUser = Auth::user();
+//    public function chartpengadaan(Request $request)
+//     {
+//         $authUser = Auth::user();
         
-        // Ambil bidang_id dari karyawan yang login (PENERIMA)
-        $bidangId = $authUser->karyawan->bidang_id ?? null;
-        $ruangan = $authUser->karyawan->ruangan ?? null;
+//         // Ambil bidang_id dari karyawan yang login (PENERIMA)
+//         $bidangId = $authUser->karyawan->bidang_id ?? null;
+//         $ruangan = $authUser->karyawan->ruangan ?? null;
         
-        // Ambil bidang untuk filter
-        $bidangs = bidang::all();
+//         // Ambil bidang untuk filter
+//         $bidangs = bidang::all();
 
-        // Ambil query pencarian
-        $search = $request->input('search');
-        $statusFilter = $request->input('status');
-        $bidangFilter = $request->input('bidang');
-        $typeFilter = $request->input('type');
-         $tahunAnggaran = $request->input('tahun_anggaran');
+//         // Ambil query pencarian
+//         $search = $request->input('search');
+//         $statusFilter = $request->input('status');
+//         $bidangFilter = $request->input('bidang');
+//         $typeFilter = $request->input('type');
+//          $tahunAnggaran = $request->input('tahun_anggaran');
 
-        /**
-         * ============================
-         * QUERY DASAR PENGADAAN
-         * Filter berdasarkan bidang_id user (PENERIMA)
-         * ============================
-         */
-            $query = pengajuan::with(['items', 'karyawan', 'bidang'])
-            ->where('bidang_id', $bidangId)
-            ->where('status', '!=', 'draft')
-            ->when($search, function ($q) use ($search) {
-                $q->where(function ($query) use ($search) {
-                    $query->where('no_pengajuan', 'like', "%{$search}%")
-                        ->orWhere('dasar_usulan', 'like', "%{$search}%")
-                        ->orWhereHas('items', function ($itemQuery) use ($search) {
-                            $itemQuery->where('nama_barang', 'like', "%{$search}%")
-                                ->orWhere('spesifikasi', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->when($statusFilter, function ($q) use ($statusFilter) {
-                $q->where('status', $statusFilter);
-            })
-            ->when($bidangFilter, function ($q) use ($bidangFilter) {
-                $q->where('bidang_id', $bidangFilter);
-            })
-            ->when($tahunAnggaran, function ($q) use ($tahunAnggaran) { // <-- TAMBAHKAN FILTER TAHUN
-            $q->where('tahun_anggaran', $tahunAnggaran);
-            });
+//         /**
+//          * ============================
+//          * QUERY DASAR PENGADAAN
+//          * Filter berdasarkan bidang_id user (PENERIMA)
+//          * ============================
+//          */
+//             $query = pengajuan::with(['items', 'karyawan', 'bidang'])
+//             // ->where('bidang_id', $bidangId)
+//             ->where('status', '!=', 'draft')
+//             ->when($search, function ($q) use ($search) {
+//                 $q->where(function ($query) use ($search) {
+//                     $query->where('no_pengajuan', 'like', "%{$search}%")
+//                         ->orWhere('dasar_usulan', 'like', "%{$search}%")
+//                         ->orWhereHas('items', function ($itemQuery) use ($search) {
+//                             $itemQuery->where('nama_barang', 'like', "%{$search}%")
+//                                 ->orWhere('spesifikasi', 'like', "%{$search}%");
+//                         });
+//                 });
+//             })
+//             ->when($statusFilter, function ($q) use ($statusFilter) {
+//                 $q->where('status', $statusFilter);
+//             })
+//             ->when($bidangFilter, function ($q) use ($bidangFilter) {
+//                 $q->where('bidang_id', $bidangFilter);
+//             })
+//             ->when($tahunAnggaran, function ($q) use ($tahunAnggaran) { // <-- TAMBAHKAN FILTER TAHUN
+//             $q->where('tahun_anggaran', $tahunAnggaran);
+//             });
 
-        /**
-         * ============================
-         * DATA UNTUK TABEL SEMUA PENGAJUAN
-         * ============================
-         */
-        $allPengajuan = clone $query;
-        $allPengajuan = $allPengajuan->orderBy('created_at', 'desc')
-            ->paginate(10)
-            ->appends($request->all());
+//         /**
+//          * ============================
+//          * DATA UNTUK TABEL SEMUA PENGAJUAN
+//          * ============================
+//          */
+//         $allPengajuan = clone $query;
+//         $allPengajuan = $allPengajuan->orderBy('created_at', 'desc')
+//             ->paginate(10)
+//             ->appends($request->all());
 
-        /**
-         * ============================
-         * DATA UNTUK TAB PERMINTAAN 
-         * ============================
-         */
-        $permintaanQuery = clone $query;
-        $permintaanPengajuan = $permintaanQuery->where(function($q) {
-                $q->where('dasar_usulan', 'LIKE', '%Program Kerja%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%Kebutuhan Operasional%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%Penambahan Kapasitas Pelayanan%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%Pemenuhan Standar Akreditasi%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%Keselamatan Pasien%')
-                  ->orWhereNull('dasar_usulan');
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10)
-            ->appends($request->all());
+//         /**
+//          * ============================
+//          * DATA UNTUK TAB PERMINTAAN 
+//          * ============================
+//          */
+//         $permintaanQuery = clone $query;
+//         $permintaanPengajuan = $permintaanQuery->where(function($q) {
+//                 $q->where('dasar_usulan', 'LIKE', '%Program Kerja%')
+//                   ->orWhere('dasar_usulan', 'LIKE', '%Kebutuhan Operasional%')
+//                   ->orWhere('dasar_usulan', 'LIKE', '%Penambahan Kapasitas Pelayanan%')
+//                   ->orWhere('dasar_usulan', 'LIKE', '%Pemenuhan Standar Akreditasi%')
+//                   ->orWhere('dasar_usulan', 'LIKE', '%Keselamatan Pasien%')
+//                   ->orWhereNull('dasar_usulan');
+//             })
+//             ->orderBy('created_at', 'desc')
+//             ->paginate(10)
+//             ->appends($request->all());
 
-        /**
-         * ============================
-         * DATA UNTUK TAB PERBAIKAN 
-         * ============================
-         */
-        $perbaikanQuery = clone $query;
-        $perbaikanPengajuan = $perbaikanQuery->where(function($q) {
-                $q->where('dasar_usulan', 'LIKE', '%Penggantian Barang Rusak%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%perbaikan%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%service%')
-                  ->orWhere('dasar_usulan', 'LIKE', '%repair%');
-            })
-            ->orderBy('created_at', 'desc')
-            ->paginate(10)
-            ->appends($request->all());
+//         /**
+//          * ============================
+//          * DATA UNTUK TAB PERBAIKAN 
+//          * ============================
+//          */
+//         $perbaikanQuery = clone $query;
+//         $perbaikanPengajuan = $perbaikanQuery->where(function($q) {
+//                 $q->where('dasar_usulan', 'LIKE', '%Penggantian Barang Rusak%')
+//                   ->orWhere('dasar_usulan', 'LIKE', '%perbaikan%')
+//                   ->orWhere('dasar_usulan', 'LIKE', '%service%')
+//                   ->orWhere('dasar_usulan', 'LIKE', '%repair%');
+//             })
+//             ->orderBy('created_at', 'desc')
+//             ->paginate(10)
+//             ->appends($request->all());
 
-        /**
-         * ============================
-         * STATISTIK DASHBOARD
-         * ============================
-         */
-        $stats = [
-            'total' => Pengajuan::where('bidang_id', $bidangId)->count(),
-            'draft' => Pengajuan::where('bidang_id', $bidangId)->where('status', 'draft')->count(),
-            'diajukan' => Pengajuan::where('bidang_id', $bidangId)->where('status', 'diajukan')->count(),
-            'disetujui' => Pengajuan::where('bidang_id', $bidangId)->where('status', 'disetujui')->count(),
-            'ditolak' => Pengajuan::where('bidang_id', $bidangId)->where('status', 'ditolak')->count(),
-            'revisi' => Pengajuan::where('bidang_id', $bidangId)->where('status', 'revisi')->count(),
-            'menunggu_direktur' => Pengajuan::where('bidang_id', $bidangId)->where('status', 'menunggu_direktur')->count(),
+//         /**
+//          * ============================
+//          * STATISTIK DASHBOARD
+//          * ============================
+//          */
+//         //         $stats = [
+//         //     'total' => (clone $query)->count(),
             
-            'permintaan_count' => Pengajuan::where('bidang_id', $bidangId)
-                ->where(function($q) {
-                    $q->where('dasar_usulan', 'LIKE', '%Program Kerja%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%Kebutuhan Operasional%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%Penambahan Kapasitas Pelayanan%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%Pemenuhan Standar Akreditasi%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%Keselamatan Pasien%')
-                      ->orWhereNull('dasar_usulan');
-                })->count(),
-                
-            'perbaikan_count' => Pengajuan::where('bidang_id', $bidangId)
-                ->where(function($q) {
-                    $q->where('dasar_usulan', 'LIKE', '%Penggantian Barang Rusak%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%perbaikan%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%service%')
-                      ->orWhere('dasar_usulan', 'LIKE', '%repair%');
-                })->count(),
-        ];
+//         //     // Pakai clone $query biar angkanya sinkron sama tabel
+//         //     'diajukan' => (clone $query)->where('status', 'diajukan')->count(),
+            
+//         //     'disetujui' => (clone $query)->whereIn('status', ['disetujui', 'selesai'])->count(),
+            
+//         //     'ditolak' => (clone $query)->where('status', 'ditolak')->count(),
+            
+//         //     'selesai' => (clone $query)->where('status', 'selesai')->count(),
 
-        return view('penerima.pengadaan.permintaan', compact(
-            'authUser',
-            'allPengajuan',
-            'permintaanPengajuan',
-            'perbaikanPengajuan',
-            'bidangs',
-            'search',
-            'statusFilter',
-            'bidangFilter',
-            'typeFilter',
-            'stats',
-            'tahunAnggaran', // <-- TAMBAHKAN INI
-            'bidangId',
-            'ruangan'
-        ));
-    }
+//         //     // BADGE TAB PENGAADAAN: Ngitung pakai KOLOM KATEGORI & STATUS DIAJUKAN
+//         //     'permintaan_count' => (clone $query)
+//         //         ->where('status', 'diajukan')
+//         //         ->where('kategori', 'pengadaan')
+//         //         ->count(),
+                
+//         //     // BADGE TAB PERBAIKAN: Ngitung pakai KOLOM KATEGORI
+//         //     'perbaikan_count' => (clone $query)
+//         //         ->where('status', 'diajukan')
+//         //         ->where('kategori', 'pemeliharaan')
+//         //         ->count(),
+//         // ];
+
+//                 $stats = [
+//             'total' => (clone $query)->count(),
+            
+//             // Pakai clone $query biar angkanya sinkron sama tabel
+//             'diajukan' => (clone $query)->where('status', 'diajukan')->count(),
+            
+//             'disetujui' => (clone $query)->whereIn('status', ['disetujui', 'selesai'])->count(),
+            
+//             'ditolak' => (clone $query)->where('status', 'ditolak')->count(),
+            
+//             'selesai' => (clone $query)->where('status', 'selesai')->count(),
+
+//             // BADGE TAB PENGAADAAN: Ngitung pakai KOLOM KATEGORI & STATUS DIAJUKAN
+//             'permintaan_count' => (clone $query)
+//                 ->where('status', 'diajukan')
+//                 ->where('kategori', 'pengadaan')
+//                 ->count(),
+                
+//             // BADGE TAB PERBAIKAN: Ngitung pakai KOLOM KATEGORI
+//             'perbaikan_count' => (clone $query)
+//                 ->where('status', 'diajukan')
+//                 ->where('kategori', 'pemeliharaan')
+//                 ->count(),
+//         ];
+
+//         return view('penerima.pengadaan.permintaan', compact(
+//             'authUser',
+//             'allPengajuan',
+//             'permintaanPengajuan',
+//             'perbaikanPengajuan',
+//             'bidangs',
+//             'search',
+//             'statusFilter',
+//             'bidangFilter',
+//             'typeFilter',
+//             'stats',
+//             'tahunAnggaran', // <-- TAMBAHKAN INI
+//             'bidangId',
+//             'ruangan'
+//         ));
+//     }
+
+// public function chartpengadaan(Request $request)
+// {
+//     $authUser = Auth::user();
+    
+//     // Ambil bidang_id dari karyawan yang login (PENERIMA)
+//     $bidangId = $authUser->karyawan->bidang_id ?? null;
+//     $ruangan = $authUser->karyawan->ruangan ?? null;
+    
+//     // Ambil bidang untuk filter
+//     $bidangs = bidang::all();
+
+//     // Ambil query pencarian
+//     $search = $request->input('search');
+//     $statusFilter = $request->input('status');
+//     $bidangFilter = $request->input('bidang');
+//     $typeFilter = $request->input('type');
+//     $tahunAnggaran = $request->input('tahun_anggaran');
+
+//     /**
+//      * ============================
+//      * QUERY DASAR PENGADAAN
+//      * ============================
+//      */
+//     $query = pengajuan::with(['items', 'karyawan', 'bidang'])
+//         // ->where('bidang_id', $bidangId)
+//         ->where('status', '!=', 'draft')
+//         ->when($search, function ($q) use ($search) {
+//             $q->where(function ($query) use ($search) {
+//                 $query->where('no_pengajuan', 'like', "%{$search}%")
+//                     ->orWhere('dasar_usulan', 'like', "%{$search}%")
+//                     ->orWhereHas('items', function ($itemQuery) use ($search) {
+//                         $itemQuery->where('nama_barang', 'like', "%{$search}%")
+//                             ->orWhere('spesifikasi', 'like', "%{$search}%");
+//                     });
+//             });
+//         })
+//         ->when($statusFilter, function ($q) use ($statusFilter) {
+//             $q->where('status', $statusFilter);
+//         })
+//         ->when($bidangFilter, function ($q) use ($bidangFilter) {
+//             $q->where('bidang_id', $bidangFilter);
+//         })
+//         ->when($tahunAnggaran, function ($q) use ($tahunAnggaran) {
+//             $q->where('tahun_anggaran', $tahunAnggaran);
+//         });
+
+//     /**
+//      * ============================
+//      * DATA UNTUK TABEL SEMUA PENGAJUAN
+//      * ============================
+//      */
+//     $allPengajuan = clone $query;
+//     $allPengajuan = $allPengajuan->orderBy('created_at', 'desc')
+//         ->paginate(10)
+//         ->appends($request->all());
+
+//     /**
+//      * ============================
+//      * DATA UNTUK TAB PENGADAAN
+//      * ============================
+//      */
+//     $permintaanQuery = clone $query;
+//     $permintaanPengajuan = $permintaanQuery->where('kategori', 'pengadaan')
+//         ->orderBy('created_at', 'desc')
+//         ->paginate(10)
+//         ->appends($request->all());
+
+//     /**
+//      * ============================
+//      * DATA UNTUK TAB PEMELIHARAAN
+//      * ============================
+//      */
+//     $perbaikanQuery = clone $query;
+//     $perbaikanPengajuan = $perbaikanQuery->where('kategori', 'pemeliharaan')
+//         ->orderBy('created_at', 'desc')
+//         ->paginate(10)
+//         ->appends($request->all());
+
+//     /**
+//      * ============================
+//      * STATISTIK DASHBOARD
+//      * ============================
+//      */
+//     $stats = [
+//         'total' => (clone $query)->count(),
+//         'diajukan' => (clone $query)->where('status', 'diajukan')->count(),
+//         'disetujui' => (clone $query)->whereIn('status', ['disetujui', 'selesai'])->count(),
+//         'ditolak' => (clone $query)->where('status', 'ditolak')->count(),
+//         'selesai' => (clone $query)->where('status', 'selesai')->count(),
+
+//         // Hitungan Badge Tab
+//         // Hitungan Badge Tab
+//             'permintaan_count' => (clone $query)
+//                 ->where('status', 'LIKE', '%diajukan%')
+//                 ->where(function($q) {
+//                     $q->where('kategori', 'LIKE', '%pengadaan%')
+//                     ->orWhereNull('kategori'); // Nangkep data lama yang kategorinya kosong
+//                 })
+//                 ->count(),
+
+//             'perbaikan_count' => (clone $query)
+//                 ->where('status', 'LIKE', '%diajukan%')
+//                 ->where(function($q) {
+//                     $q->where('kategori', 'LIKE', '%pemeliharaan%')
+//                     ->orWhereNull('kategori');
+//                 })
+//                 ->count(),
+//                 ];
+
+//     return view('penerima.pengadaan.permintaan', compact(
+//         'authUser',
+//         'allPengajuan',
+//         'permintaanPengajuan',
+//         'perbaikanPengajuan',
+//         'bidangs',
+//         'search',
+//         'statusFilter',
+//         'bidangFilter',
+//         'typeFilter',
+//         'stats',
+//         'tahunAnggaran',
+//         'bidangId',
+//         'ruangan'
+//     ));
+// }
+
+public function chartpengadaan(Request $request)
+{
+    $authUser = Auth::user();
+    
+    // Ambil bidang_id dari karyawan yang login (PENERIMA)
+    $bidangId = $authUser->karyawan->bidang_id ?? null;
+    $ruangan = $authUser->karyawan->ruangan ?? null;
+    
+    // Ambil bidang untuk filter
+    $bidangs = bidang::all();
+
+    // Ambil query pencarian & filter
+    $search = $request->input('search');
+    $statusFilter = $request->input('status');
+    $bidangFilter = $request->input('bidang');
+    $typeFilter = $request->input('type');
+    $tahunAnggaran = $request->input('tahun_anggaran');
+    $bulanFilter = $request->input('bulan'); // <-- TAMBAHAN FILTER BULAN
+
+    /**
+     * ============================
+     * QUERY DASAR PENGADAAN
+     * ============================
+     */
+    $query = pengajuan::with(['items', 'karyawan', 'bidang'])
+        ->where('status', '!=', 'draft')
+        ->when($search, function ($q) use ($search) {
+            $q->where(function ($query) use ($search) {
+                $query->where('no_pengajuan', 'like', "%{$search}%")
+                    ->orWhere('dasar_usulan', 'like', "%{$search}%")
+                    ->orWhereHas('items', function ($itemQuery) use ($search) {
+                        $itemQuery->where('nama_barang', 'like', "%{$search}%")
+                            ->orWhere('spesifikasi', 'like', "%{$search}%");
+                    });
+            });
+        })
+        ->when($statusFilter, function ($q) use ($statusFilter) {
+            $q->where('status', $statusFilter);
+        })
+        ->when($bidangFilter, function ($q) use ($bidangFilter) {
+            $q->where('bidang_id', $bidangFilter);
+        })
+        ->when($tahunAnggaran, function ($q) use ($tahunAnggaran) {
+            $q->where('tahun_anggaran', $tahunAnggaran);
+        })
+        ->when($bulanFilter, function ($q) use ($bulanFilter) {
+            $q->whereMonth('tanggal_pengajuan', $bulanFilter); // <-- FILTER BULAN
+        });
+
+    /**
+     * ============================
+     * DATA UNTUK TABEL SEMUA PENGAJUAN
+     * ============================
+     */
+    $allPengajuan = clone $query;
+    $allPengajuan = $allPengajuan->orderBy('created_at', 'desc')
+        ->paginate(10)
+        ->appends($request->all());
+
+    /**
+     * ============================
+     * DATA UNTUK TAB PENGADAAN
+     * ============================
+     */
+    $permintaanQuery = clone $query;
+    $permintaanPengajuan = $permintaanQuery->where('kategori', 'pengadaan')
+        ->orderBy('created_at', 'desc')
+        ->paginate(10)
+        ->appends($request->all());
+
+    /**
+     * ============================
+     * DATA UNTUK TAB PEMELIHARAAN
+     * ============================
+     */
+    $perbaikanQuery = clone $query;
+    $perbaikanPengajuan = $perbaikanQuery->where('kategori', 'pemeliharaan')
+        ->orderBy('created_at', 'desc')
+        ->paginate(10)
+        ->appends($request->all());
+
+    /**
+     * ============================
+     * STATISTIK DASHBOARD
+     * ============================
+     */
+    $stats = [
+        'total' => (clone $query)->count(),
+        'diajukan' => (clone $query)->where('status', 'diajukan')->count(),
+        'disetujui' => (clone $query)->whereIn('status', ['disetujui', 'selesai'])->count(),
+        'ditolak' => (clone $query)->where('status', 'ditolak')->count(),
+        'selesai' => (clone $query)->where('status', 'selesai')->count(),
+
+        // Hitungan Badge Tab (Sinkron dengan filter)
+        // 'permintaan_count' => (clone $query)
+        //     ->where('status', 'LIKE', '%diajukan%')
+        //     ->where(function($q) {
+        //         $q->where('kategori', 'LIKE', '%pengadaan%')
+        //           ->orWhereNull('kategori');
+        //     })
+        //     ->count(),
+        'permintaan_count' => (clone $query)->where('kategori', 'pengadaan')->count(),
+        
+        'perbaikan_count'  => (clone $query)->where('kategori', 'pemeliharaan')->count(),
+        // 'perbaikan_count' => (clone $query)
+        //     ->where('status', 'LIKE', '%diajukan%')
+        //     ->where(function($q) {
+        //         $q->where('kategori', 'LIKE', '%pemeliharaan%')
+        //           ->orWhereNull('kategori');
+        //     })
+        //     ->count(),
+    ];
+
+    return view('penerima.pengadaan.permintaan', compact(
+        'authUser',
+        'allPengajuan',
+        'permintaanPengajuan',
+        'perbaikanPengajuan',
+        'bidangs',
+        'search',
+        'statusFilter',
+        'bidangFilter',
+        'typeFilter',
+        'stats',
+        'tahunAnggaran',
+        'bidangId',
+        'ruangan'
+    ));
+}
+
+// public function chartpengadaan(Request $request)
+// {
+//     $authUser = Auth::user();
+
+//     // Bidang & ruangan user atasan
+//     $bidangId = $authUser->karyawan->bidang_id ?? null;
+//     $ruangan  = $authUser->karyawan->ruangan ?? null;
+
+//     $bidangs = bidang::all();
+
+//     // Filter request
+//     $search        = $request->input('search');
+//     $statusFilter  = $request->input('status');
+//     $bidangFilter  = $request->input('bidang');
+//     $tahunAnggaran = $request->input('tahun_anggaran');
+
+//     /**
+//      * ============================
+//      * QUERY DASAR PENGADAAN (ATASAN)public function chartpengadaan(Request $request)
+// {
+//     $authUser = Auth::user();
+
+//     // Bidang & ruangan user atasan
+//     $bidangId = $authUser->karyawan->bidang_id ?? null;
+//     $ruangan  = $authUser->karyawan->ruangan ?? null;
+
+//     $bidangs = bidang::all();
+
+//     // Filter request
+//     $search        = $request->input('search');
+//     $statusFilter  = $request->input('status');
+//     $bidangFilter  = $request->input('bidang');
+//     $tahunAnggaran = $request->input('tahun_anggaran');
+
+//     /**
+//      * ============================
+//      * QUERY DASAR PENGADAAN (ATASAN)
+//      * ============================
+//      */
+//     $query = pengajuan::with(['items', 'karyawan', 'bidang'])
+//         // ⚠️ Sesuaikan filter atasan ini dengan relasi di project Anda
+//         ->where('penerima_id', $authUser->karyawan_id ?? $authUser->id)
+//         ->where('status', '!=', 'draft')
+//         ->when($search, function ($q) use ($search) {
+//             $q->where(function ($query) use ($search) {
+//                 $query->where('no_pengajuan', 'like', "%{$search}%")
+//                       ->orWhere('dasar_usulan', 'like', "%{$search}%")
+//                       ->orWhereHas('items', function ($itemQuery) use ($search) {
+//                           $itemQuery->where('nama_barang', 'like', "%{$search}%")
+//                                     ->orWhere('spesifikasi', 'like', "%{$search}%");
+//                       });
+//             });
+//         })
+//         ->when($statusFilter, function ($q) use ($statusFilter) {
+//             $q->where('status', $statusFilter);
+//         })
+//         ->when($bidangFilter, function ($q) use ($bidangFilter) {
+//             $q->where('bidang_id', $bidangFilter);
+//         })
+//         ->when($tahunAnggaran, function ($q) use ($tahunAnggaran) {
+//             $q->where('tahun_anggaran', $tahunAnggaran);
+//         });
+
+//     /**
+//      * ============================
+//      * HELPER SCOPE: PERBAIKAN
+//      * ============================
+//      * Logic: Jika dasar_usulan mengandung kata kunci perbaikan
+//      */
+//     $scopePerbaikan = function ($q) {
+//         $q->where(function ($sub) {
+//             $sub->where('dasar_usulan', 'LIKE', '%Penggantian Barang Rusak%')
+//                 ->orWhere('dasar_usulan', 'LIKE', '%perbaikan%')
+//                 ->orWhere('dasar_usulan', 'LIKE', '%service%')
+//                 ->orWhere('dasar_usulan', 'LIKE', '%repair%');
+//         });
+//     };
+
+//     /**
+//      * ============================
+//      * HELPER SCOPE: PERMINTAAN
+//      * ============================
+//      * Logic: Semua data yang BUKAN perbaikan (termasuk NULL / kosong)
+//      * Ini memastikan tidak ada data yang "hilang" dari kedua tab.
+//      */
+//     $scopePermintaan = function ($q) use ($scopePerbaikan) {
+//         $q->where(function ($sub) use ($scopePerbaikan) {
+//             $sub->where(function ($sub2) use ($scopePerbaikan) {
+//                 // Cari yang tidak cocok dengan perbaikan
+//                 $sub2->whereNot(function ($sub3) use ($scopePerbaikan) {
+//                     $scopePerbaikan($sub3);
+//                 })
+//                 // Atau yang dasarnya NULL
+//                 ->orWhereNull('dasar_usulan')
+//                 // Atau yang dasarnya string kosong
+//                 ->orWhere('dasar_usulan', '');
+//             });
+//         });
+//     };
+
+//     /**
+//      * ============================
+//      * 3 TABEL (SEMUA / PERMINTAAN / PERBAIKAN)
+//      * ============================
+//      */
+//     $allPengajuan = (clone $query)
+//         ->orderBy('created_at', 'desc')
+//         ->paginate(10, ['*'], 'page_all')
+//         ->appends($request->all());
+
+//     $permintaanPengajuan = (clone $query)
+//         ->tap($scopePermintaan)
+//         ->orderBy('created_at', 'desc')
+//         ->paginate(10, ['*'], 'page_permintaan')
+//         ->appends($request->all());
+
+//     $perbaikanPengajuan = (clone $query)
+//         ->tap($scopePerbaikan)
+//         ->orderBy('created_at', 'desc')
+//         ->paginate(10, ['*'], 'page_perbaikan')
+//         ->appends($request->all());
+
+//     /**
+//      * ============================
+//      * STATISTIK DASHBOARD
+//      * ============================
+//      */
+//     $baseCount = (clone $query);
+
+//     $stats = [
+//         'total'             => (clone $baseCount)->count(),
+//         'draft'             => (clone $baseCount)->where('status', 'draft')->count(),
+//         'revisi'            => (clone $baseCount)->where('status', 'revisi')->count(),
+//         'diajukan'          => (clone $baseCount)->where('status', 'diajukan')->count(),
+//         'disetujui'         => (clone $baseCount)->where('status', 'disetujui')->count(),
+//         'ditolak'           => (clone $baseCount)->where('status', 'ditolak')->count(),
+//         'menunggu_direktur' => (clone $baseCount)->where('status', 'menunggu_direktur')->count(),
+        
+//         // Hitung jumlah per kategori menggunakan scope yang baru
+//         'permintaan_count'  => (clone $baseCount)->tap($scopePermintaan)->count(),
+//         'perbaikan_count'   => (clone $baseCount)->tap($scopePerbaikan)->count(),
+//     ];
+
+//     return view('penerima.pengadaan.permintaan', compact(
+//         'authUser',
+//         'allPengajuan',
+//         'permintaanPengajuan',
+//         'perbaikanPengajuan',
+//         'bidangs',
+//         'search',
+//         'statusFilter',
+//         'bidangFilter',
+//         'stats',
+//         'tahunAnggaran',
+//         'bidangId',
+//         'ruangan'
+//     ));
+// }
+//    public function chartpengadaan(Request $request)
+//     {
+//         $authUser = Auth::user();
+
+//         // Bidang & ruangan user penerima
+//         $bidangId = $authUser->karyawan->bidang_id ?? null;
+//         $ruangan  = $authUser->karyawan->ruangan ?? null;
+
+//         $bidangs = bidang::all();
+
+//         // Filter request
+//         $search        = $request->input('search');
+//         $statusFilter  = $request->input('status');
+//         $bidangFilter  = $request->input('bidang');
+//         $typeFilter    = $request->input('type');
+//         $tahunAnggaran = $request->input('tahun_anggaran');
+
+//         /**
+//          * ============================
+//          * QUERY DASAR PENGADAAN
+//          * ============================
+//          */
+//         $query = pengajuan::with(['items', 'karyawan', 'bidang'])
+//             ->where('status', '!=', 'draft')
+//             ->when($search, function ($q) use ($search) {
+//                 $q->where(function ($query) use ($search) {
+//                     $query->where('no_pengajuan', 'like', "%{$search}%")
+//                           ->orWhere('dasar_usulan', 'like', "%{$search}%")
+//                           ->orWhereHas('items', function ($itemQuery) use ($search) {
+//                               $itemQuery->where('nama_barang', 'like', "%{$search}%")
+//                                         ->orWhere('spesifikasi', 'like', "%{$search}%");
+//                           });
+//                 });
+//             })
+//             ->when($statusFilter, function ($q) use ($statusFilter) {
+//                 $q->where('status', $statusFilter);
+//             })
+//             ->when($bidangFilter, function ($q) use ($bidangFilter) {
+//                 $q->where('bidang_id', $bidangFilter);
+//             })
+//             ->when($tahunAnggaran, function ($q) use ($tahunAnggaran) {
+//                 // Jika kolom tahun_anggaran ADA di tabel:
+//                 $q->where('tahun_anggaran', $tahunAnggaran);
+//                 // Jika TIDAK ada, pakai: $q->whereYear('tanggal_pengajuan', $tahunAnggaran);
+//             });
+
+//         // Helper closure logika permintaan / perbaikan
+//         $scopePermintaan = function ($q) {
+//             $q->where(function ($sub) {
+//                 $sub->where('dasar_usulan', 'LIKE', '%Program Kerja%')
+//                     ->orWhere('dasar_usulan', 'LIKE', '%Kebutuhan Operasional%')
+//                     ->orWhere('dasar_usulan', 'LIKE', '%Penambahan Kapasitas Pelayanan%')
+//                     ->orWhere('dasar_usulan', 'LIKE', '%Pemenuhan Standar Akreditasi%')
+//                     ->orWhere('dasar_usulan', 'LIKE', '%Keselamatan Pasien%')
+//                     ->orWhereNull('dasar_usulan');
+//             });
+//         };
+
+//         $scopePerbaikan = function ($q) {
+//             $q->where(function ($sub) {
+//                 $sub->where('dasar_usulan', 'LIKE', '%Penggantian Barang Rusak%')
+//                     ->orWhere('dasar_usulan', 'LIKE', '%perbaikan%')
+//                     ->orWhere('dasar_usulan', 'LIKE', '%service%')
+//                     ->orWhere('dasar_usulan', 'LIKE', '%repair%');
+//             });
+//         };
+
+//         /**
+//          * ============================
+//          * TABEL: SEMUA PENGAJUAN
+//          * ============================
+//          */
+//         $allPengajuan = (clone $query)
+//             ->orderBy('created_at', 'desc')
+//             ->paginate(10, ['*'], 'page_all')
+//             ->appends($request->all());
+
+//         /**
+//          * ============================
+//          * TABEL: PERMINTAAN
+//          * ============================
+//          */
+//         $permintaanPengajuan = (clone $query)
+//             ->tap($scopePermintaan)
+//             ->orderBy('created_at', 'desc')
+//             ->paginate(10, ['*'], 'page_permintaan')
+//             ->appends($request->all());
+
+//         /**
+//          * ============================
+//          * TABEL: PERBAIKAN
+//          * ============================
+//          */
+//         $perbaikanPengajuan = (clone $query)
+//             ->tap($scopePerbaikan)
+//             ->orderBy('created_at', 'desc')
+//             ->paginate(10, ['*'], 'page_perbaikan')
+//             ->appends($request->all());
+
+//         /**
+//          * ============================
+//          * STATISTIK DASHBOARD
+//          * ============================
+//          * Mengikuti query dasar (bukan query terpisah),
+//          * supaya angka kartu konsisten dgn tabel.
+//          */
+//         $baseCount = (clone $query);
+
+//         $stats = [
+//             'total'             => (clone $baseCount)->count(),
+//             'draft'             => (clone $baseCount)->where('status', 'draft')->count(),
+//             'revisi'            => (clone $baseCount)->where('status', 'revisi')->count(),
+//             'diajukan'          => (clone $baseCount)->where('status', 'diajukan')->count(),
+//             'disetujui'         => (clone $baseCount)->where('status', 'disetujui')->count(),
+//             'ditolak'           => (clone $baseCount)->where('status', 'ditolak')->count(),
+//             'menunggu_direktur' => (clone $baseCount)->where('status', 'menunggu_direktur')->count(),
+//             'permintaan_count'  => (clone $baseCount)->tap($scopePermintaan)->count(),
+//             'perbaikan_count'   => (clone $baseCount)->tap($scopePerbaikan)->count(),
+//         ];
+
+//         return view('penerima.pengadaan.permintaan', compact(
+//             'authUser',
+//             'allPengajuan',
+//             'permintaanPengajuan',
+//             'perbaikanPengajuan',
+//             'bidangs',
+//             'search',
+//             'statusFilter',
+//             'bidangFilter',
+//             'typeFilter',
+//             'stats',
+//             'tahunAnggaran',
+//             'bidangId',
+//             'ruangan'
+//         ));
+//     }
 
    public function showpengadaan($id)
 {
@@ -706,7 +1279,7 @@ public function exportCsv(Request $request)
 public function verifikasi(Request $request, $id)
 {
     $request->validate([
-        'status_verifikasi' => 'required|in:disetujui_koordinator,ditolak,revisi',
+        'status_verifikasi' => 'required|in:disetujui_koordinator,ditolak,revisi,survei',
         'catatan_verifikasi' => 'required|string|min:5',
         'penerima_id' => 'required'
     ]);
@@ -718,6 +1291,7 @@ public function verifikasi(Request $request, $id)
             'disetujui_koordinator' => 'disetujui_koordinator',
             'ditolak' => 'ditolak',
             'revisi' => 'revisi',
+            'survei' => 'perlu survei perbaikan'
             
         ];
         
@@ -726,6 +1300,7 @@ public function verifikasi(Request $request, $id)
             'disetujui_koordinator' => 'disetujui',
             'ditolak' => 'ditolak',
             'revisi' => 'revisi',
+            'survei' => 'perlu survei perbaikan'
         ];
         
         $newStatus = $statusMap[$request->status_verifikasi];
@@ -921,166 +1496,328 @@ public function verifikasi(Request $request, $id)
     return $map[$status] ?? $status;
 }
 
-   public function exportExcel(Request $request)
-    {
-        // ==========================================================
-        // AMBIL PARAMETER FILTER
-        // ==========================================================
-        $tahun = $request->input('tahun');
-        $bulan = $request->input('bulan');
-        $status = $request->input('status');
-        $atasanId = $request->input('atasan_id');
+//    public function exportExcel(Request $request)
+//     {
+//         // ==========================================================
+//         // AMBIL PARAMETER FILTER
+//         // ==========================================================
+//         $tahun = $request->input('tahun');
+//         $bulan = $request->input('bulan');
+//         $status = $request->input('status');
+//         $atasanId = $request->input('atasan_id');
 
-        // ==========================================================
-        // QUERY DATA
-        // ==========================================================
-        $query = pengajuan::with([
-            'bidang',
-            'items',
-            'karyawan',
-            'penerima',
-            'atasan',
-            'direktur',
-        ]);
+//         // ==========================================================
+//         // QUERY DATA
+//         // ==========================================================
+//         $query = pengajuan::with([
+//             'bidang',
+//             'items',
+//             'karyawan',
+//             'penerima',
+//             'atasan',
+//             'direktur',
+//         ]);
 
-        // Filter tahun
-        if ($tahun) {
-            $query->whereYear('tanggal_pengajuan', $tahun);
+//         // Filter tahun
+//         if ($tahun) {
+//             $query->whereYear('tanggal_pengajuan', $tahun);
+//         }
+
+//         // Filter bulan
+//         if ($bulan) {
+//             $query->whereMonth('tanggal_pengajuan', $bulan);
+//         }
+
+//         // Filter status
+//         if ($status !== null && $status !== '') {
+//             $query->where('status', $status);
+//         }
+
+//         // Filter atasan
+//         if ($atasanId) {
+//             $query->where('atasan_id', $atasanId);
+//         }
+
+//         // Ambil data
+//         $pengadaan = $query
+//             ->orderBy('tanggal_pengajuan', 'desc')
+//             ->get();
+
+//         // ==========================================================
+//         // CEK DATA KOSONG
+//         // ==========================================================
+//         if ($pengadaan->isEmpty()) {
+//             return back()->with('error', 'Tidak ada data untuk diexport.');
+//         }
+
+//         // ==========================================================
+//         // BUAT SPREADSHEET
+//         // ==========================================================
+//         $spreadsheet = new Spreadsheet();
+
+//         // Hapus sheet default
+//         $defaultSheet = $spreadsheet->getActiveSheet();
+//         $spreadsheet->removeSheetByIndex($spreadsheet->getIndex($defaultSheet));
+
+//         // ==========================================================
+//         // SHEET 1 - SEMUA DATA
+//         // ==========================================================
+//         $sheetSemua = $spreadsheet->createSheet();
+//         $sheetSemua->setTitle('Semua Data');
+
+//         $this->buatSheetPengadaan(
+//             $sheetSemua,
+//             $pengadaan,
+//             $tahun,
+//             $bulan,
+//             $status,
+//             'Semua Atasan'
+//         );
+
+//         // ==========================================================
+//         // KELOMPOKKAN DATA BERDASARKAN ATASAN
+//         // ==========================================================
+//         $dataPerAtasan = $pengadaan->groupBy('atasan_id');
+
+//         foreach ($dataPerAtasan as $idAtasan => $dataAtasan) {
+
+//             // Ambil data atasan dari pengajuan pertama
+//             $pengajuanPertama = $dataAtasan->first();
+//             $atasan = $pengajuanPertama?->atasan;
+
+//             // Ambil nama atasan
+//             $namaAtasan = $atasan?->nama_karyawan
+//                 ?? $atasan?->nama
+//                 ?? 'Tanpa Atasan';
+
+//             // NAMA SHEET EXCEL MAKSIMAL 31 KARAKTER
+//             $namaSheet = trim($namaAtasan);
+
+//             // Hilangkan karakter yang tidak diperbolehkan Excel
+//             $namaSheet = str_replace(
+//                 ['\\', '/', '*', '[', ']', ':', '?'],
+//                 '',
+//                 $namaSheet
+//             );
+
+//             if ($namaSheet === '') {
+//                 $namaSheet = 'Tanpa Atasan';
+//             }
+
+//             // Maksimal 31 karakter
+//             $namaSheet = mb_substr($namaSheet, 0, 31);
+
+//             // CEGAH DUPLIKAT NAMA SHEET
+//             $namaSheetOriginal = $namaSheet;
+//             $counter = 1;
+
+//             while ($spreadsheet->sheetNameExists($namaSheet)) {
+//                 $suffix = ' ' . $counter;
+//                 $namaSheet = mb_substr($namaSheetOriginal, 0, 31 - mb_strlen($suffix)) . $suffix;
+//                 $counter++;
+//             }
+
+//             // BUAT SHEET ATASAN
+//             $sheetAtasan = $spreadsheet->createSheet();
+//             $sheetAtasan->setTitle($namaSheet);
+
+//             $this->buatSheetPengadaan(
+//                 $sheetAtasan,
+//                 $dataAtasan,
+//                 $tahun,
+//                 $bulan,
+//                 $status,
+//                 $namaAtasan
+//             );
+//         }
+
+//         // ==========================================================
+//         // AKTIFKAN SHEET PERTAMA
+//         // ==========================================================
+//         $spreadsheet->setActiveSheetIndex(0);
+
+//         // ==========================================================
+//         // DOWNLOAD
+//         // ==========================================================
+//         $writer = new Xlsx($spreadsheet);
+
+//         $filename = 'Laporan_Pengadaan_' . date('Ymd_His') . '.xlsx';
+
+//         return new StreamedResponse(
+//             function () use ($writer) {
+//                 $writer->save('php://output');
+//             },
+//             200,
+//             [
+//                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+//                 'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+//                 'Cache-Control' => 'max-age=0',
+//                 'Pragma' => 'public',
+//             ]
+//         );
+//     }
+
+public function exportExcel(Request $request)
+{
+    // ==========================================================
+    // AMBIL PARAMETER FILTER
+    // ==========================================================
+    $tahun    = $request->input('tahun');
+    $bulan    = $request->input('bulan');
+    $status   = $request->input('status');
+    $atasanId = $request->input('atasan_id');
+
+    // ==========================================================
+    // QUERY DATA
+    // ==========================================================
+    $query = pengajuan::with([
+        'bidang',
+        'items',
+        'karyawan',
+        'penerima',
+        'atasan',
+        'direktur',
+    ]);
+
+    // Filter tahun
+    if ($tahun) {
+        $query->whereYear('tanggal_pengajuan', $tahun);
+    }
+
+    // Filter bulan
+    if ($bulan) {
+        $query->whereMonth('tanggal_pengajuan', $bulan);
+    }
+
+    // Filter status
+    if ($status !== null && $status !== '') {
+        $query->where('status', $status);
+    }
+
+    // Filter atasan
+    if ($atasanId) {
+        $query->where('atasan_id', $atasanId);
+    }
+
+    // Ambil data
+    $pengadaan = $query
+        ->orderBy('tanggal_pengajuan', 'desc')
+        ->get();
+
+    // ==========================================================
+    // CEK DATA KOSONG
+    // → TETAP EXPORT, isi tulisan "Tidak ada data"
+    // ==========================================================
+    if ($pengadaan->isEmpty()) {
+        return $this->exportKosong($tahun, $bulan, $status, $atasanId);
+    }
+
+    // ==========================================================
+    // BUAT SPREADSHEET
+    // ==========================================================
+    $spreadsheet = new Spreadsheet();
+
+    // Hapus sheet default
+    $defaultSheet = $spreadsheet->getActiveSheet();
+    $spreadsheet->removeSheetByIndex($spreadsheet->getIndex($defaultSheet));
+
+    // ==========================================================
+    // SHEET 1 - SEMUA DATA
+    // ==========================================================
+    $sheetSemua = $spreadsheet->createSheet();
+    $sheetSemua->setTitle('Semua Data');
+
+    $this->buatSheetPengadaan(
+        $sheetSemua,
+        $pengadaan,
+        $tahun,
+        $bulan,
+        $status,
+        'Semua Atasan'
+    );
+
+    // ==========================================================
+    // KELOMPOKKAN DATA BERDASARKAN ATASAN
+    // ==========================================================
+    $dataPerAtasan = $pengadaan->groupBy('atasan_id');
+
+    foreach ($dataPerAtasan as $idAtasan => $dataAtasan) {
+
+        // Ambil data atasan dari pengajuan pertama
+        $pengajuanPertama = $dataAtasan->first();
+        $atasan = $pengajuanPertama?->atasan;
+
+        // Ambil nama atasan
+        $namaAtasan = $atasan?->nama_karyawan
+            ?? $atasan?->nama
+            ?? 'Tanpa Atasan';
+
+        // NAMA SHEET EXCEL MAKSIMAL 31 KARAKTER
+        $namaSheet = trim($namaAtasan);
+
+        // Hilangkan karakter yang tidak diperbolehkan Excel
+        $namaSheet = str_replace(
+            ['\\', '/', '*', '[', ']', ':', '?'],
+            '',
+            $namaSheet
+        );
+
+        if ($namaSheet === '') {
+            $namaSheet = 'Tanpa Atasan';
         }
 
-        // Filter bulan
-        if ($bulan) {
-            $query->whereMonth('tanggal_pengajuan', $bulan);
+        // Maksimal 31 karakter
+        $namaSheet = mb_substr($namaSheet, 0, 31);
+
+        // CEGAH DUPLIKAT NAMA SHEET
+        $namaSheetOriginal = $namaSheet;
+        $counter = 1;
+
+        while ($spreadsheet->sheetNameExists($namaSheet)) {
+            $suffix = ' ' . $counter;
+            $namaSheet = mb_substr($namaSheetOriginal, 0, 31 - mb_strlen($suffix)) . $suffix;
+            $counter++;
         }
 
-        // Filter status
-        if ($status !== null && $status !== '') {
-            $query->where('status', $status);
-        }
-
-        // Filter atasan
-        if ($atasanId) {
-            $query->where('atasan_id', $atasanId);
-        }
-
-        // Ambil data
-        $pengadaan = $query
-            ->orderBy('tanggal_pengajuan', 'desc')
-            ->get();
-
-        // ==========================================================
-        // CEK DATA KOSONG
-        // ==========================================================
-        if ($pengadaan->isEmpty()) {
-            return back()->with('error', 'Tidak ada data untuk diexport.');
-        }
-
-        // ==========================================================
-        // BUAT SPREADSHEET
-        // ==========================================================
-        $spreadsheet = new Spreadsheet();
-
-        // Hapus sheet default
-        $defaultSheet = $spreadsheet->getActiveSheet();
-        $spreadsheet->removeSheetByIndex($spreadsheet->getIndex($defaultSheet));
-
-        // ==========================================================
-        // SHEET 1 - SEMUA DATA
-        // ==========================================================
-        $sheetSemua = $spreadsheet->createSheet();
-        $sheetSemua->setTitle('Semua Data');
+        // BUAT SHEET ATASAN
+        $sheetAtasan = $spreadsheet->createSheet();
+        $sheetAtasan->setTitle($namaSheet);
 
         $this->buatSheetPengadaan(
-            $sheetSemua,
-            $pengadaan,
+            $sheetAtasan,
+            $dataAtasan,
             $tahun,
             $bulan,
             $status,
-            'Semua Atasan'
-        );
-
-        // ==========================================================
-        // KELOMPOKKAN DATA BERDASARKAN ATASAN
-        // ==========================================================
-        $dataPerAtasan = $pengadaan->groupBy('atasan_id');
-
-        foreach ($dataPerAtasan as $idAtasan => $dataAtasan) {
-
-            // Ambil data atasan dari pengajuan pertama
-            $pengajuanPertama = $dataAtasan->first();
-            $atasan = $pengajuanPertama?->atasan;
-
-            // Ambil nama atasan
-            $namaAtasan = $atasan?->nama_karyawan
-                ?? $atasan?->nama
-                ?? 'Tanpa Atasan';
-
-            // NAMA SHEET EXCEL MAKSIMAL 31 KARAKTER
-            $namaSheet = trim($namaAtasan);
-
-            // Hilangkan karakter yang tidak diperbolehkan Excel
-            $namaSheet = str_replace(
-                ['\\', '/', '*', '[', ']', ':', '?'],
-                '',
-                $namaSheet
-            );
-
-            if ($namaSheet === '') {
-                $namaSheet = 'Tanpa Atasan';
-            }
-
-            // Maksimal 31 karakter
-            $namaSheet = mb_substr($namaSheet, 0, 31);
-
-            // CEGAH DUPLIKAT NAMA SHEET
-            $namaSheetOriginal = $namaSheet;
-            $counter = 1;
-
-            while ($spreadsheet->sheetNameExists($namaSheet)) {
-                $suffix = ' ' . $counter;
-                $namaSheet = mb_substr($namaSheetOriginal, 0, 31 - mb_strlen($suffix)) . $suffix;
-                $counter++;
-            }
-
-            // BUAT SHEET ATASAN
-            $sheetAtasan = $spreadsheet->createSheet();
-            $sheetAtasan->setTitle($namaSheet);
-
-            $this->buatSheetPengadaan(
-                $sheetAtasan,
-                $dataAtasan,
-                $tahun,
-                $bulan,
-                $status,
-                $namaAtasan
-            );
-        }
-
-        // ==========================================================
-        // AKTIFKAN SHEET PERTAMA
-        // ==========================================================
-        $spreadsheet->setActiveSheetIndex(0);
-
-        // ==========================================================
-        // DOWNLOAD
-        // ==========================================================
-        $writer = new Xlsx($spreadsheet);
-
-        $filename = 'Laporan_Pengadaan_' . date('Ymd_His') . '.xlsx';
-
-        return new StreamedResponse(
-            function () use ($writer) {
-                $writer->save('php://output');
-            },
-            200,
-            [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-                'Cache-Control' => 'max-age=0',
-                'Pragma' => 'public',
-            ]
+            $namaAtasan
         );
     }
+
+    // ==========================================================
+    // AKTIFKAN SHEET PERTAMA
+    // ==========================================================
+    $spreadsheet->setActiveSheetIndex(0);
+
+    // ==========================================================
+    // DOWNLOAD
+    // ==========================================================
+    $writer = new Xlsx($spreadsheet);
+
+    $filename = 'Laporan_Pengadaan_' . date('Ymd_His') . '.xlsx';
+
+    return new StreamedResponse(
+        function () use ($writer) {
+            $writer->save('php://output');
+        },
+        200,
+        [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+            'Pragma' => 'public',
+        ]
+    );
+}
 
     /**
      * Method untuk membuat sheet pengadaan
@@ -1492,6 +2229,109 @@ public function verifikasi(Request $request, $id)
             ->setBottom(0.5);
     }
 
+    private function exportKosong($tahun, $bulan, $status, $atasanId)
+{
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+    $sheet->setTitle('Laporan Pengadaan');
+
+    // ==========================================================
+    // SUSUN KETERANGAN FILTER
+    // ==========================================================
+    $filterDesc = [];
+
+    if ($bulan) {
+        $bulanNama = [
+            1=>'Januari',2=>'Februari',3=>'Maret',4=>'April',
+            5=>'Mei',6=>'Juni',7=>'Juli',8=>'Agustus',
+            9=>'September',10=>'Oktober',11=>'November',12=>'Desember'
+        ][(int) $bulan] ?? $bulan;
+        $filterDesc[] = "Bulan: {$bulanNama}";
+    }
+
+    if ($tahun) {
+        $filterDesc[] = "Tahun: {$tahun}";
+    }
+
+    if ($atasanId) {
+        $atasan = \App\Models\Karyawan::find($atasanId);
+        if ($atasan) {
+            $filterDesc[] = "Atasan: " . ($atasan->nama_karyawan ?? $atasan->nama);
+        }
+    }
+
+    if ($status !== null && $status !== '') {
+        $filterDesc[] = "Status: " . $this->getStatusLabel($status);
+    }
+
+    $filterText = count($filterDesc)
+        ? implode(' | ', $filterDesc)
+        : 'Semua Data';
+
+    // ==========================================================
+    // JUDUL
+    // ==========================================================
+    $sheet->setCellValue('A1', 'LAPORAN PENGADAAN');
+    $sheet->mergeCells('A1:D1');
+    $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
+    $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+    // ==========================================================
+    // INFO FILTER
+    // ==========================================================
+    $sheet->setCellValue('A2', $filterText);
+    $sheet->mergeCells('A2:D2');
+    $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+    $sheet->getStyle('A2')->getFont()->setSize(11);
+
+    // ==========================================================
+    // TULISAN "TIDAK ADA DATA"
+    // ==========================================================
+    $sheet->setCellValue('A5', 'Tidak ada data untuk filter yang dipilih.');
+    $sheet->mergeCells('A5:D5');
+    $sheet->getStyle('A5')->getFont()
+        ->setBold(true)
+        ->setSize(12)
+        ->getColor()->setARGB('FFB00020');
+    $sheet->getStyle('A5')->getAlignment()
+        ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+        ->setVertical(Alignment::VERTICAL_CENTER);
+    $sheet->getRowDimension(5)->setRowHeight(30);
+
+    // ==========================================================
+    // TANGGAL CETAK
+    // ==========================================================
+    $sheet->setCellValue('A7', 'Dicetak pada: ' . date('d/m/Y H:i:s'));
+    $sheet->mergeCells('A7:D7');
+    $sheet->getStyle('A7')->getFont()->setSize(9);
+    $sheet->getStyle('A7')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+    // ==========================================================
+    // AUTO SIZE
+    // ==========================================================
+    foreach (range('A', 'D') as $col) {
+        $sheet->getColumnDimension($col)->setAutoSize(true);
+    }
+
+    // ==========================================================
+    // DOWNLOAD
+    // ==========================================================
+    $writer   = new Xlsx($spreadsheet);
+    $filename = 'Laporan_Pengadaan_KOSONG_' . date('Ymd_His') . '.xlsx';
+
+    return new StreamedResponse(
+        function () use ($writer) {
+            $writer->save('php://output');
+        },
+        200,
+        [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+            'Pragma' => 'public',
+        ]
+    );
+}
      public function chartspengadaans(){
 
         return view('penerima.pengadaan.chart');
@@ -1548,8 +2388,8 @@ public function verifikasi(Request $request, $id)
         // ===== STATISTIK =====
         $stats = [
             'total' => (clone $baseQuery)->count(),
-            'draft' => (clone $baseQuery)->where('status', 'draft')->count(),
-            'diajukan' => (clone $baseQuery)->whereIn('status', ['diajukan', 'disetujui_koordinator', 'disetujui_kabid'])->count(),
+            'diajukan' => (clone $baseQuery)->where('status', 'diajukan')->count(),
+            // 'diajukan' => (clone $baseQuery)->whereIn('status', ['diajukan', 'disetujui_koordinator', 'disetujui_kabid'])->count(),
             'disetujui' => (clone $baseQuery)->where('status', 'disetujui')->count(),
             'ditolak' => (clone $baseQuery)->where('status', 'ditolak')->count(),
             'menunggu_direktur' => (clone $baseQuery)->where('status', 'menunggu_direktur')->count(),

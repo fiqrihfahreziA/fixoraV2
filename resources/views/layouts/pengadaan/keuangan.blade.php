@@ -473,7 +473,17 @@
 <nav class="navbar navbar-expand-lg navbar-glass">
     <div class="container">
         <!-- Brand -->
-        <a class="navbar-brand d-flex align-items-center gap-3" href="{{ route('keuangan.dashboard') }}">
+         @php
+            $user = Auth::user();
+            // Cek apakah user punya role tambahan (role2) dan role utamanya atasan
+            $isMultirole = ($user->role === 'atasan' && $user->role2);
+            
+            // Kalau multirole, arahkan ke dashboard multirole. 
+            // Kalau bukan, kasih '#' (atau arahkan ke dashboard aslinya)
+            $homeUrl = $isMultirole ? route('multirole.dashboard') : '#';
+        @endphp
+
+        <a class="navbar-brand d-flex align-items-center gap-3" href="{{ $homeUrl }}">
             <div class="brand-icon animate__animated animate__fadeInDown">
                 <img src="{{ asset('gambar/rsmz.png') }}" alt="Logo RSMZ">
             </div>

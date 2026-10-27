@@ -33,35 +33,75 @@ class AuthenticatedSessionController extends Controller
     // 🔐 LOGIN KHUSUS ADMIN
     if ($request->input('login_as') === 'admin' && $user->role !== 'admin') {
         Auth::logout();
-
-        return back()->withErrors([
-            'email' => 'Akun ini bukan admin.',
-        ]);
+        return back()->withErrors(['email' => 'Akun ini bukan admin.']);
     }
 
     // 🔐 ADMIN TIDAK BOLEH LOGIN LEWAT USER LOGIN
     if (! $request->has('login_as') && $user->role === 'admin') {
         Auth::logout();
-
-        return back()->withErrors([
-            'email' => 'Admin harus login lewat halaman admin.',
-        ]);
+        return back()->withErrors(['email' => 'Admin harus login lewat halaman admin.']);
     }
 
-    if ($user->role === 'atasan' && $user->role2 === 'penerima') {
-    return redirect()->intended('/multirole');
-}
+    // 🔁 ATASAN DENGAN ROLE TAMBAHAN → arahkan ke multirole sesuai kombinasi
+    if ($user->role === 'atasan' && $prefix = $user->multirolePrefix()) {
+        return redirect()->intended('/' . $prefix);
+    }
 
     // 🔁 REDIRECT SESUAI ROLE
     return match ($user->role) {
         'admin'    => redirect('/admin'),
         'penerima' => redirect('/penerima'),
         'atasan'   => redirect('/atasan'),
-        'keuangan'   => redirect('/keuangan'),
-        'direktur'   => redirect('/direktur'),
+        'keuangan' => redirect('/keuangan'),
+        'direktur' => redirect('/direktur'),
+        'ppk'      => redirect('/ppk'),
+        'kpa'      => redirect('/kpa'),
         default    => redirect('/pemohon'),
     };
 }
+
+//     public function store(LoginRequest $request): RedirectResponse
+// {
+//     $request->authenticate();
+//     $request->session()->regenerate();
+
+//     $user = $request->user();
+
+//     // 🔐 LOGIN KHUSUS ADMIN
+//     if ($request->input('login_as') === 'admin' && $user->role !== 'admin') {
+//         Auth::logout();
+
+//         return back()->withErrors([
+//             'email' => 'Akun ini bukan admin.',
+//         ]);
+//     }
+
+//     // 🔐 ADMIN TIDAK BOLEH LOGIN LEWAT USER LOGIN
+//     if (! $request->has('login_as') && $user->role === 'admin') {
+//         Auth::logout();
+
+//         return back()->withErrors([
+//             'email' => 'Admin harus login lewat halaman admin.',
+//         ]);
+//     }
+
+//     if ($user->role === 'atasan' && $user->role2 === 'penerima') {
+//     return redirect()->intended('/multirole');
+// }
+
+//     // 🔁 REDIRECT SESUAI ROLE
+//     return match ($user->role) {
+//         'admin'      => redirect('/admin'),
+//         'penerima'   => redirect('/penerima'),
+//         'atasan'     => redirect('/atasan'),
+//         'keuangan'   => redirect('/keuangan'),
+//         'direktur'   => redirect('/direktur'),
+//         'ppk'        => redirect('/ppk'),
+//         'kpa'        => redirect('/kpa'),
+//         // 'direktur'   => redirect('/direktur'),
+//         default      => redirect('/pemohon'),
+//     };
+// }
 
     // public function store(LoginRequest $request): RedirectResponse
     // {

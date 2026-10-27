@@ -100,18 +100,22 @@
                                    required>
                         </div>
 
-                        <!-- Bidang -->
+                        <!-- Pilih Barjas -->
                         <div class="col-md-3">
-                            <label class="form-label fw-semibold small">Bidang</label>
-                            <select name="bidang_id" class="form-select">
-                                <option value="">Pilih Bidang</option>
-                                @foreach($bidangs as $bidang)
-                                    <option value="{{ $bidang->id }}" 
-                                        {{ old('bidang_id', $pengajuan->bidang_id) == $bidang->id ? 'selected' : '' }}>
-                                        {{ $bidang->nama_bidang }}
-                                    </option>
-                                @endforeach
+                            <label class="form-label fw-semibold small">Jenis</label>
+                            <select name="barjas" id="barjas" class="form-select" onchange="toggleBarjasLainnya()">
+                                <option value="">Pilih Jenis</option>
+                                <option value="barang" {{ old('barjas', $pengajuan->barjas) == 'barang' ? 'selected' : '' }}>Barang</option>
+                                <option value="jasa" {{ old('barjas', $pengajuan->barjas) == 'jasa' ? 'selected' : '' }}>Jasa</option>
+                                <option value="lainnya" {{ old('barjas', $pengajuan->barjas) == 'lainnya' ? 'selected' : '' }}>Lainnya</option>
                             </select>
+                        </div>
+
+                        <!-- Input manual kalau pilih "Lainnya" -->
+                        <div class="col-md-3 {{ old('barjas', $pengajuan->barjas) == 'lainnya' ? '' : 'd-none' }}" id="wrapper_barjas_lainnya">
+                            <label class="form-label fw-semibold small">Barjas Lainnya</label>
+                            <input type="text" name="barajas_lainnya" class="form-control" placeholder="Masukkan barjas lainnya..."
+                                   value="{{ old('barajas_lainnya', $pengajuan->barajas_lainnya) }}">
                         </div>
 
                         <!-- Tahun Anggaran -->
@@ -130,7 +134,7 @@
                             <label class="form-label fw-semibold small">
                                 Dasar Usulan <span class="text-danger">*</span>
                             </label>
-                            <select name="dasar_usulan" class="form-select" required>
+                            <select name="dasar_usulan" id="dasar_usulan" class="form-select" required onchange="toggleDasarUsulanLainnya()">
                                 <option value="">Pilih Dasar Usulan</option>
                                 <option value="Program Kerja" {{ old('dasar_usulan', $pengajuan->dasar_usulan) == 'Program Kerja' ? 'selected' : '' }}>Program Kerja</option>
                                 <option value="Kebutuhan Operasional" {{ old('dasar_usulan', $pengajuan->dasar_usulan) == 'Kebutuhan Operasional' ? 'selected' : '' }}>Kebutuhan Operasional</option>
@@ -140,6 +144,15 @@
                                 <option value="Keselamatan Pasien" {{ old('dasar_usulan', $pengajuan->dasar_usulan) == 'Keselamatan Pasien' ? 'selected' : '' }}>Keselamatan Pasien</option>
                                 <option value="lainnya" {{ old('dasar_usulan', $pengajuan->dasar_usulan) == 'lainnya' ? 'selected' : '' }}>Lainnya...</option>
                             </select>
+                        </div>
+
+                        <!-- Input manual kalau pilih "Lainnya" -->
+                        <div class="col-md-4 {{ old('dasar_usulan', $pengajuan->dasar_usulan) == 'lainnya' ? '' : 'd-none' }}" id="wrapper_dasar_usulan_lainnya">
+                            <label class="form-label fw-semibold small">
+                                Dasar Usulan Lainnya <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="dasar_usulan_lainnya" class="form-control" placeholder="Masukkan dasar usulan lainnya..."
+                                   value="{{ old('dasar_usulan_lainnya', $pengajuan->dasar_usulan_lainnya) }}">
                         </div>
 
                         <!-- Nama Pengaju dengan Hidden ID -->
@@ -195,11 +208,11 @@
                             </label>
                             <select name="kondisi_barang_lama" class="form-select">
                                 <option value="">Pilih Kondisi</option>
-                                <option value="Baik" {{ old('kondisi_barang_lama', $pengajuan->kondisi_barang_lama) == 'Baik' ? 'selected' : '' }}>Baik</option>
-                                <option value="Cukup Baik" {{ old('kondisi_barang_lama', $pengajuan->kondisi_barang_lama) == 'Cukup Baik' ? 'selected' : '' }}>Cukup Baik</option>
+                                <option value="Rusak berat" {{ old('kondisi_barang_lama', $pengajuan->kondisi_barang_lama) == 'Rusak berat' ? 'selected' : '' }}>Rusak berat</option>
                                 <option value="Rusak Ringan" {{ old('kondisi_barang_lama', $pengajuan->kondisi_barang_lama) == 'Rusak Ringan' ? 'selected' : '' }}>Rusak Ringan</option>
-                                <option value="Rusak Berat" {{ old('kondisi_barang_lama', $pengajuan->kondisi_barang_lama) == 'Rusak Berat' ? 'selected' : '' }}>Rusak Berat</option>
-                                <option value="Usang" {{ old('kondisi_barang_lama', $pengajuan->kondisi_barang_lama) == 'Usang' ? 'selected' : '' }}>Usang</option>
+                                <option value="Tidak Memadai" {{ old('kondisi_barang_lama', $pengajuan->kondisi_barang_lama) == 'Tidak Memadai' ? 'selected' : '' }}>Tidak Memadai</option>
+                                <option value="Kapasitas Kurang" {{ old('kondisi_barang_lama', $pengajuan->kondisi_barang_lama) == 'Kapasitas Kurang' ? 'selected' : '' }}>Kapasitas Kurang</option>
+                                <option value="Tidak Tersedia" {{ old('kondisi_barang_lama', $pengajuan->kondisi_barang_lama) == 'Tidak Tersedia' ? 'selected' : '' }}>Tidak Tersedia</option>
                             </select>
                         </div>
 
@@ -448,6 +461,41 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- BARIS KETIGA: Dokumen Upload per Item (toggle) -->
+                            <div class="row g-3 mt-3 pt-3 border-top">
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               name="items[{{ $index }}][ada_dokumen]" 
+                                               id="ada_dokumen_{{ $index }}"
+                                               value="1"
+                                               {{ $item->dokumen_upload ? 'checked' : '' }}
+                                               onchange="toggleDokumenItem(this, {{ $index }})">
+                                        <label class="form-check-label fw-semibold text-primary" for="ada_dokumen_{{ $index }}">
+                                            <i class="bi bi-paperclip me-1"></i>Upload Dokumen
+                                        </label>
+                                        @if($item->dokumen_upload)
+                                            <small class="text-success d-block ms-4 mt-1">
+                                                <i class="bi bi-check-circle me-1"></i>File sudah diupload: {{ basename($item->dokumen_upload) }}
+                                            </small>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <div class="col-12" id="detail_dokumen_{{ $index }}" style="{{ $item->dokumen_upload ? 'display: block;' : 'display: none;' }}">
+                                    <label class="form-label fw-semibold small">
+                                        Dokumen Upload (Kosongkan jika tidak ingin mengubah)
+                                    </label>
+                                    <input type="file"
+                                           name="items[{{ $index }}][dokumen_upload]"
+                                           class="form-control"
+                                           accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls"
+                                           {{ $item->dokumen_upload ? '' : 'disabled' }}>
+                                    <small class="text-muted">Format: PDF, JPG, PNG, Excel (Max: 5MB)</small>
+                                </div>
+                            </div>
                         </div>
                         @endforeach
                     </div>
@@ -476,30 +524,230 @@
                     <h6 class="fw-bold text-primary mb-3">
                         <i class="bi bi-paperclip me-2"></i>Dokumen Pendukung
                     </h6>
+                    <p class="text-muted small mb-3">
+                        <i class="bi bi-info-circle me-1"></i>Centang dokumen yang ingin diupload. <strong>Semua opsional.</strong>
+                    </p>
 
                     <div class="row g-3">
-                        <!-- Data Kerusakan (PDF only) -->
-                        <div class="col-md-12">
-                            <div class="card p-3 border-0 bg-light">
-                                <div class="d-flex align-items-center gap-3 mb-2">
-                                    <i class="bi bi-file-earmark-pdf fs-4 text-danger"></i>
-                                    <div>
-                                        <label class="fw-semibold mb-0">Data Kerusakan</label>
-                                        <small class="text-muted d-block">Upload dokumentasi kerusakan (opsional)</small>
-                                        @if($pengajuan->data_kerusakan)
-                                            <small class="text-success d-block">
-                                                <i class="bi bi-check-circle me-1"></i>File sudah diupload
-                                            </small>
-                                        @endif
-                                    </div>
+
+                        <!-- 1. Data Kerusakan -->
+                        <div class="col-md-6">
+                            <div class="card p-3 border-0 bg-light h-100">
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="ada_data_kerusakan" 
+                                           id="ada_data_kerusakan"
+                                           value="1"
+                                           {{ $pengajuan->data_kerusakan ? 'checked' : '' }}
+                                           onchange="toggleDokumenPendukung(this, 'data_kerusakan')">
+                                    <label class="form-check-label fw-semibold text-danger" for="ada_data_kerusakan">
+                                        <i class="bi bi-file-earmark-pdf me-1"></i>Data Kerusakan
+                                    </label>
+                                    @if($pengajuan->data_kerusakan)
+                                        <small class="text-success d-block ms-4 mt-1">
+                                            <i class="bi bi-check-circle me-1"></i>File sudah ada
+                                        </small>
+                                    @endif
                                 </div>
-                                <input type="file" 
-                                       name="data_kerusakan" 
-                                       class="form-control" 
-                                       accept=".pdf">
-                                <small class="text-muted mt-1">Format: PDF (Max: 5MB)</small>
+                                <div class="mt-2 {{ $pengajuan->data_kerusakan ? '' : 'd-none' }}" id="detail_data_kerusakan">
+                                    <input type="file"
+                                           name="data_kerusakan"
+                                           class="form-control"
+                                           accept=".pdf"
+                                           {{ $pengajuan->data_kerusakan ? '' : 'disabled' }}>
+                                    <small class="text-muted">Format: PDF (Max: 5MB)</small>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- 2. Analisis Kebutuhan -->
+                        <div class="col-md-6">
+                            <div class="card p-3 border-0 bg-light h-100">
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="ada_analisis_kebutuhan" 
+                                           id="ada_analisis_kebutuhan"
+                                           value="1"
+                                           {{ $pengajuan->analisis_kebutuhan ? 'checked' : '' }}
+                                           onchange="toggleDokumenPendukung(this, 'analisis_kebutuhan')">
+                                    <label class="form-check-label fw-semibold text-primary" for="ada_analisis_kebutuhan">
+                                        <i class="bi bi-clipboard-data me-1"></i>Analisis Kebutuhan
+                                    </label>
+                                    @if($pengajuan->analisis_kebutuhan)
+                                        <small class="text-success d-block ms-4 mt-1">
+                                            <i class="bi bi-check-circle me-1"></i>File sudah ada
+                                        </small>
+                                    @endif
+                                </div>
+                                <div class="mt-2 {{ $pengajuan->analisis_kebutuhan ? '' : 'd-none' }}" id="detail_analisis_kebutuhan">
+                                    <input type="file"
+                                           name="analisis_kebutuhan"
+                                           class="form-control"
+                                           accept=".pdf,.doc,.docx,.xlsx,.xls"
+                                           {{ $pengajuan->analisis_kebutuhan ? '' : 'disabled' }}>
+                                    <small class="text-muted">Format: PDF, Word, Excel (Max: 5MB)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Spesifikasi Teknis -->
+                        <div class="col-md-6">
+                            <div class="card p-3 border-0 bg-light h-100">
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="ada_spesifikasi_teknis" 
+                                           id="ada_spesifikasi_teknis"
+                                           value="1"
+                                           {{ $pengajuan->spesifikasi_teknis ? 'checked' : '' }}
+                                           onchange="toggleDokumenPendukung(this, 'spesifikasi_teknis')">
+                                    <label class="form-check-label fw-semibold text-primary" for="ada_spesifikasi_teknis">
+                                        <i class="bi bi-gear me-1"></i>Spesifikasi Teknis
+                                    </label>
+                                    @if($pengajuan->spesifikasi_teknis)
+                                        <small class="text-success d-block ms-4 mt-1">
+                                            <i class="bi bi-check-circle me-1"></i>File sudah ada
+                                        </small>
+                                    @endif
+                                </div>
+                                <div class="mt-2 {{ $pengajuan->spesifikasi_teknis ? '' : 'd-none' }}" id="detail_spesifikasi_teknis">
+                                    <input type="file"
+                                           name="spesifikasi_teknis"
+                                           class="form-control"
+                                           accept=".pdf,.doc,.docx,.xlsx,.xls"
+                                           {{ $pengajuan->spesifikasi_teknis ? '' : 'disabled' }}>
+                                    <small class="text-muted">Format: PDF, Word, Excel (Max: 5MB)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Foto Barang -->
+                        <div class="col-md-6">
+                            <div class="card p-3 border-0 bg-light h-100">
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="ada_foto_barang" 
+                                           id="ada_foto_barang"
+                                           value="1"
+                                           {{ $pengajuan->foto_barang ? 'checked' : '' }}
+                                           onchange="toggleDokumenPendukung(this, 'foto_barang')">
+                                    <label class="form-check-label fw-semibold text-primary" for="ada_foto_barang">
+                                        <i class="bi bi-image me-1"></i>Foto Barang
+                                    </label>
+                                    @if($pengajuan->foto_barang)
+                                        <small class="text-success d-block ms-4 mt-1">
+                                            <i class="bi bi-check-circle me-1"></i>File sudah ada
+                                        </small>
+                                    @endif
+                                </div>
+                                <div class="mt-2 {{ $pengajuan->foto_barang ? '' : 'd-none' }}" id="detail_foto_barang">
+                                    <input type="file"
+                                           name="foto_barang[]"
+                                           class="form-control"
+                                           accept="image/*"
+                                           multiple
+                                           {{ $pengajuan->foto_barang ? '' : 'disabled' }}>
+                                    <small class="text-muted">Format: JPG, PNG (bisa pilih beberapa file)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 5. Penawaran Harga -->
+                        <div class="col-md-6">
+                            <div class="card p-3 border-0 bg-light h-100">
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="ada_penawaran_harga" 
+                                           id="ada_penawaran_harga"
+                                           value="1"
+                                           {{ $pengajuan->penawaran_harga ? 'checked' : '' }}
+                                           onchange="toggleDokumenPendukung(this, 'penawaran_harga')">
+                                    <label class="form-check-label fw-semibold text-primary" for="ada_penawaran_harga">
+                                        <i class="bi bi-cash-coin me-1"></i>Penawaran Harga
+                                    </label>
+                                    @if($pengajuan->penawaran_harga)
+                                        <small class="text-success d-block ms-4 mt-1">
+                                            <i class="bi bi-check-circle me-1"></i>File sudah ada
+                                        </small>
+                                    @endif
+                                </div>
+                                <div class="mt-2 {{ $pengajuan->penawaran_harga ? '' : 'd-none' }}" id="detail_penawaran_harga">
+                                    <input type="file"
+                                           name="penawaran_harga"
+                                           class="form-control"
+                                           accept=".pdf,.xlsx,.xls,.doc,.docx"
+                                           {{ $pengajuan->penawaran_harga ? '' : 'disabled' }}>
+                                    <small class="text-muted">Format: PDF, Excel, Word (Max: 5MB)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 6. Data Pengguna -->
+                        <div class="col-md-6">
+                            <div class="card p-3 border-0 bg-light h-100">
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="ada_data_pengguna" 
+                                           id="ada_data_pengguna"
+                                           value="1"
+                                           {{ $pengajuan->data_pengguna ? 'checked' : '' }}
+                                           onchange="toggleDokumenPendukung(this, 'data_pengguna')">
+                                    <label class="form-check-label fw-semibold text-primary" for="ada_data_pengguna">
+                                        <i class="bi bi-graph-up me-1"></i>Data Penggunaan / Pemakaian
+                                    </label>
+                                    @if($pengajuan->data_pengguna)
+                                        <small class="text-success d-block ms-4 mt-1">
+                                            <i class="bi bi-check-circle me-1"></i>File sudah ada
+                                        </small>
+                                    @endif
+                                </div>
+                                <div class="mt-2 {{ $pengajuan->data_pengguna ? '' : 'd-none' }}" id="detail_data_pengguna">
+                                    <input type="file"
+                                           name="data_pengguna"
+                                           class="form-control"
+                                           accept=".pdf,.xlsx,.xls,.csv,.doc,.docx"
+                                           {{ $pengajuan->data_pengguna ? '' : 'disabled' }}>
+                                    <small class="text-muted">Format: PDF, Excel, CSV, Word (Max: 5MB)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 7. Dokumen Pendukung Lainnya -->
+                        <div class="col-md-6">
+                            <div class="card p-3 border-0 bg-light h-100">
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="ada_dokumen_lainnya" 
+                                           id="ada_dokumen_lainnya"
+                                           value="1"
+                                           {{ $pengajuan->dokumen_pendukung_lainnya ? 'checked' : '' }}
+                                           onchange="toggleDokumenPendukung(this, 'dokumen_lainnya')">
+                                    <label class="form-check-label fw-semibold text-primary" for="ada_dokumen_lainnya">
+                                        <i class="bi bi-folder-plus me-1"></i>Dokumen Pendukung Lainnya
+                                    </label>
+                                    @if($pengajuan->dokumen_pendukung_lainnya)
+                                        <small class="text-success d-block ms-4 mt-1">
+                                            <i class="bi bi-check-circle me-1"></i>File sudah ada
+                                        </small>
+                                    @endif
+                                </div>
+                                <div class="mt-2 {{ $pengajuan->dokumen_pendukung_lainnya ? '' : 'd-none' }}" id="detail_dokumen_lainnya">
+                                    <input type="file"
+                                           name="dokumen_pendukung_lainnya"
+                                           class="form-control"
+                                           accept=".pdf,.doc,.docx,.xlsx,.xls,.jpg,.jpeg,.png"
+                                           {{ $pengajuan->dokumen_pendukung_lainnya ? '' : 'disabled' }}>
+                                    <small class="text-muted">Format: PDF, Word, Excel, Gambar (Max: 5MB)</small>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -584,9 +832,6 @@
 </style>
 
 <script>
-// ============================================
-// INISIALISASI
-// ============================================
 let indeksItem = {{ $pengajuan->items->count() }};
 let stepSekarang = 1;
 
@@ -606,7 +851,7 @@ function tambahItem() {
                     Nama Barang <span class="text-danger">*</span>
                 </label>
                 <input type="text"
-                       name="items[${indeksItem}][nama_barang]"
+                       name="items[\${indeksItem}][nama_barang]"
                        class="form-control item-required"
                        placeholder="Nama barang"
                        required>
@@ -615,14 +860,14 @@ function tambahItem() {
             <div class="col-md-2">
                 <label class="form-label fw-semibold small">Spesifikasi</label>
                 <input type="text"
-                       name="items[${indeksItem}][spesifikasi]"
+                       name="items[\${indeksItem}][spesifikasi]"
                        class="form-control"
                        placeholder="Spesifikasi">
             </div>
 
             <div class="col-md-2">
                 <label class="form-label fw-semibold small">Satuan</label>
-                <select name="items[${indeksItem}][satuan]" class="form-select">
+                <select name="items[\${indeksItem}][satuan]" class="form-select">
                     <option value="Unit">Unit</option>
                     <option value="Buah">Buah</option>
                     <option value="Pcs">Pcs</option>
@@ -636,7 +881,7 @@ function tambahItem() {
                     Jumlah <span class="text-danger">*</span>
                 </label>
                 <input type="number"
-                       name="items[${indeksItem}][jumlah]"
+                       name="items[\${indeksItem}][jumlah]"
                        class="form-control item-required hitung-total"
                        placeholder="0"
                        min="1"
@@ -649,7 +894,7 @@ function tambahItem() {
                     Harga Satuan (Rp) <span class="text-danger">*</span>
                 </label>
                 <input type="number"
-                       name="items[${indeksItem}][harga_satuan]"
+                       name="items[\${indeksItem}][harga_satuan]"
                        class="form-control item-required hitung-total"
                        placeholder="0"
                        min="0"
@@ -660,7 +905,7 @@ function tambahItem() {
             <div class="col-md-1">
                 <label class="form-label fw-semibold small">Total (Rp)</label>
                 <input type="text"
-                       name="items[${indeksItem}][total]"
+                       name="items[\${indeksItem}][total]"
                        class="form-control bg-light total-harga"
                        value="0"
                        readonly>
@@ -681,26 +926,25 @@ function tambahItem() {
                 <div class="form-check">
                     <input class="form-check-input" 
                            type="checkbox" 
-                           name="items[${indeksItem}][ada_barang_tersedia]" 
-                           id="barang_tersedia_${indeksItem}"
+                           name="items[\${indeksItem}][ada_barang_tersedia]" 
+                           id="barang_tersedia_\${indeksItem}"
                            value="1"
-                           onchange="toggleBarangTersedia(this, ${indeksItem})">
-                    <label class="form-check-label fw-semibold text-success" for="barang_tersedia_${indeksItem}">
+                           onchange="toggleBarangTersedia(this, \${indeksItem})">
+                    <label class="form-check-label fw-semibold text-success" for="barang_tersedia_\${indeksItem}">
                         <i class="bi bi-box-seam me-1"></i>
                         Ada Barang Tersedia (Centang jika ada barang yang sudah tersedia)
                     </label>
                 </div>
             </div>
 
-            <!-- Detail Barang Tersedia -->
-            <div class="col-12" id="detail_barang_tersedia_${indeksItem}" style="display: none;">
+            <div class="col-12" id="detail_barang_tersedia_\${indeksItem}" style="display: none;">
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label fw-semibold small">
                             Nama Barang Tersedia <span class="text-danger">*</span>
                         </label>
                         <input type="text"
-                               name="items[${indeksItem}][barang_tersedia][nama_barang]"
+                               name="items[\${indeksItem}][barang_tersedia][nama_barang]"
                                class="form-control"
                                placeholder="Nama barang yang sudah tersedia"
                                disabled>
@@ -711,7 +955,7 @@ function tambahItem() {
                             Jumlah Tersedia <span class="text-danger">*</span>
                         </label>
                         <input type="number"
-                               name="items[${indeksItem}][barang_tersedia][jumlah]"
+                               name="items[\${indeksItem}][barang_tersedia][jumlah]"
                                class="form-control"
                                placeholder="0"
                                min="0"
@@ -723,11 +967,11 @@ function tambahItem() {
                             Tahun Perolehan <span class="text-danger">*</span>
                         </label>
                         <input type="number"
-                               name="items[${indeksItem}][barang_tersedia][tahun_perolehan]"
+                               name="items[\${indeksItem}][barang_tersedia][tahun_perolehan]"
                                class="form-control"
                                placeholder="2020"
                                min="1900"
-                               max="${new Date().getFullYear()}"
+                               max="\${new Date().getFullYear()}"
                                disabled>
                     </div>
 
@@ -735,7 +979,7 @@ function tambahItem() {
                         <label class="form-label fw-semibold small">
                             Kondisi <span class="text-danger">*</span>
                         </label>
-                        <select name="items[${indeksItem}][barang_tersedia][kondisi]" class="form-select" disabled>
+                        <select name="items[\${indeksItem}][barang_tersedia][kondisi]" class="form-select" disabled>
                             <option value="">Pilih Kondisi</option>
                             <option value="Baik">Baik</option>
                             <option value="Cukup Baik">Cukup Baik</option>
@@ -747,11 +991,76 @@ function tambahItem() {
                 </div>
             </div>
         </div>
+
+        <!-- BARIS KETIGA: Dokumen Upload per Item (toggle) -->
+        <div class="row g-3 mt-3 pt-3 border-top">
+            <div class="col-12">
+                <div class="form-check">
+                    <input class="form-check-input" 
+                           type="checkbox" 
+                           name="items[\${indeksItem}][ada_dokumen]" 
+                           id="ada_dokumen_\${indeksItem}"
+                           value="1"
+                           onchange="toggleDokumenItem(this, \${indeksItem})">
+                    <label class="form-check-label fw-semibold text-primary" for="ada_dokumen_\${indeksItem}">
+                        <i class="bi bi-paperclip me-1"></i>Upload Dokumen
+                    </label>
+                </div>
+            </div>
+
+            <div class="col-12" id="detail_dokumen_\${indeksItem}" style="display: none;">
+                <label class="form-label fw-semibold small">
+                    Dokumen Upload
+                </label>
+                <input type="file"
+                       name="items[\${indeksItem}][dokumen_upload]"
+                       class="form-control"
+                       accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls"
+                       disabled>
+                <small class="text-muted">Format: PDF, JPG, PNG, Excel (Max: 5MB)</small>
+            </div>
+        </div>
     `;
 
     container.appendChild(itemRow);
     indeksItem++;
     perbaruiTotalItem();
+}
+
+// =========================
+// TOGGLE BARJAS LAINNYA
+// =========================
+function toggleBarjasLainnya() {
+    const val = document.getElementById('barjas').value;
+    const wrapper = document.getElementById('wrapper_barjas_lainnya');
+    const input = wrapper.querySelector('input[name="barajas_lainnya"]');
+
+    if (val === 'lainnya') {
+        wrapper.classList.remove('d-none');
+        input.setAttribute('required', 'required');
+    } else {
+        wrapper.classList.add('d-none');
+        input.removeAttribute('required');
+        input.value = '';
+    }
+}
+
+// =========================
+// TOGGLE DASAR USULAN LAINNYA
+// =========================
+function toggleDasarUsulanLainnya() {
+    const val = document.getElementById('dasar_usulan').value;
+    const wrapper = document.getElementById('wrapper_dasar_usulan_lainnya');
+    const input = wrapper.querySelector('input[name="dasar_usulan_lainnya"]');
+
+    if (val === 'lainnya') {
+        wrapper.classList.remove('d-none');
+        input.setAttribute('required', 'required');
+    } else {
+        wrapper.classList.add('d-none');
+        input.removeAttribute('required');
+        input.value = '';
+    }
 }
 
 // =========================
@@ -763,10 +1072,52 @@ function toggleBarangTersedia(checkbox, index) {
     
     if (checkbox.checked) {
         detailDiv.style.display = 'block';
-        inputs.forEach(input => {
-            input.disabled = false;
-        });
+        inputs.forEach(input => input.disabled = false);
     } else {
+        detailDiv.style.display = 'none';
+        inputs.forEach(input => {
+            input.disabled = true;
+            input.value = '';
+        });
+    }
+}
+
+// =========================
+// TOGGLE DOKUMEN PER ITEM
+// =========================
+function toggleDokumenItem(checkbox, index) {
+    const detailDiv = document.getElementById('detail_dokumen_' + index);
+    if (!detailDiv) return;
+
+    const inputs = detailDiv.querySelectorAll('input');
+
+    if (checkbox.checked) {
+        detailDiv.style.display = 'block';
+        inputs.forEach(input => input.disabled = false);
+    } else {
+        detailDiv.style.display = 'none';
+        inputs.forEach(input => {
+            input.disabled = true;
+            input.value = '';
+        });
+    }
+}
+
+// =========================
+// TOGGLE DOKUMEN PENDUKUNG (Step 3)
+// =========================
+function toggleDokumenPendukung(checkbox, fieldName) {
+    const detailDiv = document.getElementById('detail_' + fieldName);
+    if (!detailDiv) return;
+
+    const inputs = detailDiv.querySelectorAll('input');
+
+    if (checkbox.checked) {
+        detailDiv.classList.remove('d-none');
+        detailDiv.style.display = 'block';
+        inputs.forEach(input => input.disabled = false);
+    } else {
+        detailDiv.classList.add('d-none');
         detailDiv.style.display = 'none';
         inputs.forEach(input => {
             input.disabled = true;
@@ -947,32 +1298,30 @@ document.addEventListener('DOMContentLoaded', function () {
     perbaruiUI();
     perbaruiTotalItem();
 
+    // Cek toggle barjas & dasar usulan saat load
+    toggleBarjasLainnya();
+    toggleDasarUsulanLainnya();
+
     const deleteButtons = document.querySelectorAll('.item-row .btn-outline-danger');
     if (deleteButtons.length <= 1) {
         deleteButtons.forEach(btn => btn.disabled = true);
     }
-    
-    // Set indeksItem awal
-    indeksItem = {{ $pengajuan->items->count() }};
 });
 
 // =========================
 // SUBMIT FORM
 // =========================
 document.getElementById('formPengajuan').addEventListener('submit', function () {
-    // Aktifkan semua field sebelum form dikirim
     this.querySelectorAll('input, select, textarea').forEach(el => {
         el.disabled = false;
     });
 
-    // Debug di console
     const formData = new FormData(this);
     console.log('📤 DATA YANG DIKIRIM:');
     for (let [key, value] of formData.entries()) {
         console.log(key, '=>', value);
     }
 
-    // Tampilkan loading
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';

@@ -19,10 +19,10 @@ Route::middleware(['auth', 'role:keuangan'])
     ->name('keuangan.')
     ->group(function () {
 
-        Route::get('/', [keuanganController::class, 'index'])
+        Route::get('/p', [keuanganController::class, 'index'])
             ->name('dashboard');
          
-        Route::get('/permintaann', [keuanganController::class, 'showpengadaan'])
+        Route::get('/', [keuanganController::class, 'showpengadaan'])
             ->name('pengadaan');
         Route::get('/pengadaan/{id}/detail', [KeuanganController::class, 'detail'])->name('pengadaan.detail');
         Route::put('keuangan/verifikasi/lengkap/{id}', [KeuanganController::class, 'verifikasiLengkap'])->name('verifikasi.lengkap');

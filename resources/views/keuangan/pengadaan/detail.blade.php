@@ -22,29 +22,17 @@
                 <div class="d-flex flex-wrap gap-3 align-items-center">
                     @php
                         $statusBadge = [
-                            'draft' => 'secondary',
-                            'diajukan' => 'warning',
-                            'revisi' => 'warning',
-                            'disetujui_koordinator' => 'info',
-                            'disetujui_kabid' => 'primary',
-                            'menunggu_direktur' => 'warning',
-                            'disetujui' => 'success',
-                            'ditolak' => 'danger',
-                            'ditolak_penerima' => 'danger',
-                            'ditolak_keuangan' => 'danger'
+                            'draft' => 'secondary','diajukan' => 'warning','revisi' => 'warning',
+                            'disetujui_koordinator' => 'info','menunggu_keuangan' => 'primary',
+                            'menunggu_direktur' => 'warning','disetujui' => 'success',
+                            'ditolak' => 'danger','ditolak_penerima' => 'danger','ditolak_keuangan' => 'danger'
                         ][$pengajuan->status ?? 'draft'] ?? 'secondary';
-                        
+
                         $statusLabel = [
-                            'draft' => 'Draft',
-                            'diajukan' => 'Diajukan',
-                            'revisi' => 'Revisi',
-                            'disetujui_koordinator' => 'Disetujui Koordinator',
-                            'disetujui_kabid' => 'Disetujui Kabid',
-                            'menunggu_direktur' => 'Menunggu Direktur',
-                            'disetujui' => 'Disetujui',
-                            'ditolak' => 'Ditolak',
-                            'ditolak_penerima' => 'Ditolak Penerima',
-                            'ditolak_keuangan' => 'Ditolak Keuangan'
+                            'draft' => 'Draft','diajukan' => 'Diajukan','revisi' => 'Revisi',
+                            'disetujui_koordinator' => 'Disetujui Koordinator','menunggu_keuangan' => 'Disetujui Kabid',
+                            'menunggu_direktur' => 'Menunggu Direktur','disetujui' => 'Disetujui',
+                            'ditolak' => 'Ditolak','ditolak_penerima' => 'Ditolak Penerima','ditolak_keuangan' => 'Ditolak Keuangan'
                         ][$pengajuan->status ?? 'draft'] ?? $pengajuan->status ?? 'Unknown';
                     @endphp
                     <span class="badge bg-{{ $statusBadge }} fs-6 px-3 py-2">
@@ -55,10 +43,10 @@
                         <i class="bi bi-calendar3 me-1"></i>
                         Diajukan: {{ isset($pengajuan->created_at) ? date('d M Y H:i', strtotime($pengajuan->created_at)) : '-' }}
                     </small>
-                    @if(isset($pengajuan->disetujui_kabid_at) && $pengajuan->disetujui_kabid_at)
+                    @if(isset($pengajuan->menunggu_keuangan_at) && $pengajuan->menunggu_keuangan_at)
                     <small class="text-success">
                         <i class="bi bi-check-circle me-1"></i>
-                        Disetujui Atasan: {{ date('d M Y H:i', strtotime($pengajuan->disetujui_kabid_at)) }}
+                        Disetujui Atasan: {{ date('d M Y H:i', strtotime($pengajuan->menunggu_keuangan_at)) }}
                     </small>
                     @endif
                 </div>
@@ -70,7 +58,7 @@
                 </span>
             </div>
         </div>
-        
+
         @if(isset($pengajuan->catatan_bidang) && $pengajuan->catatan_bidang)
         <div class="mt-3 p-3 bg-light rounded">
             <div class="d-flex align-items-start gap-2">
@@ -137,39 +125,50 @@
 </div>
 @endif
 
-  <!-- ============================================ -->
-        <!-- AKSI VERIFIKASI KEUANGAN (DI BAWAH SEMUA DATA) -->
-        <!-- ============================================ -->
-        @if(in_array($pengajuan->status ?? '', ['disetujui_kabid', 'menunggu_direktur']))
-        <div class="card border-0 shadow-sm mb-4" style="background-color: #fff3cd; border-left: 4px solid #ffc107;">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-md-12">
-                        <h6 class="fw-bold mb-2">
-                            <i class="bi bi-check2-circle text-primary me-2"></i>
-                            Verifikasi Anggaran Keuangan
-                        </h6>
-                        <p class="text-muted small mb-3">
-                            ✅ Silakan periksa seluruh data pengajuan di atas sebelum melakukan verifikasi.
-                            Pilih opsi verifikasi di bawah ini.
-                        </p>
-                        <div class="d-flex flex-wrap gap-2">
-                            <button class="btn btn-success rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalVerifikasiLengkap">
-                                <i class="bi bi-check-circle me-1"></i> Anggaran Tersedia (Setujui)
-                            </button>
-                            <button class="btn btn-warning rounded-pill px-4 text-dark" data-bs-toggle="modal" data-bs-target="#modalVerifikasiSebagian">
-                                <i class="bi bi-pencil-square me-1"></i> Anggaran Sebagian
-                            </button>
-                            <button class="btn btn-danger rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalTolakKeuangan">
-                                <i class="bi bi-x-circle me-1"></i> Tolak
-                            </button>
+<!-- ============================================ -->
+<!-- PANEL VERIFIKASI (SIMPLE) -->
+<!-- ============================================ -->
+@if(in_array($pengajuan->status ?? '', ['menunggu_keuangan', 'sesuai standard']))
+<div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);">
+    <div class="card-body p-4">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-7">
+                <div class="d-flex align-items-center gap-3 text-white">
+                    <div class="d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
+                         style="width: 48px; height: 48px; background: rgba(255,255,255,.15);">
+                        <i class="bi bi-shield-check fs-4"></i>
+                    </div>
+                    <div>
+                        <div class="text-white-50 small text-uppercase fw-semibold" style="letter-spacing: 1px; font-size: .7rem;">
+                            Tahap Verifikasi
                         </div>
+                        <h5 class="mb-0 fw-bold">Anggaran Keuangan</h5>
+                        <small class="text-white-50">Periksa seluruh data sebelum mengambil keputusan</small>
                     </div>
                 </div>
             </div>
+            <div class="col-lg-5 text-lg-end">
+                <div class="text-white-50 small">Total Diajukan</div>
+                <div class="text-white fw-bold fs-4 mb-2">
+                    Rp {{ number_format($pengajuan->total_pengajuan ?? 0, 0, ',', '.') }}
+                </div>
+                <div class="d-flex gap-2 flex-wrap justify-content-lg-end">
+                    <button type="button" class="btn btn-light btn-sm px-3" onclick="openDrawer('lengkap')">
+                        <i class="bi bi-check-circle text-success me-1"></i> Setujui Penuh
+                    </button>
+                    <button type="button" class="btn btn-light btn-sm px-3" onclick="openDrawer('sebagian')">
+                        <i class="bi bi-sliders text-warning me-1"></i> Sebagian
+                    </button>
+                    <button type="button" class="btn btn-light btn-sm px-3" onclick="openDrawer('tolak')">
+                        <i class="bi bi-x-circle text-danger me-1"></i> Tolak
+                    </button>
+                </div>
+            </div>
         </div>
-        @endif
-        
+    </div>
+</div>
+@endif
+
 <div class="row">
     <!-- Kolom Kiri -->
     <div class="col-lg-8">
@@ -205,11 +204,6 @@
                             <div class="label">Instalasi</div>
                             <div class="value">{{ $pengajuan->instalasi ?? '-' }}</div>
                         </div>
-                    </div>
-                    <div class="col-12">
-                        <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalPengaju">
-                            <i class="bi bi-eye me-1"></i> Lihat Detail Lengkap Pengaju
-                        </a>
                     </div>
                 </div>
             </div>
@@ -256,11 +250,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-12">
-                        <a href="#" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalPenerima">
-                            <i class="bi bi-eye me-1"></i> Lihat Detail Lengkap Penerima
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -290,7 +279,7 @@
                         <div class="info-item bg-primary bg-opacity-10">
                             <div class="label">Status Persetujuan</div>
                             <div class="value">
-                                @if(isset($pengajuan->disetujui_kabid_at) && $pengajuan->disetujui_kabid_at)
+                                @if(isset($pengajuan->menunggu_keuangan_at) && $pengajuan->menunggu_keuangan_at)
                                     <span class="badge bg-success">Sudah Menyetujui</span>
                                 @else
                                     <span class="badge bg-warning">Menunggu Persetujuan</span>
@@ -301,7 +290,7 @@
                     <div class="col-md-6">
                         <div class="info-item bg-primary bg-opacity-10">
                             <div class="label">Tanggal Persetujuan</div>
-                            <div class="value">{{ isset($pengajuan->disetujui_kabid_at) && $pengajuan->disetujui_kabid_at ? date('d M Y H:i', strtotime($pengajuan->disetujui_kabid_at)) : '-' }}</div>
+                            <div class="value">{{ isset($pengajuan->menunggu_keuangan_at) && $pengajuan->menunggu_keuangan_at ? date('d M Y H:i', strtotime($pengajuan->menunggu_keuangan_at)) : '-' }}</div>
                         </div>
                     </div>
                     @if(isset($pengajuan->catatan_bidang) && $pengajuan->catatan_bidang)
@@ -312,11 +301,6 @@
                         </div>
                     </div>
                     @endif
-                    <div class="col-12">
-                        <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalAtasan">
-                            <i class="bi bi-eye me-1"></i> Lihat Detail Lengkap Atasan
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>
@@ -431,8 +415,6 @@
             </div>
         </div>
 
-      
-
         <!-- PDF Data Kerusakan -->
         @if(isset($pengajuan->data_kerusakan) && $pengajuan->data_kerusakan)
         <div class="card border-0 shadow-sm mb-4">
@@ -521,7 +503,6 @@
             </div>
             <div class="card-body">
                 <div class="timeline">
-                    <!-- 1. Pengajuan -->
                     <div class="timeline-item">
                         <div class="timeline-icon bg-warning">
                             <i class="bi bi-file-earmark-text text-white"></i>
@@ -533,18 +514,17 @@
                         </div>
                     </div>
 
-                    <!-- 2. Atasan -->
                     <div class="timeline-item">
-                        <div class="timeline-icon {{ isset($pengajuan->disetujui_kabid_at) && $pengajuan->disetujui_kabid_at ? 'bg-success' : 'bg-secondary' }}">
+                        <div class="timeline-icon {{ isset($pengajuan->menunggu_keuangan_at) && $pengajuan->menunggu_keuangan_at ? 'bg-success' : 'bg-secondary' }}">
                             <i class="bi bi-person-up text-white"></i>
                         </div>
                         <div class="timeline-content">
                             <h6 class="fw-bold mb-0">2. Persetujuan Atasan</h6>
                             <small class="text-muted">{{ $pengajuan->atasan->nama ?? 'Atasan' }}</small>
-                            @if(isset($pengajuan->disetujui_kabid_at) && $pengajuan->disetujui_kabid_at)
+                            @if(isset($pengajuan->menunggu_keuangan_at) && $pengajuan->menunggu_keuangan_at)
                                 <p class="mb-0 small text-success">
                                     <i class="bi bi-check-circle"></i> Disetujui 
-                                    {{ date('d M Y', strtotime($pengajuan->disetujui_kabid_at)) }}
+                                    {{ date('d M Y', strtotime($pengajuan->menunggu_keuangan_at)) }}
                                 </p>
                             @else
                                 <p class="mb-0 small text-warning">⏳ Menunggu persetujuan</p>
@@ -552,7 +532,6 @@
                         </div>
                     </div>
 
-                    <!-- 3. Penerima -->
                     <div class="timeline-item">
                         <div class="timeline-icon {{ ($pengajuan->status_penerimaan ?? '') == 'diterima' ? 'bg-success' : 'bg-secondary' }}">
                             <i class="bi bi-person-check text-white"></i>
@@ -574,7 +553,6 @@
                         </div>
                     </div>
 
-                    <!-- 4. Keuangan -->
                     <div class="timeline-item">
                         <div class="timeline-icon {{ ($pengajuan->status ?? '') == 'disetujui' ? 'bg-success' : (($pengajuan->status ?? '') == 'ditolak_keuangan' ? 'bg-danger' : 'bg-primary') }}">
                             <i class="bi bi-cash-stack text-white"></i>
@@ -599,7 +577,6 @@
                         </div>
                     </div>
 
-                    <!-- 5. Direktur -->
                     <div class="timeline-item">
                         <div class="timeline-icon {{ ($pengajuan->status ?? '') == 'disetujui_direktur' ? 'bg-success' : 'bg-secondary' }}">
                             <i class="bi bi-building text-white"></i>
@@ -643,401 +620,156 @@
 </div>
 
 <!-- ============================================ -->
-<!-- MODAL VERIFIKASI LENGKAP (Anggaran Tersedia) -->
+<!-- SIDE DRAWER VERIFIKASI -->
 <!-- ============================================ -->
-<div class="modal fade" id="modalVerifikasiLengkap" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-check-circle me-2"></i>Verifikasi Anggaran Tersedia
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('keuangan.verifikasi.lengkap', $pengajuan->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    <div class="alert alert-success">
-                        <i class="bi bi-info-circle me-2"></i>
-                        Total anggaran tersedia penuh sebesar 
-                        <strong>Rp {{ number_format($pengajuan->total_pengajuan ?? 0, 0, ',', '.') }}</strong>
-                        akan disetujui seluruhnya.
-                    </div>
-                    
-                    <input type="hidden" name="total_disetujui" value="{{ $pengajuan->total_pengajuan ?? 0 }}">
-                    <input type="hidden" name="id_keuangan" value="{{ $authUser->karyawan->id }}">
-                    
-                    <div class="mb-3">
-                        <label for="catatan_keuangan_lengkap" class="form-label">Catatan Verifikasi (Opsional)</label>
-                        <textarea name="catatan_keuangan" id="catatan_keuangan_lengkap" class="form-control" rows="3" placeholder="Isi catatan jika diperlukan..."></textarea>
-                    </div>
-                    
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="setuju_lengkap" required>
-                        <label class="form-check-label" for="setuju_lengkap">
-                            Saya menyatakan bahwa anggaran tersedia penuh dan pengajuan ini layak diteruskan ke Direktur.
-                        </label>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success" id="btnLengkap" disabled>
-                        <i class="bi bi-check2-circle me-1"></i> Setujui Penuh
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<div id="drawerOverlay" class="drawer-overlay" onclick="closeDrawer()"></div>
 
-<!-- ============================================ -->
-<!-- MODAL VERIFIKASI SEBAGIAN (Anggaran Sebagian) -->
-<!-- ============================================ -->
-<div class="modal fade" id="modalVerifikasiSebagian" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title">
-                    <i class="bi bi-pencil-square me-2"></i>Verifikasi Anggaran Sebagian
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div id="verifDrawer" class="verif-drawer">
+    {{-- Header --}}
+    <div class="drawer-header" id="drawerHeader">
+        <div class="d-flex align-items-center gap-3">
+            <div class="drawer-icon" id="drawerIcon">
+                <i class="bi bi-check-circle-fill"></i>
             </div>
-            <form action="{{ route('keuangan.verifikasi.sebagian', $pengajuan->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        Total pengajuan: <strong>Rp {{ number_format($pengajuan->total_pengajuan ?? 0, 0, ',', '.') }}</strong>
-                        <br>
-                        Silakan input nominal yang disetujui (tidak boleh lebih dari total pengajuan).
-                    </div>
-                    
-                    <input type="hidden" name="id_keuangan" value="{{ $authUser->karyawan->id }}">
-                    
-                    <div class="mb-3">
-                        <label for="total_disetujui_sebagian" class="form-label fw-bold">
-                            Total Anggaran yang Disetujui <span class="text-danger">*</span>
-                        </label>
-                        <div class="input-group">
-                            <span class="input-group-text">Rp</span>
-                            <input type="number" 
-                                   name="total_disetujui" 
-                                   id="total_disetujui_sebagian" 
-                                   class="form-control" 
-                                   placeholder="Masukkan nominal yang disetujui"
-                                   min="1"
-                                   max="{{ $pengajuan->total_pengajuan ?? 0 }}"
-                                   required
-                                   oninput="validasiAnggaran(this)">
-                            <span class="input-group-text">.00</span>
-                        </div>
-                        <small class="text-muted">
-                            Maksimal: Rp {{ number_format($pengajuan->total_pengajuan ?? 0, 0, ',', '.') }}
-                        </small>
-                        <div id="peringatanAnggaran" class="text-danger small mt-1" style="display: none;">
-                            <i class="bi bi-exclamation-circle me-1"></i>
-                            Nominal tidak boleh melebihi total pengajuan!
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="catatan_keuangan_sebagian" class="form-label">Catatan Verifikasi (Opsional)</label>
-                        <textarea name="catatan_keuangan" id="catatan_keuangan_sebagian" class="form-control" rows="3" placeholder="Isi catatan jika diperlukan..."></textarea>
-                    </div>
-                    
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="setuju_sebagian" required>
-                        <label class="form-check-label" for="setuju_sebagian">
-                            Saya menyatakan bahwa data pengajuan ini disetujui sebagian dan layak diteruskan ke Direktur.
-                        </label>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-warning text-dark" id="btnSebagian" disabled>
-                        <i class="bi bi-check2-circle me-1"></i> Setujui Sebagian
-                    </button>
-                </div>
-            </form>
+            <div>
+                <h5 class="mb-0 fw-bold" id="drawerTitle">Setujui Penuh</h5>
+                <small class="text-muted" id="drawerSubtitle">Anggaran tersedia sesuai pengajuan</small>
+            </div>
         </div>
+        <button type="button" class="btn-close" onclick="closeDrawer()"></button>
     </div>
-</div>
 
-<!-- ============================================ -->
-<!-- MODAL TOLAK KEUANGAN -->
-<!-- ============================================ -->
-<div class="modal fade" id="modalTolakKeuangan" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-x-circle me-2"></i>Tolak Pengajuan
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    {{-- Body --}}
+    <div class="drawer-body">
+
+        {{-- FORM LENGKAP --}}
+        <form action="{{ route('keuangan.verifikasi.lengkap', $pengajuan->id) }}" method="POST" id="formLengkap" class="drawer-form">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="total_disetujui" value="{{ $pengajuan->total_pengajuan ?? 0 }}">
+            <input type="hidden" name="id_keuangan" value="{{ $authUser->karyawan->id }}">
+
+            <div class="p-3 rounded-3 mb-3 bg-success bg-opacity-10 border border-success border-opacity-25">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">Nominal Disetujui</span>
+                    <span class="badge bg-success">FULL</span>
+                </div>
+                <div class="fs-4 fw-bold text-success mt-1">
+                    Rp {{ number_format($pengajuan->total_pengajuan ?? 0, 0, ',', '.') }}
+                </div>
+                <small class="text-muted">{{ count($pengajuan->items ?? []) }} item disetujui seluruhnya</small>
             </div>
-            <form action="{{ route('keuangan.tolak', $pengajuan->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        Anda akan menolak pengajuan <strong>{{ $pengajuan->no_pengajuan ?? 'N/A' }}</strong>.
-                    </div>
-                    
-                    <input type="hidden" name="penerima_id" value="{{ $authUser->karyawan->id }}">
-                    
-                    <div class="mb-3">
-                        <label for="alasan_tolak" class="form-label">Alasan Penolakan <span class="text-danger">*</span></label>
-                        <textarea name="alasan_tolak" id="alasan_tolak" class="form-control" rows="3" required placeholder="Isi alasan penolakan..."></textarea>
-                    </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">
+                    Catatan Verifikasi <span class="text-muted fw-normal">(opsional)</span>
+                </label>
+                <textarea name="catatan_keuangan" class="form-control" rows="3"
+                          placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+            </div>
+
+            <label class="confirm-check d-flex align-items-start gap-3 p-3 rounded-3 border">
+                <input class="form-check-input mt-1" type="checkbox" id="setuju_lengkap" required>
+                <span class="small text-secondary">
+                    Saya menyatakan anggaran <strong>tersedia penuh</strong> dan pengajuan ini
+                    layak diteruskan ke Direktur.
+                </span>
+            </label>
+        </form>
+
+        {{-- FORM SEBAGIAN --}}
+        <form action="{{ route('keuangan.verifikasi.sebagian', $pengajuan->id) }}" method="POST" id="formSebagian" class="drawer-form d-none">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="id_keuangan" value="{{ $authUser->karyawan->id }}">
+
+            <div class="d-flex justify-content-between align-items-center mb-2 small">
+                <span class="text-muted">Total Pengajuan</span>
+                <span class="fw-semibold">Rp {{ number_format($pengajuan->total_pengajuan ?? 0, 0, ',', '.') }}</span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">
+                    Nominal Disetujui <span class="text-danger">*</span>
+                </label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text bg-light fw-semibold">Rp</span>
+                    <input type="number"
+                           name="total_disetujui"
+                           id="total_disetujui_sebagian"
+                           class="form-control fw-bold"
+                           placeholder="0"
+                           min="1"
+                           max="{{ $pengajuan->total_pengajuan ?? 0 }}"
+                           required
+                           oninput="validasiAnggaran(this)">
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-x-circle me-1"></i> Tolak Pengajuan
-                    </button>
+                <div class="d-flex justify-content-between mt-2 small">
+                    <span class="text-muted">Maks: Rp {{ number_format($pengajuan->total_pengajuan ?? 0, 0, ',', '.') }}</span>
+                    <span id="persentaseAnggaran" class="text-muted">0%</span>
                 </div>
-            </form>
-        </div>
+                <div class="progress mt-2" style="height: 6px;">
+                    <div id="progressAnggaran" class="progress-bar bg-warning" style="width: 0%;"></div>
+                </div>
+                <div id="peringatanAnggaran" class="text-danger small mt-2" style="display: none;">
+                    <i class="bi bi-exclamation-circle me-1"></i>
+                    Nominal tidak boleh melebihi total pengajuan!
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">
+                    Catatan Verifikasi <span class="text-muted fw-normal">(opsional)</span>
+                </label>
+                <textarea name="catatan_keuangan" class="form-control" rows="3"
+                          placeholder="Alasan penyusutan nominal..."></textarea>
+            </div>
+
+            <label class="confirm-check d-flex align-items-start gap-3 p-3 rounded-3 border">
+                <input class="form-check-input mt-1" type="checkbox" id="setuju_sebagian" required>
+                <span class="small text-secondary">
+                    Saya menyatakan pengajuan ini <strong>disetujui sebagian</strong> dan layak
+                    diteruskan ke Direktur.
+                </span>
+            </label>
+        </form>
+
+        {{-- FORM TOLAK --}}
+        <form action="{{ route('keuangan.tolak', $pengajuan->id) }}" method="POST" id="formTolak" class="drawer-form d-none">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="penerima_id" value="{{ $authUser->karyawan->id }}">
+
+            <div class="p-3 rounded-3 mb-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 small text-danger">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                Pengajuan akan ditolak dan <strong>tidak dapat dilanjutkan</strong>. Tindakan ini tercatat permanen.
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">
+                    Alasan Penolakan <span class="text-danger">*</span>
+                </label>
+                <textarea name="alasan_tolak" class="form-control" rows="4" required
+                          placeholder="Jelaskan alasan penolakan secara detail..."></textarea>
+            </div>
+        </form>
     </div>
-</div>
 
-<!-- MODAL PENGAJU -->
-<div class="modal fade" id="modalPengaju" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-person-badge me-2"></i>Detail Lengkap Pengaju
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Nama Lengkap</div>
-                            <div class="value">{{ $pengajuan->karyawan->nama ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">NIP / NIK</div>
-                            <div class="value">{{ $pengajuan->karyawan->nip ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Jabatan</div>
-                            <div class="value">{{ $pengajuan->karyawan->jabatan ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Bidang</div>
-                            <div class="value">{{ $pengajuan->bidang->nama_bidang ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Instalasi</div>
-                            <div class="value">{{ $pengajuan->instalasi ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Email</div>
-                            <div class="value">{{ $pengajuan->karyawan->email ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">No. Telepon</div>
-                            <div class="value">{{ $pengajuan->karyawan->no_telepon ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Tanggal Bergabung</div>
-                            <div class="value">{{ isset($pengajuan->karyawan->tanggal_bergabung) && $pengajuan->karyawan->tanggal_bergabung ? date('d M Y', strtotime($pengajuan->karyawan->tanggal_bergabung)) : '-' }}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-            </div>
-        </div>
-    </div>
-</div>
+    {{-- Footer --}}
+    <div class="drawer-footer">
+        <button type="button" class="btn btn-light" onclick="closeDrawer()">Batal</button>
 
-<!-- MODAL PENERIMA -->
-<div class="modal fade" id="modalPenerima" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-person-check me-2"></i>Detail Lengkap Penerima
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Nama Lengkap</div>
-                            <div class="value">{{ $pengajuan->penerima->nama ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">NIP / NIK</div>
-                            <div class="value">{{ $pengajuan->penerima->nip ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Jabatan</div>
-                            <div class="value">{{ $pengajuan->penerima->jabatan ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Bidang</div>
-                            <div class="value">{{ $pengajuan->penerima->bidang->nama_bidang ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Email</div>
-                            <div class="value">{{ $pengajuan->penerima->email ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">No. Telepon</div>
-                            <div class="value">{{ $pengajuan->penerima->no_telepon ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Status Penerimaan</div>
-                            <div class="value">
-                                @if(($pengajuan->status_penerimaan ?? '') == 'diterima')
-                                    <span class="badge bg-success">Sudah Menerima</span>
-                                @elseif(($pengajuan->status_penerimaan ?? '') == 'ditolak')
-                                    <span class="badge bg-danger">Ditolak</span>
-                                @else
-                                    <span class="badge bg-warning">Menunggu Konfirmasi</span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Tanggal Konfirmasi</div>
-                            <div class="value">{{ isset($pengajuan->tanggal_konfirmasi_penerima) && $pengajuan->tanggal_konfirmasi_penerima ? date('d M Y H:i', strtotime($pengajuan->tanggal_konfirmasi_penerima)) : '-' }}</div>
-                        </div>
-                    </div>
-                    @if(isset($pengajuan->catatan_penerima) && $pengajuan->catatan_penerima)
-                    <div class="col-12">
-                        <div class="info-item-modal">
-                            <div class="label">Catatan Penerima</div>
-                            <div class="value">{{ $pengajuan->catatan_penerima }}</div>
-                        </div>
-                    </div>
-                    @endif
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-            </div>
-        </div>
-    </div>
-</div>
+        <button type="submit" form="formLengkap" class="btn btn-success px-4 drawer-submit" id="btnLengkap" disabled>
+            <i class="bi bi-check2-circle me-1"></i> Setujui Penuh
+        </button>
 
-<!-- MODAL ATASAN -->
-<div class="modal fade" id="modalAtasan" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-person-up me-2"></i>Detail Lengkap Atasan
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Nama Lengkap</div>
-                            <div class="value">{{ $pengajuan->atasan->nama ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">NIP / NIK</div>
-                            <div class="value">{{ $pengajuan->atasan->nip ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Jabatan</div>
-                            <div class="value">{{ $pengajuan->atasan->jabatan ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Bidang</div>
-                            <div class="value">{{ $pengajuan->atasan->bidang->nama_bidang ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Email</div>
-                            <div class="value">{{ $pengajuan->atasan->email ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">No. Telepon</div>
-                            <div class="value">{{ $pengajuan->atasan->no_telepon ?? '-' }}</div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Status Persetujuan</div>
-                            <div class="value">
-                                @if(isset($pengajuan->disetujui_kabid_at) && $pengajuan->disetujui_kabid_at)
-                                    <span class="badge bg-success">Sudah Menyetujui</span>
-                                @else
-                                    <span class="badge bg-warning">Menunggu Persetujuan</span>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="info-item-modal">
-                            <div class="label">Tanggal Persetujuan</div>
-                            <div class="value">{{ isset($pengajuan->disetujui_kabid_at) && $pengajuan->disetujui_kabid_at ? date('d M Y H:i', strtotime($pengajuan->disetujui_kabid_at)) : '-' }}</div>
-                        </div>
-                    </div>
-                    @if(isset($pengajuan->catatan_bidang) && $pengajuan->catatan_bidang)
-                    <div class="col-12">
-                        <div class="info-item-modal">
-                            <div class="label">Catatan Atasan</div>
-                            <div class="value">{{ $pengajuan->catatan_bidang }}</div>
-                        </div>
-                    </div>
-                    @endif
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-            </div>
-        </div>
+        <button type="submit" form="formSebagian" class="btn btn-warning text-dark px-4 drawer-submit d-none" id="btnSebagian" disabled>
+            <i class="bi bi-check2-circle me-1"></i> Setujui Sebagian
+        </button>
+
+        <button type="submit" form="formTolak" class="btn btn-danger px-4 drawer-submit d-none">
+            <i class="bi bi-x-circle me-1"></i> Tolak Pengajuan
+        </button>
     </div>
 </div>
 
@@ -1061,126 +793,251 @@
     margin-top: 2px;
 }
 
-.info-item-modal {
-    background: #f8f9fa;
-    padding: 12px 16px;
-    border-radius: 8px;
-    border-left: 3px solid #0d6efd;
-}
-.info-item-modal .label {
-    font-size: 0.7rem;
-    color: #6c757d;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-}
-.info-item-modal .value {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #1a1a2e;
-    margin-top: 2px;
-}
-
 /* Timeline Styles */
-.timeline {
-    position: relative;
-    padding-left: 30px;
-}
+.timeline { position: relative; padding-left: 30px; }
 .timeline::before {
     content: '';
     position: absolute;
-    left: 8px;
-    top: 0;
-    bottom: 0;
+    left: 8px; top: 0; bottom: 0;
     width: 2px;
     background: #dee2e6;
 }
-.timeline-item {
-    position: relative;
-    margin-bottom: 25px;
-}
-.timeline-item:last-child {
-    margin-bottom: 0;
-}
+.timeline-item { position: relative; margin-bottom: 25px; }
+.timeline-item:last-child { margin-bottom: 0; }
 .timeline-icon {
     position: absolute;
-    left: -22px;
-    top: 0;
-    width: 32px;
-    height: 32px;
+    left: -22px; top: 0;
+    width: 32px; height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1;
 }
-.timeline-icon i {
-    font-size: 14px;
-}
-.timeline-content {
-    padding-left: 5px;
-}
-.timeline-content h6 {
-    font-size: 0.9rem;
-}
-.timeline-content small {
-    font-size: 0.75rem;
-}
-.timeline-content p {
-    font-size: 0.8rem;
-}
+.timeline-icon i { font-size: 14px; }
+.timeline-content { padding-left: 5px; }
+.timeline-content h6 { font-size: 0.9rem; }
+.timeline-content small { font-size: 0.75rem; }
+.timeline-content p { font-size: 0.8rem; }
 
-/* Validasi Anggaran */
-.input-group .form-control:focus {
-    border-color: #ffc107;
-    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+/* Confirm Checkbox */
+.confirm-check {
+    cursor: pointer;
+    background: #f9fafb;
+    transition: all .15s ease;
+    border-color: #e5e7eb !important;
+}
+.confirm-check:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db !important;
 }
 
 /* ============================================ */
-/* MODAL - TANPA BACKDROP SAMA SEKALI */
+/* SIDE DRAWER VERIFIKASI */
 /* ============================================ */
-.modal-backdrop {
-    display: none !important;
-}
 
-.modal {
-    background: transparent !important;
+.drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, .35);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .25s ease, visibility .25s ease;
+    z-index: 1040;
+    backdrop-filter: blur(2px);
     pointer-events: none;
 }
-
-.modal-dialog {
+.drawer-overlay.show {
+    opacity: 1;
+    visibility: visible;
     pointer-events: auto;
-    margin: 1.75rem auto;
 }
 
-.modal-content {
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(0, 0, 0, 0.06);
+.verif-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 480px;
+    max-width: 100%;
+    background: #fff;
+    box-shadow: -20px 0 60px rgba(0, 0, 0, .15);
+    transform: translateX(100%);
+    transition: transform .3s cubic-bezier(.34, 1.15, .64, 1);
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    visibility: hidden;
+}
+.verif-drawer.show {
+    transform: translateX(0);
+    pointer-events: auto;
+    visibility: visible;
+}
+
+.drawer-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f3f5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+.drawer-icon {
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    background: #d1fae5;
+    color: #059669;
+    transition: background .2s ease, color .2s ease;
+}
+.drawer-icon.icon-warning { background: #fef3c7; color: #d97706; }
+.drawer-icon.icon-danger  { background: #fee2e2; color: #dc2626; }
+
+.drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+}
+
+.drawer-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #f1f3f5;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
     background: #fff;
 }
 
-/* Animasi modal */
-.modal.fade .modal-dialog {
-    transform: scale(0.92) translateY(-30px);
-    opacity: 0;
-    transition: transform 0.25s ease-out, opacity 0.25s ease-out;
-}
-
-.modal.show .modal-dialog {
-    transform: scale(1) translateY(0);
-    opacity: 1;
+/* Mobile: full width */
+@media (max-width: 576px) {
+    .verif-drawer { width: 100%; }
+    .drawer-header { padding: 16px 20px; }
+    .drawer-body { padding: 16px 20px; }
+    .drawer-footer { padding: 12px 20px; flex-wrap: wrap; }
+    .drawer-footer .btn { flex: 1; }
 }
 </style>
 
 <script>
-// Validasi agar total_disetujui tidak melebihi total_pengajuan
+// ============================================
+// CLEANUP: hapus sisa backdrop dari versi lama
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.modal-backdrop').forEach(function(b) { b.remove(); });
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+
+    // Checkbox gate: lengkap
+    var checkboxLengkap = document.getElementById('setuju_lengkap');
+    var btnLengkap = document.getElementById('btnLengkap');
+    if (checkboxLengkap && btnLengkap) {
+        checkboxLengkap.addEventListener('change', function() {
+            btnLengkap.disabled = !this.checked;
+        });
+    }
+
+    // Checkbox gate: sebagian
+    var checkboxSebagian = document.getElementById('setuju_sebagian');
+    var btnSebagian = document.getElementById('btnSebagian');
+    if (checkboxSebagian && btnSebagian) {
+        checkboxSebagian.addEventListener('change', function() {
+            btnSebagian.disabled = !this.checked;
+        });
+    }
+});
+
+// ============================================
+// DRAWER CONTROL
+// ============================================
+function openDrawer(mode) {
+    var drawer = document.getElementById('verifDrawer');
+    var overlay = document.getElementById('drawerOverlay');
+    var icon = document.getElementById('drawerIcon');
+    var title = document.getElementById('drawerTitle');
+    var subtitle = document.getElementById('drawerSubtitle');
+
+    // Sembunyikan semua form & tombol submit
+    document.querySelectorAll('.drawer-form').forEach(function(f) {
+        f.classList.add('d-none');
+    });
+    document.querySelectorAll('.drawer-submit').forEach(function(b) {
+        b.classList.add('d-none');
+    });
+
+    icon.classList.remove('icon-warning', 'icon-danger');
+
+    if (mode === 'lengkap') {
+        document.getElementById('formLengkap').classList.remove('d-none');
+        document.getElementById('btnLengkap').classList.remove('d-none');
+        icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+        title.textContent = 'Setujui Penuh';
+        subtitle.textContent = 'Anggaran tersedia sesuai pengajuan';
+    } else if (mode === 'sebagian') {
+        document.getElementById('formSebagian').classList.remove('d-none');
+        document.getElementById('btnSebagian').classList.remove('d-none');
+        icon.classList.add('icon-warning');
+        icon.innerHTML = '<i class="bi bi-sliders"></i>';
+        title.textContent = 'Setujui Sebagian';
+        subtitle.textContent = 'Sesuaikan nominal anggaran';
+    } else if (mode === 'tolak') {
+        document.getElementById('formTolak').classList.remove('d-none');
+        var tolakBtn = document.querySelectorAll('.drawer-submit')[2];
+        if (tolakBtn) tolakBtn.classList.remove('d-none');
+        icon.classList.add('icon-danger');
+        icon.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+        title.textContent = 'Tolak Pengajuan';
+        subtitle.textContent = '{{ $pengajuan->no_pengajuan ?? "N/A" }}';
+    }
+
+    drawer.classList.add('show');
+    overlay.classList.add('show');
+    // NOTE: body TIDAK di-lock supaya halaman belakang tetap scrollable
+}
+
+function closeDrawer() {
+    var drawer = document.getElementById('verifDrawer');
+    var overlay = document.getElementById('drawerOverlay');
+    if (drawer) drawer.classList.remove('show');
+    if (overlay) overlay.classList.remove('show');
+    document.body.style.overflow = '';
+    document.body.classList.remove('modal-open');
+}
+
+// Esc untuk close
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeDrawer();
+});
+
+// ============================================
+// VALIDASI ANGGARAN
+// ============================================
 function validasiAnggaran(input) {
     var max = {{ $pengajuan->total_pengajuan ?? 0 }};
     var nilai = parseInt(input.value) || 0;
     var peringatan = document.getElementById('peringatanAnggaran');
     var btnSubmit = document.getElementById('btnSebagian');
-    
+    var progress = document.getElementById('progressAnggaran');
+    var persen = document.getElementById('persentaseAnggaran');
+
+    var pct = max > 0 ? Math.min((nilai / max) * 100, 100) : 0;
+    if (progress) progress.style.width = pct + '%';
+    if (persen) persen.textContent = pct.toFixed(0) + '%';
+
+    if (progress) {
+        progress.classList.remove('bg-warning', 'bg-danger', 'bg-success');
+        if (nilai > max) progress.classList.add('bg-danger');
+        else if (pct === 100) progress.classList.add('bg-success');
+        else progress.classList.add('bg-warning');
+    }
+
     if (nilai > max) {
         peringatan.style.display = 'block';
         input.classList.add('is-invalid');
@@ -1195,26 +1052,5 @@ function validasiAnggaran(input) {
         if (btnSubmit) btnSubmit.disabled = false;
     }
 }
-
-// Event listener untuk checkbox di modal verifikasi
-document.addEventListener('DOMContentLoaded', function() {
-    // Verifikasi Lengkap
-    var checkboxLengkap = document.getElementById('setuju_lengkap');
-    var btnLengkap = document.getElementById('btnLengkap');
-    if (checkboxLengkap && btnLengkap) {
-        checkboxLengkap.addEventListener('change', function() {
-            btnLengkap.disabled = !this.checked;
-        });
-    }
-    
-    // Verifikasi Sebagian
-    var checkboxSebagian = document.getElementById('setuju_sebagian');
-    var btnSebagian = document.getElementById('btnSebagian');
-    if (checkboxSebagian && btnSebagian) {
-        checkboxSebagian.addEventListener('change', function() {
-            btnSebagian.disabled = !this.checked;
-        });
-    }
-});
 </script>
 @endsection

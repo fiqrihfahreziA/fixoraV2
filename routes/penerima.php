@@ -25,14 +25,14 @@ Route::middleware(['auth', 'role:penerima'])
     ->group(function () {
 
     
-        Route::get('/', [PenerimaController::class, 'index'])
+        Route::get('/d', [PenerimaController::class, 'index'])
             ->name('dashboard');
 
         Route::get('/chart', [PenerimaController::class, 'chart'])
             ->name('chart');
 
          
-        Route::get('/permintaann', [PenerimaController::class, 'showpermintaan'])
+        Route::get('/', [PenerimaController::class, 'showpermintaan'])
             ->name('permintaan');
             
         Route::post('/permintaann', [PenerimaController::class, 'storebarang'])->name('permintaan.store');
@@ -78,7 +78,7 @@ Route::middleware(['auth', 'role:penerima'])
     // PENGADAAN
       Route::get('/pengadaan/export', [PenerimaController::class, 'exportExcel'])
     ->name('pengadaan.export');
-      Route::get('/chart/pengadaan', [PenerimaController::class, 'chartpengadaan'])
+      Route::get('/', [PenerimaController::class, 'chartpengadaan'])
             ->name('chartp');
        // Detail pengajuan
     // Detail pengajuan

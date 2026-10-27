@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('role');
             $table->string('role2')->nullable();
+            $table->string('subrole')->nullable();
             $table->boolean('is_active')->default(1);
             $table->rememberToken();
             $table->timestamps();

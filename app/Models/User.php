@@ -25,6 +25,7 @@ class User extends Authenticatable
         'role',   
         'role2',     // ⬅️ TAMBAHKAN
         'is_active',   // ⬅️ TAMBAHKAN
+        'subrole'
 
     ];
 
@@ -62,4 +63,18 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function multirolePrefix(): ?string
+{
+    if ($this->role !== 'atasan' || ! $this->role2) {
+        return null;
+    }
+
+    return match ($this->role2) {
+        'penerima' => 'multirole1',
+        'ppk'      => 'multirole2',
+        'keuangan' => 'multirole3',
+        default    => null,
+    };
+}
 }

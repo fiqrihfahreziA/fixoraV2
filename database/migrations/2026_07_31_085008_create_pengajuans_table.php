@@ -37,37 +37,50 @@ return new class extends Migration
             $table->string('foto_barang')->nullable();
             $table->string('penawaran_harga')->nullable();
             $table->string('data_kerusakan')->nullable();
+            $table->string('barjas')->nullable();
+            $table->string('barajas_lainnya')->nullable();
+            $table->string('dasar_usulan_lainnya')->nullable();
             // approval sederhana
             $table->foreignId('penerima_id')->nullable()->constrained('karyawans')->nullOnDelete();
             $table->foreignId('atasan_id')->nullable()->constrained('karyawans')->nullOnDelete();
-             $table->foreignId('id_keuangan')->nullable()->constrained('karyawans')->nullOnDelete();
-          
-           
-           
+            $table->foreignId('id_keuangan')->nullable()->constrained('karyawans')->nullOnDelete();
+            $table->foreignId('direktur_id')->nullable()->constrained('karyawans')->nullOnDelete();
+            $table->foreignId('ppk_id')->nullable()->constrained('karyawans')->nullOnDelete();
+            $table->foreignId('kpa_id')->nullable()->constrained('karyawans')->nullOnDelete();
 
-             $table->decimal('total_pengajuan', 15, 2)->default(0);
-             $table->decimal('total_disetujui', 15, 2)->default(0);
-               $table->decimal('total_disetujui_direktur', 15, 2)->default(0);
-             $table->enum('status', [
-                'draft',
-                'diajukan',
-                'disetujui_koordinator',
-                'disetujui_kabid',
-                'dipertimbangkan',
-                'menunggu_direktur',
-                'disetujui',
-                'disetujui sebagian',
-                'ditolak',
-                'revisi',
-                'ditunda',
-            ])->default('draft');
+            $table->decimal('total_pengajuan', 15, 2)->default(0);
+            $table->decimal('total_disetujui', 15, 2)->default(0);
+            $table->decimal('total_disetujui_direktur', 15, 2)->default(0);
+            $table->string('dasar_usulan_lainnya')->default('draft');
+            // $table->enum('status', [
+            //      'draft',
+            // 'diajukan',
+            // 'disetujui_koordinator',
+            // 'disetujui_kabid',
+            // 'dipertimbangkan',
+            // 'menunggu_direktur',
+            // 'disetujui',
+            // 'disetujui sebagian',
+            // 'ditolak',
+            // 'revisi',
+            // 'ditunda',
+            // 'tersedia layak dan diutamakan',
+            // 'perlu survei perbaikan',
+            // 'tidak direkomendasikan',
+            // 'sesuai kebutuhan',
+            // 'sesuai standard',
+            // 'sebagian anggaran',
+            // 'anggaran tidak tersedia',
+            // 'menunggu ppk',
+            // 'menunggu_kpa'
+                
+            // ])->default('draft');
             // waktu approval
             $table->timestamp('diterima_at')->nullable();
             $table->timestamp('disetujui_kabid_at')->nullable();
             $table->timestamp('disetujui_keuangan_at')->nullable();
             $table->timestamp('disetujui_direktur_at')->nullable();
-          
-             $table->text('catatan_unit')->nullable();
+            $table->text('catatan_unit')->nullable();
 
             // Kepala Bidang
             $table->text('catatan_bidang')->nullable();
@@ -88,7 +101,29 @@ return new class extends Migration
             $table->text('catatan_direktur')->nullable();
              $table->text('alasan_direktur')->nullable();
 
-            $table->timestamps();
+             //lampiran
+             $table->string('analisis_kebutuhan')->nullable();
+             $table->string('data_pengguna')->nullable();
+             $table->string('spesifikasi_teknis')->nullable();
+             $table->string('dokumen_pendukung_lainnya')->nullable();
+            $table->date('tanggal_survei')->nullable();;
+            $table->text('catatan_survei')->nullable();
+            $table->text('prioritas')->nullable();
+
+            $table->string('log_ppk')->nullable();
+            $table->string('catatan_ppk')->nullable();
+            $table->string('log_kpa')->nullable();
+            $table->string('catatan_kpa')->nullable();
+            $table->timestamp('kpa')->nullable();
+            $table->string('acc_kabidPelayanan')->nullable(); //
+            $table->string('acc_kabidPenunjang')->nullable(); //
+            $table->timestamp('acc_kabidPelayanan_at')->nullable();
+            $table->timestamp('acc_kabidPenunjang_at')->nullable();
+            $table->string('log_acc_kabidPelayanan')->nullable(); //
+            $table->string('log_acc_kabidPenunjang')->nullable(); //
+            
+              
+             $table->timestamps();
         });
     }
 

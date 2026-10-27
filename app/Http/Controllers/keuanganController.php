@@ -35,70 +35,283 @@ class keuanganController extends Controller
         ]);
     }
 
-     public function showpengadaan(Request $request)
-    {
-        $authUser = Auth::user();
+    //  public function showpengadaan(Request $request)
+    // {
+    //     $authUser = Auth::user();
         
-        // Ambil query pencarian
-        $search = $request->input('search');
-        $statusFilter = $request->input('status');
+    //     // Ambil query pencarian
+    //     $search = $request->input('search');
+    //     $statusFilter = $request->input('status');
 
-        /**
-         * ============================
-         * QUERY DASAR PENGADAAN (SEMUA)
-         * TAMPILKAN SEMUA STATUS KECUALI:
-         * - draft, revisi, diajukan, disetujui_koordinator
-         * ============================
-         */
-        $query = Pengajuan::with(['items', 'karyawan', 'bidang'])
-            ->whereNotIn('status', ['diajukan', 'draft', 'revisi', 'disetujui_koordinator'])
-            ->when($search, function ($q) use ($search) {
-                $q->where(function ($query) use ($search) {
-                    $query->where('no_pengajuan', 'like', "%{$search}%")
-                        ->orWhere('dasar_usulan', 'like', "%{$search}%")
-                        ->orWhereHas('items', function ($itemQuery) use ($search) {
-                            $itemQuery->where('nama_barang', 'like', "%{$search}%")
-                                ->orWhere('spesifikasi', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->when($statusFilter, function ($q) use ($statusFilter) {
-                $q->where('status', $statusFilter);
+    //     /**
+    //      * ============================
+    //      * QUERY DASAR PENGADAAN (SEMUA)
+    //      * TAMPILKAN SEMUA STATUS KECUALI:
+    //      * - draft, revisi, diajukan, disetujui_koordinator
+    //      * ============================
+    //      */
+    //     $query = Pengajuan::with(['items', 'karyawan', 'bidang'])
+    //         ->whereNotIn('status', ['diajukan', 'draft', 'revisi', 'disetujui_koordinator','perlu survei perbaikan','disetujui_kabid'])
+    //         ->when($search, function ($q) use ($search) {
+    //             $q->where(function ($query) use ($search) {
+    //                 $query->where('no_pengajuan', 'like', "%{$search}%")
+    //                     ->orWhere('dasar_usulan', 'like', "%{$search}%")
+    //                     ->orWhereHas('items', function ($itemQuery) use ($search) {
+    //                         $itemQuery->where('nama_barang', 'like', "%{$search}%")
+    //                             ->orWhere('spesifikasi', 'like', "%{$search}%");
+    //                     });
+    //             });
+    //         })
+    //         ->when($statusFilter, function ($q) use ($statusFilter) {
+    //             $q->where('status', $statusFilter);
+    //         });
+
+    //     /**
+    //      * ============================
+    //      * DATA UNTUK TABEL SEMUA PENGAJUAN
+    //      * ============================
+    //      */
+    //     $allPengajuan = clone $query;
+    //     $allPengajuan = $allPengajuan->orderBy('created_at', 'desc')
+    //         ->paginate(10)
+    //         ->appends($request->all());
+
+    //     /**
+    //      * ============================
+    //      * STATISTIK DASHBOARD
+    //      * ============================
+    //      */
+    //     $stats = [
+    //         'total' => Pengajuan::whereNotIn('status', ['diajukan', 'draft', 'revisi', 'disetujui_koordinator'])->count(),
+    //         'draft' => Pengajuan::where('status', 'draft')->count(),
+    //         'diajukan' => Pengajuan::where('status', 'diajukan')->count(),
+    //         'disetujui' => Pengajuan::where('status', 'disetujui')->count(),
+    //         'ditolak' => Pengajuan::where('status', 'ditolak')->count(),
+    //         'menunggu_direktur' => Pengajuan::where('status', 'menunggu_direktur')->count(),
+    //         'disetujui_kabid' => Pengajuan::where('status', 'disetujui_kabid')->count(),
+    //     ];
+
+    //     return view('keuangan.pengadaan.pengadaan', compact(
+    //         'authUser',
+    //         'allPengajuan',
+    //         'search',
+    //         'statusFilter',
+    //         'stats'
+    //     ));
+    // }
+
+//     public function showpengadaan(Request $request)
+// {
+//     $authUser = Auth::user();
+
+//     $search       = $request->input('search');
+//     $statusFilter = $request->input('status');
+//     $kategoriFilter = $request->input('kategori', 'pengadaan'); // default: pengadaan
+
+//     $excludeStatus = [
+//         'diajukan', 'draft', 'revisi',
+//         'disetujui_koordinator', 'perlu survei perbaikan', 'disetujui_kabid'
+//     ];
+
+//     // ============================
+//     // QUERY DASAR (per kategori)
+//     // ============================
+//     $query = Pengajuan::with(['items', 'karyawan', 'bidang'])
+//         ->whereNotIn('status', $excludeStatus)
+//         ->where('kategori', $kategoriFilter)
+//         ->when($search, function ($q) use ($search) {
+//             $q->where(function ($query) use ($search) {
+//                 $query->where('no_pengajuan', 'like', "%{$search}%")
+//                     ->orWhere('dasar_usulan', 'like', "%{$search}%")
+//                     ->orWhereHas('items', function ($itemQuery) use ($search) {
+//                         $itemQuery->where('nama_barang', 'like', "%{$search}%")
+//                             ->orWhere('spesifikasi', 'like', "%{$search}%");
+//                     });
+//             });
+//         })
+//         ->when($statusFilter, function ($q) use ($statusFilter) {
+//             $q->where('status', $statusFilter);
+//         });
+
+//     // ============================
+//     // DATA TABEL
+//     // ============================
+//     $allPengajuan = (clone $query)
+//         ->orderBy('created_at', 'desc')
+//         ->paginate(10)
+//         ->appends($request->all());
+
+//     // ============================
+//     // STATISTIK (per kategori)
+//     // ============================
+//     $statsBase = Pengajuan::whereNotIn('status', $excludeStatus)
+//         ->where('kategori', $kategoriFilter);
+
+//     $stats = [
+//         'total'             => (clone $statsBase)->count(),
+//         'draft'             => (clone $statsBase)->where('status', 'draft')->count(),
+//         'diajukan'          => (clone $statsBase)->where('status', 'diajukan')->count(),
+//         'disetujui'         => (clone $statsBase)->where('status', 'disetujui')->count(),
+//         'ditolak'           => (clone $statsBase)->where('status', 'ditolak')->count(),
+//         'menunggu_direktur' => (clone $statsBase)->where('status', 'menunggu_direktur')->count(),
+//         'disetujui_kabid'   => (clone $statsBase)->where('status', 'disetujui_kabid')->count(),
+//     ];
+
+//     // ============================
+//     // COUNTER UNTUK BADGE TAB
+//     // ============================
+//     $countPengadaan    = Pengajuan::whereNotIn('status', $excludeStatus)
+//         ->where('kategori', 'pengadaan')->count();
+//     $countPemeliharaan = Pengajuan::whereNotIn('status', $excludeStatus)
+//         ->where('kategori', 'pemeliharaan')->count();
+
+//     return view('keuangan.pengadaan.pengadaan', compact(
+//         'authUser',
+//         'allPengajuan',
+//         'search',
+//         'statusFilter',
+//         'kategoriFilter',
+//         'stats',
+//         'countPengadaan',
+//         'countPemeliharaan'
+//     ));
+// }
+
+public function showpengadaan(Request $request)
+{
+    $authUser = Auth::user();
+
+    $search         = $request->input('search');
+    $statusFilter   = $request->input('status');
+    $kategoriFilter = $request->input('kategori', 'pengadaan'); // default: pengadaan
+    $tahunFilter    = $request->input('tahun'); // ✅ Tambah Filter Tahun
+    $bulanFilter    = $request->input('bulan'); // ✅ Tambah Filter Bulan
+    $bidangFilter   = $request->input('bidang'); // ✅ Tambah Filter Bidang
+
+    // Ambil list tahun dari tanggal_pengajuan
+    $listTahun = Pengajuan::selectRaw('YEAR(tanggal_pengajuan) as tahun')
+        ->whereNotNull('tanggal_pengajuan')
+        ->distinct()
+        ->orderBy('tahun', 'desc')
+        ->pluck('tahun');
+
+    // Ambil list bidang
+    $bidangs = \App\Models\Bidang::all();
+
+    $excludeStatus = [
+        'diajukan', 'draft', 'revisi',
+        'disetujui_koordinator', 'perlu survei perbaikan', 'disetujui_kabid'
+    ];
+
+    // ============================
+    // QUERY DASAR (per kategori)
+    // ============================
+    $query = Pengajuan::with(['items', 'karyawan', 'bidang'])
+        ->whereNotIn('status', $excludeStatus)
+        ->where('kategori', $kategoriFilter)
+        ->when($search, function ($q) use ($search) {
+            $q->where(function ($query) use ($search) {
+                $query->where('no_pengajuan', 'like', "%{$search}%")
+                    ->orWhere('dasar_usulan', 'like', "%{$search}%")
+                    ->orWhereHas('items', function ($itemQuery) use ($search) {
+                        $itemQuery->where('nama_barang', 'like', "%{$search}%")
+                            ->orWhere('spesifikasi', 'like', "%{$search}%");
+                    });
             });
+        })
+        ->when($statusFilter, function ($q) use ($statusFilter) {
+            $q->where('status', $statusFilter);
+        })
+        // ✅ Filter Bidang
+        ->when($bidangFilter, function ($q) use ($bidangFilter) {
+            $q->where('bidang_id', $bidangFilter);
+        })
+        // ✅ Filter Tahun (dari tanggal_pengajuan)
+        ->when($tahunFilter, function ($q) use ($tahunFilter) {
+            $q->whereYear('tanggal_pengajuan', $tahunFilter);
+        })
+        // ✅ Filter Bulan (dari tanggal_pengajuan)
+        ->when($bulanFilter, function ($q) use ($bulanFilter) {
+            $q->whereMonth('tanggal_pengajuan', $bulanFilter);
+        });
 
-        /**
-         * ============================
-         * DATA UNTUK TABEL SEMUA PENGAJUAN
-         * ============================
-         */
-        $allPengajuan = clone $query;
-        $allPengajuan = $allPengajuan->orderBy('created_at', 'desc')
-            ->paginate(10)
-            ->appends($request->all());
+    // ============================
+    // DATA TABEL
+    // ============================
+    $allPengajuan = (clone $query)
+        ->orderBy('created_at', 'desc')
+        ->paginate(10)
+        ->appends($request->all());
 
-        /**
-         * ============================
-         * STATISTIK DASHBOARD
-         * ============================
-         */
-        $stats = [
-            'total' => Pengajuan::whereNotIn('status', ['diajukan', 'draft', 'revisi', 'disetujui_koordinator'])->count(),
-            'draft' => Pengajuan::where('status', 'draft')->count(),
-            'diajukan' => Pengajuan::where('status', 'diajukan')->count(),
-            'disetujui' => Pengajuan::where('status', 'disetujui')->count(),
-            'ditolak' => Pengajuan::where('status', 'ditolak')->count(),
-            'menunggu_direktur' => Pengajuan::where('status', 'menunggu_direktur')->count(),
-            'disetujui_kabid' => Pengajuan::where('status', 'disetujui_kabid')->count(),
-        ];
+    // ============================
+    // STATISTIK (Sinkron dengan Filter)
+    // ============================
+    // Pakai clone $query agar statistik ikut terfilter tahun/bulan/bidang
+    $statsBase = $query; 
 
-        return view('keuangan.pengadaan.pengadaan', compact(
-            'authUser',
-            'allPengajuan',
-            'search',
-            'statusFilter',
-            'stats'
-        ));
-    }
+    $stats = [
+
+        'total' => (clone $statsBase)->count(),
+        'disetujui' => (clone $statsBase)->where('log_status_direktur', 'disetujui')->count(),
+        'ditolak' => (clone $statsBase)->where('status', 'ditolak')->count(),
+        'selesai' => (clone $statsBase)->where('status', 'selesai')->count(),
+
+       // 'total'             => (clone $statsBase)->count(),
+        'draft'             => (clone $statsBase)->where('status', 'draft')->count(),
+        'diajukan'          => (clone $statsBase)->where('status', 'diajukan')->count(),
+       // 'disetujui'         => (clone $statsBase)->where('status', 'disetujui')->count(),
+       // 'ditolak'           => (clone $statsBase)->where('status', 'ditolak')->count(),
+        'menunggu_direktur' => (clone $statsBase)->where('status', 'menunggu_direktur')->count(),
+        'disetujui_kabid'   => (clone $statsBase)->where('status', 'disetujui_kabid')->count(),
+    ];
+
+    // ============================
+    // COUNTER UNTUK BADGE TAB
+    // ============================
+    // Menggunakan query dasar tanpa filter kategori agar angkanya tetap muncul semua
+    $baseCount = Pengajuan::whereNotIn('status', $excludeStatus)
+        ->when($search, function ($q) use ($search) {
+            $q->where(function ($query) use ($search) {
+                $query->where('no_pengajuan', 'like', "%{$search}%")
+                    ->orWhere('dasar_usulan', 'like', "%{$search}%")
+                    ->orWhereHas('items', function ($itemQuery) use ($search) {
+                        $itemQuery->where('nama_barang', 'like', "%{$search}%")
+                            ->orWhere('spesifikasi', 'like', "%{$search}%");
+                    });
+            });
+        })
+        ->when($statusFilter, function ($q) use ($statusFilter) {
+            $q->where('status', $statusFilter);
+        })
+        ->when($bidangFilter, function ($q) use ($bidangFilter) {
+            $q->where('bidang_id', $bidangFilter);
+        })
+        ->when($tahunFilter, function ($q) use ($tahunFilter) {
+            $q->whereYear('tanggal_pengajuan', $tahunFilter);
+        })
+        ->when($bulanFilter, function ($q) use ($bulanFilter) {
+            $q->whereMonth('tanggal_pengajuan', $bulanFilter);
+        });
+
+    $countPengadaan    = (clone $baseCount)->where('kategori', 'pengadaan')->count();
+    $countPemeliharaan = (clone $baseCount)->where('kategori', 'pemeliharaan')->count();
+
+    return view('keuangan.pengadaan.pengadaan', compact(
+        'authUser',
+        'allPengajuan',
+        'search',
+        'statusFilter',
+        'kategoriFilter',
+        'stats',
+        'countPengadaan',
+        'countPemeliharaan',
+        'bidangs',
+        'listTahun',
+        'tahunFilter',
+        'bulanFilter',
+        'bidangFilter'
+    ));
+}
 
     public function detail($id)
     {
@@ -119,7 +332,7 @@ class keuanganController extends Controller
     
     $pengajuan = Pengajuan::findOrFail($id);
     $pengajuan->update([
-        'status' => 'menunggu_direktur',
+        'status' => 'menunggu_kpa',
         'log_status_keuangan' => 'disetujui_keuangan',
         'total_disetujui' => $pengajuan->total_pengajuan,
         'id_keuangan' =>  $request->id_keuangan,
@@ -139,7 +352,7 @@ public function verifikasiSebagian(Request $request, $id)
     
     $pengajuan = Pengajuan::findOrFail($id);
     $pengajuan->update([
-        'status' => 'menunggu_direktur',
+        'status' => 'menunggu_kpa',
          'log_status_keuangan' => 'sebagian',
         'total_disetujui' => $request->total_disetujui,
         'id_keuangan' =>  $request->id_keuangan,

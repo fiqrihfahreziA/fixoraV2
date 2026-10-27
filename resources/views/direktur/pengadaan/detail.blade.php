@@ -221,14 +221,22 @@
                         </p>
                         <div class="d-flex flex-wrap gap-2">
                             <button class="btn btn-success rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalSetujuiDirektur">
-                                <i class="bi bi-check-circle me-1"></i> Setujui Semua
+                                <i class="bi bi-check-circle me-1"></i> Setujui
                             </button>
-                            <button class="btn btn-warning rounded-pill px-4 text-dark" data-bs-toggle="modal" data-bs-target="#modalSetujuiSebagianDirektur">
-                                <i class="bi bi-check-circle me-1"></i> Setujui Sebagian
+                            
+                             <!-- {{-- Setujui Sebagian --}}
+                        @if(($pengajuan->log_status_keuangan ?? '') != 'disetujui_keuangan')
+                            <button class="btn btn-warning rounded-pill px-4 text-dark"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalSetujuiSebagianDirektur">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Setujui Sebagian
                             </button>
-                            <button class="btn btn-secondary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalTundaDirektur">
+                        @endif -->
+
+                            <!-- <button class="btn btn-secondary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalTundaDirektur">
                                 <i class="bi bi-clock me-1"></i> Tunda
-                            </button>
+                            </button> -->
                             <button class="btn btn-danger rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalTolakDirektur">
                                 <i class="bi bi-x-circle me-1"></i> Tolak
                             </button>
@@ -799,13 +807,13 @@
                     <div class="alert alert-success">
                         <i class="bi bi-info-circle me-2"></i>
                         Total pengajuan  
-                        <strong>Rp {{ number_format($pengajuan->total_pengajuan ?? 0, 0, ',', '.') }}</strong>
-                        {{-- <strong>Rp {{ number_format($pengajuan->total_disetujui ?? $pengajuan->total_pengajuan ?? 0, 0, ',', '.') }}</strong> --}}
+                        <strong>Rp {{ number_format($pengajuan->total_disetujui_direktur ?? 0, 0, ',', '.') }}</strong>
+                        {{-- <strong>Rp {{ number_format($pengajuan->total_disetujui_direktur ?? $pengajuan->total_disetujui_direktur ?? 0, 0, ',', '.') }}</strong> --}}
                         akan disetujui seluruhnya oleh direktur.
                     </div>
                     
                     <input type="hidden" name="direktur_id" value="{{ $authUser->karyawan->id }}">
-                    <input type="hidden" name="total_disetujui_direktur" value="{{ $pengajuan->total_disetujui ?? $pengajuan->total_pengajuan ?? 0 }}">
+                    <input type="hidden" name="total_disetujui_direktur" value="{{ $pengajuan->total_disetujui_direktur ?? $pengajuan->total_disetujui_direktur ?? 0 }}">
                     
                     <div class="mb-3">
                         <label for="catatan_direktur" class="form-label">Catatan Persetujuan (Opsional)</label>
