@@ -59,7 +59,7 @@ class PemohonController extends Controller
             'Kepala Bidang','Kepala Ruangan','Staff'
         ];
 
-        return view('profile.karyawan.edit', compact('authUser', 'daftarRuangan', 'daftarJabatan'));
+        return view('profile.karyawan.editpemohon', compact('authUser', 'daftarRuangan', 'daftarJabatan'));
     }
 
     /**

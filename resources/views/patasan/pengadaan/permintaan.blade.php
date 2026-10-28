@@ -620,39 +620,120 @@ MODAL DETAIL
                     $bisaRespon = false;
                 }
             @endphp --}}
+{{-- 
+                       @php
+                /* ====== USER ====== */
+                $user    = auth()->user();
+                $subrole = strtolower(trim((string) ($user->subrole ?? '')));
+                $role    = strtolower(trim((string) ($user->role ?? '')));
 
-            @php
-                $subrole = auth()->user()->subrole;
-                $bidang = strtolower(trim($pengajuan->bidang ?? ''));
+                /* ====== BIDANG PENGAJUAN (tahan string / relasi) ====== */
+                $rawBidang = is_object($pengajuan->bidang ?? null)
+                    ? ($pengajuan->bidang->nama_bidang ?? ($pengajuan->bidang->nama ?? ''))
+                    : ($pengajuan->bidang ?? '');
 
-                // Bidang yang butuh alur kabid_pelayanan -> kabid_penunjang
-                $bidangButuhDuaKabid = in_array($bidang, ['alat kesehatan', 'alkes']);
+                $bidang = strtolower(trim((string) $rawBidang));
 
+                $bidangButuhDuaKabid = in_array($bidang, ['alat kesehatan', 'alkes'], true)
+                    || str_contains($bidang, 'alat kesehatan')
+                    || str_contains($bidang, 'alkes');
+
+                /* ====== HITUNG $bisaRespon ====== */
                 if ($bidangButuhDuaKabid) {
+                    // ===== ALKES: alur kabid tetap =====
                     if ($subrole === 'kabid_pelayanan') {
                         $bisaRespon = $pengajuan->status === 'disetujui_koordinator';
                     } elseif ($subrole === 'kabid_penunjang') {
-                        $kabidPelayananSetuju = $pengajuan->log_acc_kabidPelayanan === 'disetujui oleh kabid pelayanan';
+                        $kabidPelayananSetuju   = trim(strtolower((string) $pengajuan->log_acc_kabidPelayanan))
+                                                   === 'disetujui oleh kabid pelayanan';
                         $belumDiresponPenunjang = empty($pengajuan->log_acc_kabidPenunjang);
                         $bisaRespon = $kabidPelayananSetuju && $belumDiresponPenunjang;
                     } else {
                         $bisaRespon = false;
                     }
                 } else {
-                    // Bidang komputer, AT, dll -> atasan tanpa subrole langsung respon
-                    // sesuaikan kondisi "selanjutnya" di sini
-                    $bisaRespon = empty($subrole) 
+                    // ===== NON-ALKES: atasan bebas respon (tanpa peduli bidang) =====
+                    $isAtasan = empty($subrole)
+                        || in_array($subrole, ['atasan', 'multirole1'], true)
+                        || in_array($role, ['atasan', 'multirole1'], true);
+
+                    $bisaRespon = $isAtasan
                         && $pengajuan->status === 'disetujui_koordinator'
-                        && empty($pengajuan->log_acc_kabidPelayanan) // belum direspon siapapun
+                        && empty($pengajuan->log_acc_kabidPelayanan)
                         && empty($pengajuan->log_acc_kabidPenunjang);
                 }
-            @endphp
+
+                /* ====== ROUTE DINAMIS (multirole vs biasa) ====== */
+                $isMultirole = request()->routeIs('multirole1.*')
+                    || request()->is('multirole1/*')
+                    || request()->is('multirole1');
+
+                // Cek nama route dulu — kalau tidak ada, fallback ke URL manual
+                $routeRespon = null;
+                if ($isMultirole && Route::has('multirole1.atasan.pengadaan.show')) {
+                    $routeRespon = route('multirole1.atasan.pengadaan.show', $pengajuan->id);
+                } elseif (!$isMultirole && Route::has('atasan.pengadaan.show')) {
+                    $routeRespon = route('atasan.pengadaan.show', $pengajuan->id);
+                } else {
+                    // fallback: bangun URL manual berdasarkan prefix sekarang
+                    $prefix = $isMultirole ? 'multirole1/atasan' : 'atasan';
+                    $routeRespon = url($prefix . '/pengadaan/' . $pengajuan->id);
+                }
+            @endphp --}}
+            @php
+    /* ====== USER ====== */
+    $user    = auth()->user();
+    $subrole = strtolower(trim((string) ($user->subrole ?? '')));
+    $role    = strtolower(trim((string) ($user->role ?? '')));
+
+    /* ====== BIDANG PENGAJUAN (tahan string / relasi) ====== */
+    $rawBidang = is_object($pengajuan->bidang ?? null)
+        ? ($pengajuan->bidang->nama_bidang ?? ($pengajuan->bidang->nama ?? ''))
+        : ($pengajuan->bidang ?? '');
+
+    $bidang = strtolower(trim((string) $rawBidang));
+
+    $bidangButuhDuaKabid = in_array($bidang, ['alat kesehatan', 'alkes'], true)
+        || str_contains($bidang, 'alat kesehatan')
+        || str_contains($bidang, 'alkes');
+
+    /* ====== HITUNG $bisaRespon ====== */
+    if ($bidangButuhDuaKabid) {
+        // ===== ALKES: alur kabid tetap =====
+        if ($subrole === 'kabid_pelayanan') {
+            $bisaRespon = $pengajuan->status === 'disetujui_koordinator';
+        } elseif ($subrole === 'kabid_penunjang') {
+            $kabidPelayananSetuju   = trim(strtolower((string) $pengajuan->log_acc_kabidPelayanan))
+                                       === 'disetujui oleh kabid pelayanan';
+            $belumDiresponPenunjang = empty($pengajuan->log_acc_kabidPenunjang);
+            $bisaRespon = $kabidPelayananSetuju && $belumDiresponPenunjang;
+        } else {
+            $bisaRespon = false;
+        }
+    } else {
+        // ===== NON-ALKES: atasan bebas respon (tanpa peduli bidang) =====
+        $isAtasan = empty($subrole)
+            || in_array($subrole, ['atasan', 'multirole1'], true)
+            || in_array($role, ['atasan', 'multirole1'], true);
+
+        $bisaRespon = $isAtasan
+            && $pengajuan->status === 'disetujui_koordinator'
+            && empty($pengajuan->log_acc_kabidPelayanan)
+            && empty($pengajuan->log_acc_kabidPenunjang);
+    }
+
+    /* ====== ROUTE RESPON ====== */
+    // Route multirole belum tersedia → selalu arahkan ke /atasan/pengadaan/{id}
+    $routeRespon = url('atasan/pengadaan/' . $pengajuan->id);
+@endphp
 
             <div class="modal-footer border-0 p-4 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
 
                 @if($bisaRespon)
-                    <a href="{{ route('atasan.pengadaan.show', $pengajuan->id) }}" class="btn btn-warning rounded-pill px-4 text-white" target="_blank">
+                    <a href="{{ $routeRespon }}"
+                       class="btn btn-warning rounded-pill px-4 text-white"
+                       target="_blank">
                         <i class="bi bi-pencil me-1"></i>Respon
                     </a>
                 @endif

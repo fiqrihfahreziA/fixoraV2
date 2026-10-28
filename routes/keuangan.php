@@ -21,7 +21,9 @@ Route::middleware(['auth', 'role:keuangan'])
 
         Route::get('/p', [keuanganController::class, 'index'])
             ->name('dashboard');
-         
+            Route::get('/profile-saya', [KeuanganController::class, 'editprofile'])->name('profile.karyawan.edit');
+         Route::put('/profile-saya', [KeuanganController::class, 'updateprofile'])->name('profile.karyawan.update');
+
         Route::get('/', [keuanganController::class, 'showpengadaan'])
             ->name('pengadaan');
         Route::get('/pengadaan/{id}/detail', [KeuanganController::class, 'detail'])->name('pengadaan.detail');
@@ -31,8 +33,7 @@ Route::middleware(['auth', 'role:keuangan'])
         Route::get('/report/pengadaan', [KeuanganController::class, 'reportPengadaan'])->name('reportPengadaan');
         Route::get('/pengadaan/export', [KeuanganController::class, 'exportExcel'])
             ->name('export.csv');
-        Route::get('/profile-saya', [KpaController::class, 'editprofile'])->name('profile.karyawan.edit');
-         Route::put('/profile-saya', [KpaController::class, 'updateprofile'])->name('profile.karyawan.update');
+        
 
     });
 

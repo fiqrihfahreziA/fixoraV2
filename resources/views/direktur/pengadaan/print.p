@@ -16,6 +16,10 @@
             padding: 0;
             box-sizing: border-box;
         }
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
         body {
             font-family: 'Times New Roman', Times, serif;
             font-size: 10.5pt;
@@ -26,9 +30,9 @@
         
         /* === FRAME UTAMA (BIAR DI TENGAH) === */
         .main-frame {
-            width: 100%;
-            max-width: 270mm; /* Kunci biar gak melar ke ujung kertas */
-            margin: 0 auto; /* Biar ke tengah */
+            width: 270mm;          /* lebar tetap, bukan 100% */
+            max-width: 270mm;
+            margin: 0 auto;        /* center di layar */
             padding: 0;
             background: #fff;
             position: relative;
@@ -82,6 +86,15 @@
             font-weight: bold;
             text-decoration: underline;
             letter-spacing: 0.5px;
+        }
+
+        /* === NOMOR SURAT (TENGAH) === */
+        .doc-number {
+            text-align: center;
+            font-size: 11pt;
+            font-weight: bold;
+            margin: 10px 0 14px 0;
+            letter-spacing: 0.3px;
         }
 
         /* === SECTION TITLE === */
@@ -293,13 +306,27 @@
         /* === PRINT STYLES === */
         @media print {
             .no-print { display: none !important; }
-            body { 
-                background: #fff; 
+
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                background: #fff !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
                 color-adjust: exact !important;
             }
-            .main-frame { border: none; padding: 0; margin: 0 auto; width: 100%; max-width: 270mm; }
+
+            .main-frame {
+                border: none;
+                padding: 0;
+                /* KUNCI: jangan pakai width:100% — bikin nempel kiri */
+                width: 270mm !important;
+                max-width: 270mm !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+
             tr { page-break-inside: avoid; }
         }
 
@@ -360,7 +387,15 @@
                 <img src="{{ asset('gambar/rsmz.png') }}" alt="Logo RSUD">
             </div>
         </div>
-        <div class="header-doc-title">FORMULIR PERENCANAAN PENGADAAN / PEMELIHARAAN BARANG</div>
+        <!-- ===== JUDUL DOKUMEN ===== -->
+        <div class="header-doc-title">
+            FORMULIR PERENCANAAN PENGADAAN / PEMELIHARAAN BARANG
+        </div>
+    </div>
+
+    <!-- ===== NOMOR SURAT (TENGAH, SEBELUM IDENTITAS) ===== -->
+    <div class="doc-number">
+        NO. SURAT : {{ $pengajuan->no_surat ?? '..... / ..... / .....' }}
     </div>
 
     <!-- ===== A. IDENTITAS PENGUSUL ===== -->
@@ -866,9 +901,9 @@
     </div>
 
     <!-- ===== FOOTER ===== -->
-    <div class="footer-print">
+    {{-- <div class="footer-print">
         Dicetak pada : {{ date('d F Y H:i:s') }} &nbsp;|&nbsp; Dokumen ini adalah cetakan resmi dari sistem FixoraV2
-    </div>
+    </div> --}}
 
 </div>
 <!-- ===== END FRAME UTAMA ===== -->

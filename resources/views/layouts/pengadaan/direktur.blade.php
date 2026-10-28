@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title ?? 'direktur' }} | Aplikasi Permintaan & Perbaikan Barang</title>
     <link rel="icon" href="{{ asset('gambar/rsmz.png') }}" type="image/png">
-    
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Animate.css -->
+    <!-- Animate.css (dipertahankan karena mungkin dipakai halaman lain) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
@@ -17,216 +22,247 @@
 
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --card-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            --glass-bg: rgba(255,255,255,0.15);
-            --glass-border: rgba(255,255,255,0.2);
+            --ink-deep: #17133F;
+            --ink: #231F5C;
+            --ink-2: #352B7E;
+            --accent: #5B4BC4;
+            --gold: #D9BF86;
+            --gold-deep: #B8975A;
+            --line: #E6E4F0;
+            --text: #25233A;
+            --muted: #6F6D85;
+            --bs-body-font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; margin: 0; }
+        html { height: 100%; }
 
         body {
             min-height: 100vh;
-            background: var(--primary-gradient);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            position: relative;
-            overflow-x: hidden;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
+            font-family: var(--bs-body-font-family);
+            color: var(--text);
+            background-color: var(--ink);
+            background-image:
+                radial-gradient(90% 60% at 85% -10%, rgba(139, 92, 246, .35) 0%, rgba(139, 92, 246, 0) 60%),
+                linear-gradient(165deg, var(--ink-deep) 0%, var(--ink) 45%, #3B2F86 100%);
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Animated Background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.3) 0%, transparent 50%);
-            z-index: -1;
-        }
-
-        /* Floating Particles */
-        .particle {
-            position: fixed;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            animation: float 20s infinite ease-in-out;
-            z-index: -1;
-        }
-        .particle:nth-child(1) { width: 300px; height: 300px; top: -150px; right: -100px; animation-delay: 0s; }
-        .particle:nth-child(2) { width: 200px; height: 200px; bottom: -100px; left: -50px; animation-delay: -5s; }
-        .particle:nth-child(3) { width: 150px; height: 150px; top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: -10s; }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            25% { transform: translate(30px, -30px) scale(1.1); }
-            50% { transform: translate(-20px, 20px) scale(0.9); }
-            75% { transform: translate(20px, 30px) scale(1.05); }
-        }
-
-        /* Glassmorphism Navbar */
+        /* ============ NAVBAR ============ */
         .navbar-glass {
-            background: var(--glass-bg) !important;
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1040;
+            flex-shrink: 0;
             padding: 12px 0;
-            position: relative;
-            z-index: 1050;
+            background: rgba(23, 19, 63, .72) !important;
+            backdrop-filter: blur(16px) saturate(140%);
+            -webkit-backdrop-filter: blur(16px) saturate(140%);
+            border-bottom: 1px solid rgba(255, 255, 255, .08);
+        }
+
+        .brand-icon {
+            width: 44px; height: 44px;
+            background: #fff;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
             flex-shrink: 0;
         }
+        .brand-icon img { width: 30px; height: 30px; object-fit: contain; }
 
-        .navbar-glass .navbar-brand { color: white !important; text-shadow: 0 2px 20px rgba(0,0,0,0.2); }
-        .navbar-glass .nav-link {
-            color: rgba(255,255,255,0.85) !important;
-            transition: all 0.3s ease;
-            position: relative;
-            padding: 8px 16px !important;
-            border-radius: 8px;
-        }
-        .navbar-glass .nav-link:hover { color: white !important; background: rgba(255,255,255,0.15); transform: translateY(-2px); }
-        .navbar-glass .nav-link.active { color: white !important; background: rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .navbar-glass .nav-link.active::after { content: ''; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 20px; height: 2px; background: white; border-radius: 2px; }
-
-        /* Brand Animation */
-        .brand-icon {
-            width: 48px; height: 48px; background: white; border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            transition: transform 0.3s ease;
-            animation: pulse-icon 3s infinite ease-in-out;
-        }
-        .brand-icon:hover { transform: rotate(10deg) scale(1.05); }
-        @keyframes pulse-icon {
-            0%, 100% { box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
-            50% { box-shadow: 0 8px 40px rgba(102, 126, 234, 0.4); }
-        }
-        .brand-icon img { width: 32px; height: 32px; object-fit: contain; }
-
+        .navbar-glass .navbar-brand { color: #fff !important; }
         .app-title-main {
-            font-size: 1.1rem; font-weight: 700; letter-spacing: -0.5px;
-            background: linear-gradient(to right, #fff, rgba(255,255,255,0.8));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            font-family: 'Fraunces', Georgia, serif;
+            font-size: 1.2rem;
+            font-weight: 500;
+            letter-spacing: -.005em;
+            color: #fff;
+            line-height: 1.15;
         }
-        .app-subtitle-main { font-size: 0.75rem; opacity: 0.9; color: rgba(255,255,255,0.8); }
+        .app-title-main i { color: rgba(255, 255, 255, .6); font-size: 1rem; }
+        .app-subtitle-main { font-size: .74rem; color: rgba(255, 255, 255, .6); margin-top: 2px; }
+        .app-subtitle-main i { color: var(--gold) !important; }
 
-        /* Dropdown */
-        .dropdown-glass {
-            background: rgba(255, 255, 255, 0.98) !important;
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.3); border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.25); padding: 8px; min-width: 220px;
-            margin-top: 12px !important; animation: dropdownSlide 0.3s ease-out;
+        .navbar-glass .nav-link {
+            position: relative;
+            color: rgba(255, 255, 255, .72) !important;
+            font-weight: 500;
+            font-size: .92rem;
+            padding: 8px 16px !important;
+            border-radius: 10px;
+            transition: color .2s ease, background-color .2s ease;
         }
-        @keyframes dropdownSlide { from { opacity: 0; transform: translateY(-10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .dropdown-glass .dropdown-item { border-radius: 10px; padding: 12px 16px; transition: all 0.2s ease; font-weight: 500; color: #1a1a2e !important; display: flex; align-items: center; gap: 12px; }
-        .dropdown-glass .dropdown-item i { font-size: 1.1rem; width: 20px; text-align: center; }
-        .dropdown-glass .dropdown-item:hover { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important; transform: translateX(5px); }
-        .dropdown-glass .dropdown-item:hover i { color: white !important; }
-        .dropdown-glass .dropdown-divider { margin: 6px 0; border-color: rgba(0,0,0,0.08); }
-        .dropdown-glass .dropdown-item.text-danger { color: #dc3545 !important; }
-        .dropdown-glass .dropdown-item.text-danger:hover { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important; color: white !important; }
+        .navbar-glass .nav-link:hover { color: #fff !important; background: rgba(255, 255, 255, .07); }
+        .navbar-glass .nav-link.active { color: #fff !important; background: transparent; }
+        .navbar-glass .nav-link.active::after {
+            content: '';
+            position: absolute;
+            left: 16px; right: 16px; bottom: 0;
+            height: 2px;
+            background: var(--gold);
+            border-radius: 2px;
+        }
+        .navbar-glass .nav-link:focus-visible,
+        .navbar-glass .navbar-toggler:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+        .navbar-glass .navbar-toggler-icon { filter: invert(1); }
 
-        /* User Avatar */
-        .user-dropdown-toggle { cursor: pointer; padding: 6px 12px 6px 6px !important; border-radius: 50px !important; background: rgba(255,255,255,0.1); transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; }
-        .user-dropdown-toggle:hover { background: rgba(255,255,255,0.2); transform: scale(1.02); }
+        /* ============ USER MENU ============ */
+        .user-dropdown-toggle {
+            cursor: pointer;
+            padding: 5px 14px 5px 5px !important;
+            border-radius: 999px !important;
+            border: 1px solid rgba(255, 255, 255, .14);
+            background: rgba(255, 255, 255, .06);
+            transition: background-color .2s ease, border-color .2s ease;
+        }
+        .user-dropdown-toggle:hover { background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .25); }
         .user-dropdown-toggle::after { display: none; }
-        .user-avatar { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1rem; box-shadow: 0 4px 15px rgba(245, 87, 108, 0.3); flex-shrink: 0; }
-        .user-name-display { color: white; font-weight: 500; font-size: 0.9rem; }
-        .user-caret { color: rgba(255,255,255,0.6); font-size: 0.7rem; transition: transform 0.3s ease; }
+        .user-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #EAD6A6 0%, var(--gold-deep) 100%);
+            color: var(--ink-deep);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: .85rem;
+            flex-shrink: 0;
+        }
+        .user-name-display { color: #fff; font-weight: 500; font-size: .88rem; }
+        .user-caret { color: rgba(255, 255, 255, .55); font-size: .7rem; transition: transform .25s ease; }
         .user-dropdown-toggle.show .user-caret { transform: rotate(180deg); }
 
-        /* Content Wrapper */
-        .content-wrapper { flex: 1 0 auto; padding: 20px 0; width: 100%; }
+        .dropdown-glass {
+            background: #fff !important;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            box-shadow: 0 24px 60px -20px rgba(23, 19, 63, .45);
+            padding: 8px;
+            min-width: 220px;
+            margin-top: 12px !important;
+        }
+        .dropdown-glass .dropdown-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-weight: 500; font-size: .9rem;
+            color: var(--text) !important;
+            transition: background-color .2s ease, color .2s ease;
+        }
+        .dropdown-glass .dropdown-item i { font-size: 1.05rem; width: 20px; text-align: center; color: var(--muted); }
+        .dropdown-glass .dropdown-item:hover { background: #F3F1FC !important; color: var(--ink) !important; }
+        .dropdown-glass .dropdown-item:hover i { color: var(--accent) !important; }
+        .dropdown-glass .dropdown-divider { margin: 6px 0; border-color: var(--line); }
+        .dropdown-glass .dropdown-item.text-danger { color: #A63D40 !important; }
+        .dropdown-glass .dropdown-item.text-danger i { color: #A63D40; }
+        .dropdown-glass .dropdown-item.text-danger:hover { background: #F8ECEC !important; color: #8E3235 !important; }
+        .dropdown-glass .dropdown-item.text-danger:hover i { color: #8E3235 !important; }
+
+        /* ============ KONTEN ============ */
+        .content-wrapper { flex: 1 0 auto; width: 100%; padding: 32px 0 48px; }
         .content-card-glass {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 32px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(255,255,255,0.3);
-            animation: slideUp 0.6s ease-out;
+            background: #fff;
+            border-radius: 22px;
+            padding: 40px 44px;
             min-height: 400px;
-            /* Kunci Utama Biar Gak Kepotong Modal */
-            position: relative; 
-            z-index: 1;
+            box-shadow: 0 40px 90px -40px rgba(8, 6, 32, .7);
+            animation: fadeIn .5s ease-out;
+            /* Tanpa backdrop-filter / z-index / transform di sini:
+               ketiganya membuat stacking context yang menjebak modal di bawah backdrop. */
         }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Footer */
+        /* ============ FOOTER ============ */
         .footer-glass {
-            flex-shrink: 0; background: var(--glass-bg) !important;
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--glass-border); color: rgba(255,255,255,0.8) !important;
-            padding: 20px 0; width: 100%; margin-top: auto;
+            flex-shrink: 0;
+            margin-top: auto;
+            width: 100%;
+            padding: 22px 0;
+            background: transparent !important;
+            border-top: 1px solid rgba(255, 255, 255, .1);
+            color: rgba(255, 255, 255, .6) !important;
+            font-size: .85rem;
         }
-        .footer-glass a { color: rgba(255,255,255,0.8); text-decoration: none; transition: all 0.3s ease; }
-        .footer-glass a:hover { color: white; transform: translateY(-2px); }
-        .footer-glass .social-icons { display: flex; gap: 15px; }
-        .footer-glass .social-icons a { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.1); transition: all 0.3s ease; }
-        .footer-glass .social-icons a:hover { background: rgba(255,255,255,0.2); transform: translateY(-3px); }
+        .footer-glass a { color: rgba(255, 255, 255, .6); text-decoration: none; transition: color .2s ease, border-color .2s ease; }
+        .footer-glass .social-icons { display: flex; gap: 10px; }
+        .footer-glass .social-icons a {
+            display: flex; align-items: center; justify-content: center;
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, .15);
+            font-size: .85rem;
+        }
+        .footer-glass .social-icons a:hover { color: var(--gold); border-color: var(--gold); }
 
+        /* ============ RESPONSIF ============ */
+        @media (max-width: 991.98px) {
+            .navbar-glass .navbar-collapse { padding: 14px 0 6px; }
+            .navbar-glass .nav-link.active::after { left: 16px; right: auto; width: 20px; bottom: 2px; }
+        }
         @media (max-width: 768px) {
-            .content-card-glass { padding: 20px; border-radius: 16px; min-height: 300px; }
+            .content-wrapper { padding: 20px 0 32px; }
+            .content-card-glass { padding: 26px 22px; border-radius: 18px; min-height: 300px; }
             .brand-icon { width: 40px; height: 40px; }
-            .brand-icon img { width: 26px; height: 26px; }
+            .brand-icon img { width: 27px; height: 27px; }
             .user-name-display { display: none; }
-            .dropdown-glass { min-width: 200px; margin-top: 8px !important; }
-            .content-wrapper { padding: 10px 0; }
-            .footer-glass { padding: 15px 0; font-size: 0.85rem; }
-            .footer-glass .social-icons a { width: 30px; height: 30px; font-size: 0.8rem; }
+            .user-dropdown-toggle { padding-right: 8px !important; }
+            .footer-glass { padding: 16px 0; }
         }
-
         @media (max-width: 576px) {
-            .dropdown-glass { position: fixed !important; left: 16px !important; right: 16px !important; top: auto !important; bottom: 16px !important; transform: none !important; min-width: auto !important; width: auto !important; margin: 0 !important; border-radius: 16px; }
-            .content-card-glass { padding: 15px; border-radius: 12px; }
-            .app-title-main { font-size: 0.9rem; }
-            .app-subtitle-main { font-size: 0.65rem; }
+            .dropdown-glass {
+                position: fixed !important;
+                left: 16px !important; right: 16px !important;
+                top: auto !important; bottom: 16px !important;
+                transform: none !important;
+                min-width: auto !important; width: auto !important;
+                margin: 0 !important;
+            }
+            .content-card-glass { padding: 22px 16px; border-radius: 16px; }
+            .app-title-main { font-size: 1rem; }
+            .app-subtitle-main { font-size: .66rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .content-card-glass { animation: none; }
+            * { transition-duration: .01ms !important; }
         }
 
-        /* Scrollbar styling */
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.5); }
+        ::-webkit-scrollbar-track { background: var(--ink-deep); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .25); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .4); }
     </style>
 </head>
 <body>
 
-<!-- Particles -->
-<div class="particle"></div>
-<div class="particle"></div>
-<div class="particle"></div>
-
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-glass">
     <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-3" href="#">
-            <div class="brand-icon animate__animated animate__fadeInDown">
+        <a class="navbar-brand d-flex align-items-center gap-3 me-0" href="#">
+            <div class="brand-icon">
                 <img src="{{ asset('gambar/rsmz.png') }}" alt="Logo RSMZ">
             </div>
             <div>
                 <div class="app-title-main d-flex align-items-center gap-2">
                     <span>Aplikasi Permintaan</span>
-                    <i class="bi bi-box-seam" style="-webkit-text-fill-color: initial; color: rgba(255,255,255,0.8);"></i>
+                    <i class="bi bi-box-seam"></i>
                 </div>
                 <div class="app-subtitle-main d-flex align-items-center gap-2">
                     <span>dan Perbaikan Barang</span>
-                    <i class="bi bi-tools" style="color: #fbbf24;"></i>
+                    <i class="bi bi-tools"></i>
                 </div>
             </div>
         </a>
 
-        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPemohon">
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPemohon" aria-controls="navbarPemohon" aria-expanded="false" aria-label="Buka menu">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarPemohon">
-            <ul class="navbar-nav ms-4 me-auto">
+            <ul class="navbar-nav ms-lg-4 me-auto">
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('direktur.pengadaan') ? 'active' : '' }}" href="{{ route('direktur.pengadaan') }}">
                         <i class="bi bi-box"></i> Pengadaan Barang
@@ -234,7 +270,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('direktur.reportPengadaan') ? 'active' : '' }}" href="{{ route('direktur.reportPengadaan') }}">
-                        <i class="bi bi-graph-up-arrow me-2"></i> <span>Laporan</span>
+                        <i class="bi bi-graph-up-arrow"></i> <span>Laporan</span>
                     </a>
                 </li>
             </ul>
@@ -242,7 +278,7 @@
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
                     <a class="nav-link user-dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                        <div class="user-avatar">{{ substr(Auth::user()->name, 0, 2) }}</div>
+                        <div class="user-avatar">{{ strtoupper(mb_substr(Auth::user()->name, 0, 2)) }}</div>
                         <span class="user-name-display">{{ Auth::user()->name }}</span>
                         <i class="bi bi-chevron-down user-caret"></i>
                     </a>
@@ -252,14 +288,12 @@
                                 <i class="bi bi-person-circle"></i> Profile Saya
                             </a>
                         </li>
-                        {{-- <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Pengaturan</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-bell"></i> Notifikasi <span class="badge bg-danger rounded-pill ms-auto">3</span></a></li> --}}
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}" class="d-block">
                                 @csrf
                                 <button type="submit" class="dropdown-item text-danger">
-                                    <i class="bi bi-box-arrow-right"></i> <span>Logout</span> <i class="bi bi-arrow-right ms-auto" style="font-size: 0.7rem;"></i>
+                                    <i class="bi bi-box-arrow-right"></i> <span>Logout</span>
                                 </button>
                             </form>
                         </li>
@@ -284,44 +318,50 @@
     <div class="container">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-2">
-                <img src="{{ asset('gambar/rsmz.png') }}" alt="RSMZ" style="height: 24px; width: 24px; object-fit: contain;">
-                <span>© 2026 RSMZ - All Rights Reserved</span>
+                <img src="{{ asset('gambar/rsmz.png') }}" alt="RSMZ" style="height: 22px; width: 22px; object-fit: contain;">
+                <span>© 2026 RSMZ. Hak cipta dilindungi.</span>
             </div>
-            <div class="social-icons mt-2 mt-md-0">
-                <a href="#" class="text-white"><i class="bi bi-twitter"></i></a>
-                <a href="#" class="text-white"><i class="bi bi-facebook"></i></a>
-                <a href="#" class="text-white"><i class="bi bi-instagram"></i></a>
-                <a href="#" class="text-white"><i class="bi bi-youtube"></i></a>
-                <a href="#" class="text-white"><i class="bi bi-github"></i></a>
+            <div class="social-icons mt-3 mt-md-0">
+                <a href="#" aria-label="Twitter"><i class="bi bi-twitter"></i></a>
+                <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                <a href="#" aria-label="GitHub"><i class="bi bi-github"></i></a>
             </div>
         </div>
     </div>
 </footer>
 
-<!-- Bootstrap JS Harus Di Sini -->
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    document.addEventListener('click', function(e) {
-        const dropdowns = document.querySelectorAll('.dropdown');
-        dropdowns.forEach(dropdown => {
-            if (dropdown && !dropdown.contains(e.target)) {
-                const dropdownMenu = dropdown.querySelector('.dropdown-menu');
-                if (dropdownMenu && dropdownMenu.classList.contains('show')) {
+document.addEventListener('DOMContentLoaded', function () {
+
+    // Semua modal di dalam konten dipindah ke <body> supaya tidak pernah
+    // terjebak di bawah backdrop. Berlaku untuk semua halaman direktur.
+    document.querySelectorAll('.content-card-glass .modal').forEach(function (modal) {
+        document.body.appendChild(modal);
+    });
+
+    // Tutup dropdown saat klik di luar
+    document.addEventListener('click', function (e) {
+        document.querySelectorAll('.dropdown').forEach(function (dropdown) {
+            if (!dropdown.contains(e.target)) {
+                var menu = dropdown.querySelector('.dropdown-menu');
+                if (menu && menu.classList.contains('show')) {
                     bootstrap.Dropdown.getInstance(dropdown.querySelector('.dropdown-toggle'))?.hide();
                 }
             }
         });
     });
 
-    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
-    const navbarCollapse = document.getElementById('navbarPemohon');
-    navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            if (window.innerWidth < 992) {
-                const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
-                if (bsCollapse) { bsCollapse.hide(); }
+    // Tutup menu mobile setelah link diklik
+    var navbarCollapse = document.getElementById('navbarPemohon');
+    document.querySelectorAll('.navbar-nav .nav-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (window.innerWidth < 992 && !link.classList.contains('user-dropdown-toggle')) {
+                bootstrap.Collapse.getInstance(navbarCollapse)?.hide();
             }
         });
     });

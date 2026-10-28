@@ -446,7 +446,7 @@ public function pengadaanshow(Request $request)
             'Kepala Bidang','Kepala Ruangan','Staff'
         ];
 
-        return view('profile.karyawan.edit', compact('authUser', 'daftarRuangan', 'daftarJabatan'));
+        return view('profile.karyawan.editatasan', compact('authUser', 'daftarRuangan', 'daftarJabatan'));
     }
 
     /**
@@ -502,7 +502,7 @@ public function pengadaanshow(Request $request)
     }
 
     return redirect()
-        ->route('pemohon.pengadaan')
+        ->route('atasan.pengadaan')
         ->with('success', 'Profile dan data Karyawan berhasil diperbarui.');
 }
 
@@ -535,7 +535,7 @@ public function verifikasi(Request $request, $id)
         $authUser  = Auth::user();
 
         // sesuaikan nama field & value bidangnya
-        $isAlatKesehatan = $pengajuan->bidang === 'alat kesehatan';
+        $isAlatKesehatan = $pengajuan->bidang->nama_bidang === 'alat kesehatan';
 
         // Mapping status untuk konsistensi
         $statusMap = [

@@ -15,6 +15,7 @@ use App\Models\pengajuan_item;
 use Illuminate\Support\Facades\DB; 
 use App\Models\RequestModel;
 use App\Models\Penerima;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -859,7 +860,7 @@ public function exportCsv(Request $request)
             'Kepala Bidang','Kepala Ruangan','Staff'
         ];
 
-        return view('profile.karyawan.edit', compact('authUser', 'daftarRuangan', 'daftarJabatan'));
+        return view('profile.karyawan.editpenerima', compact('authUser', 'daftarRuangan', 'daftarJabatan'));
     }
 
     /**
@@ -915,7 +916,7 @@ public function exportCsv(Request $request)
     }
 
     return redirect()
-        ->route('pemohon.pengadaan')
+        ->route('penerima.chartp')
         ->with('success', 'Profile dan data Karyawan berhasil diperbarui.');
 }
 

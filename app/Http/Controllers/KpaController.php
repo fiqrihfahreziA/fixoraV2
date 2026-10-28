@@ -500,7 +500,7 @@ public function index(Request $request)
             'Kepala Bidang','Kepala Ruangan','Staff'
         ];
 
-        return view('profile.karyawan.edit', compact('authUser', 'daftarRuangan', 'daftarJabatan'));
+        return view('profile.karyawan.editkpa', compact('authUser', 'daftarRuangan', 'daftarJabatan'));
     }
 
     /**
@@ -556,7 +556,7 @@ public function index(Request $request)
     }
 
     return redirect()
-        ->route('pemohon.pengadaan')
+        ->route('kpa.pengadaan')
         ->with('success', 'Profile dan data Karyawan berhasil diperbarui.');
 }
 

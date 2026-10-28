@@ -450,7 +450,7 @@ public function index(Request $request)
             'Kepala Bidang','Kepala Ruangan','Staff'
         ];
 
-        return view('profile.karyawan.edit', compact('authUser', 'daftarRuangan', 'daftarJabatan'));
+        return view('profile.karyawan.editppk', compact('authUser', 'daftarRuangan', 'daftarJabatan'));
     }
 
     /**

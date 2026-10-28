@@ -29,6 +29,8 @@ Route::middleware(['auth', 'role:ppk'])
        // Aksi verifikasi (PUT)
     Route::put('/verifikasi/{id}', [PpkController::class, 'verifikasi'])
             ->name('verifikasi');
+    Route::get('/profile-saya', [PpkController::class, 'editprofile'])->name('profile.karyawan.edit');
+    Route::put('/profile-saya', [PpkController::class, 'updateprofile'])->name('profile.karyawan.update');
 
     });
 

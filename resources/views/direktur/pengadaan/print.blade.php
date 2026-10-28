@@ -5,11 +5,11 @@
     <title>Formulir Perencanaan Pengadaan</title>
     <style>
         /* ========================================= */
-        /* PENGATURAN KERTAS A4 LANDSCAPE (TENGAH)   */
+        /* PENGATURAN KERTAS A4 PORTRAIT             */
         /* ========================================= */
         @page {
-            size: A4 landscape;
-            margin: 10mm 10mm; /* Margin aman printer */
+            size: A4 portrait;
+            margin: 10mm 10mm; /* area cetak 190mm x 277mm */
         }
         * {
             margin: 0;
@@ -22,28 +22,39 @@
         }
         body {
             font-family: 'Times New Roman', Times, serif;
-            font-size: 10.5pt;
+            font-size: 10pt;
             line-height: 1.35;
             color: #1a1a1a;
             background: #fff;
         }
-        
-        /* === FRAME UTAMA (BIAR DI TENGAH) === */
+
+        /* === FRAME UTAMA === */
         .main-frame {
-            width: 270mm;          /* lebar tetap, bukan 100% */
-            max-width: 270mm;
-            margin: 0 auto;        /* center di layar */
+            width: 190mm;          /* lebar A4 portrait (210mm) - margin kiri/kanan (2 x 10mm) */
+            max-width: 190mm;
+            margin: 0 auto;
             padding: 0;
             background: #fff;
             position: relative;
         }
-        
+
+        /* Tampilan di layar: tampak seperti lembar kertas */
+        @media screen {
+            body { background: #e9e9ec; padding: 24px 0 90px; }
+            .main-frame {
+                padding: 10mm;
+                width: 210mm;
+                max-width: 210mm;
+                box-shadow: 0 4px 24px rgba(0,0,0,.15);
+            }
+        }
+
         /* === HEADER === */
         .header {
             text-align: center;
             border-bottom: 3px double #000;
             padding-bottom: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .header-top {
             display: flex;
@@ -52,59 +63,61 @@
             margin-bottom: 4px;
         }
         .header-logo {
-            width: 75px;
+            width: 64px;
             flex-shrink: 0;
         }
         .header-logo img {
-            width: 70px;
+            width: 60px;
             height: auto;
             display: block;
         }
         .header-center {
             flex: 1;
             text-align: center;
-            padding: 0 8px;
+            padding: 0 6px;
         }
         .header-title {
-            font-size: 14pt;
+            font-size: 13pt;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
         .header-sub {
-            font-size: 12pt;
+            font-size: 11.5pt;
             font-weight: bold;
             letter-spacing: 0.2px;
         }
         .header-address {
-            font-size: 9pt;
-            letter-spacing: 0.2px;
+            font-size: 8.5pt;
+            letter-spacing: 0.1px;
         }
         .header-doc-title {
             margin-top: 6px;
-            font-size: 13pt;
+            font-size: 12pt;
             font-weight: bold;
             text-decoration: underline;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
-        /* === NOMOR SURAT (TENGAH) === */
+        /* === NOMOR SURAT === */
         .doc-number {
             text-align: center;
-            font-size: 11pt;
+            font-size: 10.5pt;
             font-weight: bold;
-            margin: 10px 0 14px 0;
+            margin: 8px 0 10px 0;
             letter-spacing: 0.3px;
         }
 
         /* === SECTION TITLE === */
         .section-title {
             font-weight: bold;
-            font-size: 10.5pt;
-            margin-top: 12px;
+            font-size: 10pt;
+            margin-top: 10px;
             margin-bottom: 4px;
             text-decoration: underline;
             letter-spacing: 0.2px;
+            break-after: avoid;
+            page-break-after: avoid;
         }
 
         /* === TABEL TANPA BORDER (IDENTITAS) === */
@@ -120,7 +133,7 @@
         }
         .table-no-border .label {
             font-weight: bold;
-            width: 170px;
+            width: 150px;
         }
         .table-no-border .colon {
             width: 10px;
@@ -136,17 +149,19 @@
         .table-bordered th,
         .table-bordered td {
             border: 1px solid #000;
-            padding: 5px 6px;
+            padding: 4px 5px;
             vertical-align: middle;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
         }
         .table-bordered th {
             background-color: #f0f0f0;
             font-weight: bold;
             text-align: center;
-            font-size: 9.5pt;
+            font-size: 9pt;
         }
         .table-bordered td {
-            font-size: 10pt;
+            font-size: 9.5pt;
         }
         .table-bordered input {
             border: none;
@@ -154,7 +169,7 @@
             width: 100%;
             text-align: center;
             font-family: 'Times New Roman', Times, serif;
-            font-size: 10pt;
+            font-size: 9.5pt;
         }
         .table-bordered input:focus {
             outline: none;
@@ -169,82 +184,90 @@
             border-collapse: collapse;
             margin: 4px 0;
             table-layout: fixed;
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
         .table-verification th,
         .table-verification td {
             border: 1px solid #000;
-            padding: 5px 4px;
+            padding: 4px 3px;
             vertical-align: top;
             text-align: center;
-            font-size: 9pt;
+            font-size: 8.5pt;
         }
         .table-verification th {
             background-color: #f0f0f0;
             font-weight: bold;
-            font-size: 9.5pt;
+            font-size: 9pt;
         }
-        
-        /* Desain khusus isi checklist */
+
+        /* Isi checklist */
         .table-verification .verif-options {
             text-align: left;
-            padding-left: 8px;
-            font-size: 8.5pt;
+            padding-left: 5px;
+            font-size: 8pt;
             line-height: 1.5;
         }
         .table-verification .verif-options div {
             margin-bottom: 2px;
             display: flex;
             align-items: flex-start;
-            gap: 4px;
+            gap: 3px;
         }
         .table-verification .note-cell {
-            font-size: 8.5pt;
+            font-size: 8pt;
             text-align: left;
-            padding: 4px;
-            height: 45px;
+            padding: 3px;
+            height: 42px;
             vertical-align: top;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
         }
-        
-        /* Desain Kotak Tanda Tangan */
+
+        /* Kotak tanda tangan */
         .sign-box {
             text-align: center;
-            padding-top: 8px;
-            padding-bottom: 8px;
+            padding-top: 6px;
+            padding-bottom: 6px;
             height: auto;
-            min-height: 110px;
+            min-height: 100px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
         }
         .sign-title {
-            font-size: 8pt;
+            font-size: 7.5pt;
             font-weight: bold;
             color: #333;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
         .sign-name {
             font-weight: bold;
-            font-size: 9.5pt;
+            font-size: 8.5pt;
             text-decoration: underline;
             line-height: 1.2;
             margin-bottom: 2px;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
         }
         .sign-nip {
-            font-size: 8pt;
+            font-size: 7.5pt;
             color: #333;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
         }
         .sign-qr img {
             display: block;
             margin: 0 auto;
-            width: 45px;
-            height: 45px;
+            width: 42px;
+            height: 42px;
         }
         .sign-date {
-            font-size: 7.5pt; 
-            color: #333; 
-            margin-top: 4px;
+            font-size: 7pt;
+            color: #333;
+            margin-top: 3px;
         }
 
         /* === CHECKLIST === */
@@ -256,6 +279,7 @@
         }
         .checklist-box {
             display: inline-block;
+            flex-shrink: 0;
             width: 12px;
             height: 12px;
             border: 1.5px solid #000;
@@ -281,6 +305,10 @@
             padding: 6px 8px;
             min-height: 35px;
             background: #fdfdfd;
+        }
+        .blok-keputusan {
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
 
         /* === TEXT UTILITY === */
@@ -320,9 +348,10 @@
             .main-frame {
                 border: none;
                 padding: 0;
-                /* KUNCI: jangan pakai width:100% — bikin nempel kiri */
-                width: 270mm !important;
-                max-width: 270mm !important;
+                box-shadow: none;
+                /* Jangan pakai width:100%, supaya tetap di tengah */
+                width: 190mm !important;
+                max-width: 190mm !important;
                 margin-left: auto !important;
                 margin-right: auto !important;
             }
@@ -393,7 +422,7 @@
         </div>
     </div>
 
-    <!-- ===== NOMOR SURAT (TENGAH, SEBELUM IDENTITAS) ===== -->
+    <!-- ===== NOMOR SURAT ===== -->
     <div class="doc-number">
         NO. SURAT : {{ $pengajuan->no_surat ?? '..... / ..... / .....' }}
     </div>
@@ -468,13 +497,13 @@
     <table class="table-bordered" id="table-kebutuhan">
         <thead>
             <tr>
-                <th style="width: 30px;">No</th>
-                <th style="width: 145px;">Nama Barang / Pemeliharaan</th>
-                <th style="width: 125px;">Spesifikasi Teknis</th>
-                <th style="width: 50px;">Satuan</th>
-                <th style="width: 50px;">Jumlah</th>
-                <th style="width: 115px;">Perkiraan Harga Satuan (Rp)</th>
-                <th style="width: 125px;">Total (Rp)</th>
+                <th style="width: 28px;">No</th>
+                <th style="width: 125px;">Nama Barang / Pemeliharaan</th>
+                <th style="width: 115px;">Spesifikasi Teknis</th>
+                <th style="width: 48px;">Satuan</th>
+                <th style="width: 48px;">Jumlah</th>
+                <th style="width: 100px;">Perkiraan Harga Satuan (Rp)</th>
+                <th style="width: 100px;">Total (Rp)</th>
             </tr>
         </thead>
         <tbody id="tbody-kebutuhan">
@@ -823,10 +852,10 @@
     </table>
 
     <!-- ===== J. KEPUTUSAN MANAJEMEN & TTD DIREKTUR ===== -->
-    <div style="margin-top: 10px; display: flex; justify-content: space-between; gap: 20px;">
-        
+    <div class="blok-keputusan" style="margin-top: 10px; display: flex; justify-content: space-between; gap: 16px;">
+
         <!-- KIRI: KEPUTUSAN MANAJEMEN -->
-        <div style="width: 65%;">
+        <div style="width: 63%;">
             <div class="section-title" style="margin-top: 0;">J. KEPUTUSAN DIREKTUR</div>
             <div class="border-box" style="padding: 8px 10px;">
                 <p style="margin-bottom: 6px; font-size: 9.5pt;"><strong>Direksi memutuskan:</strong></p>
@@ -858,9 +887,8 @@
         </div>
 
         <!-- KANAN: TANDA TANGAN DIREKTUR -->
-        <div style="width: 35%; text-align: center; padding-top: 20px;">
-            <!-- Tanggal Otomatis dari disetujui_direktur_at -->
-            <div style="font-size: 10pt; margin-bottom: 2px;">
+        <div style="width: 37%; text-align: center; padding-top: 20px;">
+            <div style="font-size: 9.5pt; margin-bottom: 2px;">
                 Sampang, 
                 @if($pengajuan->disetujui_direktur_at)
                     {{ \Carbon\Carbon::parse($pengajuan->disetujui_direktur_at)->translatedFormat('d F Y') }}
@@ -868,9 +896,9 @@
                     ......................... {{ date('Y') }}
                 @endif
             </div>
-            
-            <div style="font-size: 10pt; font-weight: bold; margin-bottom: 2px;">Direktur RSUD dr. Mohammad Zyn</div>
-            <div style="font-size: 10pt; font-weight: bold; margin-bottom: 10px;">Kabupaten Sampang</div>
+
+            <div style="font-size: 9.5pt; font-weight: bold; margin-bottom: 2px;">Direktur RSUD dr. Mohammad Zyn</div>
+            <div style="font-size: 9.5pt; font-weight: bold; margin-bottom: 10px;">Kabupaten Sampang</div>
             <!-- QR Code Direktur -->
             <div style="margin-top: 10px;">
                 @if($pengajuan->direktur && $pengajuan->direktur->ttd)
@@ -882,18 +910,18 @@
                 @endif
             </div>
             <!-- Nama Direktur -->
-            <div style="font-size: 10.5pt; font-weight: bold; text-decoration: underline;">
+            <div style="font-size: 10pt; font-weight: bold; text-decoration: underline;">
                 {{ $pengajuan->direktur->nama ?? '............................................' }}
             </div>
             <div style="font-size: 9pt; margin-top: 2px;">
                 NIP. {{ $pengajuan->direktur->nip ?? '............................................' }}
             </div>
         </div>
-        
+
     </div>
 
     <!-- ===== LAMPIRAN ===== -->
-    <div style="margin-top: 18px;">
+    <div style="margin-top: 14px;">
         <div class="section-title">LAMPIRAN</div>
         <div class="lampiran-list">
             <div>1. Analisis kebutuhan.</div>

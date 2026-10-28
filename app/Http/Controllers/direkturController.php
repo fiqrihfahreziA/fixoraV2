@@ -185,7 +185,7 @@ class direkturController extends Controller
             'Kepala Bidang','Kepala Ruangan','Staff'
         ];
 
-        return view('profile.karyawan.edit', compact('authUser', 'daftarRuangan', 'daftarJabatan'));
+        return view('profile.karyawan.editdirektur', compact('authUser', 'daftarRuangan', 'daftarJabatan'));
     }
 
     /**

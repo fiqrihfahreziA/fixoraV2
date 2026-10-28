@@ -507,8 +507,8 @@
             <!-- Navigation -->
             <ul class="navbar-nav ms-4 me-auto">
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('atasan.pengadaan') ? 'active' : '' }}" 
-                       href="{{ route('kpa.dashboard') }}">
+                    <a class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('ppk.pengadaan') ? 'active' : '' }}" 
+                       href="{{ route('ppk.dashboard') }}">
                         <i class="bi bi-box"></i>
                         Pengadaan Barang
                     </a>

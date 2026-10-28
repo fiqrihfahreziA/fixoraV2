@@ -818,6 +818,31 @@ MODAL DETAIL
 
             <div class="modal-footer border-0 p-4 pt-0">
                 <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
+
+                @php
+                    $statusBoleh = in_array($pengajuan->status, ['diajukan', 'perlu survei perbaikan', 'perlu_survei']);
+
+                    // Deteksi via nama bidang (bukan ID)
+                    $isPengajuanAlkes = $pengajuan->bidang?->nama_bidang === 'alat kesehatan';
+                    $isUserAlkes      = auth()->user()->karyawan?->bidang?->nama_bidang === 'alat kesehatan';
+
+                    // Aturan:
+                    // - Pengajuan Alkes → hanya user Alkes
+                    // - Pengajuan non-Alkes → semua user
+                    $bolehRespon = $isPengajuanAlkes ? $isUserAlkes : true;
+                @endphp
+
+                @if($statusBoleh && $bolehRespon)
+                    <a href="{{ route('penerima.pengadaan.show', $pengajuan->id) }}"
+                    class="btn btn-warning rounded-pill px-4 text-white"
+                    target="_blank">
+                        <i class="bi bi-pencil me-1"></i>Respon
+                    </a>
+                @endif
+            </div>
+
+            {{-- <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
                 
                 @if(
                     in_array($pengajuan->status, ['diajukan', 'perlu survei perbaikan', 'perlu_survei']) && 
@@ -827,7 +852,8 @@ MODAL DETAIL
                         <i class="bi bi-pencil me-1"></i>Respon
                     </a>
                 @endif
-            </div>
+            </div> --}}
+            
         </div>
     </div>
 </div>

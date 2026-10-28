@@ -540,7 +540,7 @@
                                 <i class="bi bi-person-circle"></i> Profile Saya
                             </a>
                         </li>
-                        <li>
+                        {{-- <li>
                             <a class="dropdown-item" href="#">
                                 <i class="bi bi-gear"></i>
                                 Pengaturan
@@ -552,7 +552,7 @@
                                 Notifikasi
                                 <span class="badge bg-danger rounded-pill ms-auto">3</span>
                             </a>
-                        </li>
+                        </li> --}}
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}" class="d-block">

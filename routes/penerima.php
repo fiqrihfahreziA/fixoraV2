@@ -30,7 +30,9 @@ Route::middleware(['auth', 'role:penerima'])
 
         Route::get('/chart', [PenerimaController::class, 'chart'])
             ->name('chart');
-
+    Route::get('/profile-saya', [PenerimaController::class, 'editprofile'])->name('profile.karyawan.edit');
+    Route::put('/profile-saya', [PenerimaController::class, 'updateprofile'])->name('profile.karyawan.update');
+  
          
         Route::get('/', [PenerimaController::class, 'showpermintaan'])
             ->name('permintaan');
@@ -92,6 +94,6 @@ Route::middleware(['auth', 'role:penerima'])
     Route::get('/report/pengadaan', [PenerimaController::class, 'reportPengadaan'])->name('reportPengadaan');
 
     Route::get('/chartss/pengadaan', [PenerimaController::class, 'chartspengadaan'])->name('chartPengadaan');
-  
+
     });
 
