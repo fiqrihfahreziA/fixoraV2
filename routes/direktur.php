@@ -34,6 +34,8 @@ Route::middleware(['auth', 'role:direktur'])
         Route::get('/reporth/pengadaan', [direkturController::class, 'reportPengadaan'])->name('reportPengadaan');
         Route::get('/pengadaannn/export', [direkturController::class, 'exportExcel'])
             ->name('export.csv');
+             Route::get('/profile-saya', [direkturController::class, 'editprofile'])->name('profile.karyawan.edit');
+         Route::put('/profile-saya', [direkturController::class, 'updateprofile'])->name('profile.karyawan.update');
       
 
     });

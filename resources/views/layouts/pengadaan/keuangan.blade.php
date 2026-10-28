@@ -545,9 +545,8 @@
                     </a>
                     <ul class="dropdown-menu dropdown-glass dropdown-menu-end">
                         <li>
-                            <a class="dropdown-item" href="#">
-                                <i class="bi bi-person-circle"></i>
-                                Profile Saya
+                            <a class="dropdown-item" href="{{ route('keuangan.profile.karyawan.edit') }}">
+                                <i class="bi bi-person-circle"></i> Profile Saya
                             </a>
                         </li>
                         <li>

@@ -61,7 +61,8 @@ Route::middleware(['auth', 'role:pemohon'])
         ->name('pengadaan.update');
      Route::get('pengadaan/{id}/cetak', [direkturController::class, 'cetak'])->name('pengadaan.cetak');
      Route::put('/pengadaan/{id}/selesai', [PemohonController::class, 'selesai'])->name('pengadaan.selesai');
- 
+    Route::get('/profile-saya', [PemohonController::class, 'editprofile'])->name('profile.karyawan.edit');
+    Route::put('/profile-saya', [PemohonController::class, 'updateprofile'])->name('profile.karyawan.update');
 
     });
 

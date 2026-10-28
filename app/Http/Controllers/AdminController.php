@@ -67,6 +67,20 @@ public function karyawan(Request $request)
     $authUser = Auth::user();
     $bidangs = Bidang::all();
 
+    // Daftar ruangan (biar konsisten, dipakai filter & form)
+    $daftarRuanganFilter = [
+        'CSSD/LAUNDRY','CODE BLUE','CSSD','DIREKTUR','UNIT HEMODIALISIS',
+        'PENUNJANG','RUANG FLAMBOYAN','IGD','IPAL','INSTALASI HEMODIALISA',
+        'INSTALASI BEDAH SENTRAL (IBS)','INSTALASI PEMELIHARAAN SARANA',
+        'LABORATORIUM','RADIOLOGI','RUANG BOUGENVILE','RUANG SAKURA',
+        'RUANG CEMPAKA','RUANG MATAHARI','RUANG MAWAR','RUANG MELATI',
+        'RUANG ANGGREK','RUANG KENANGA','RUANG DAHLIA','RUANG TULIP',
+        'Recovery Room (RR)','BRONKOSKOPI RUANGAN','RUANG GRAHA UTAMA',
+        'RUANG TERATAI','RUANG TRANSIT','PPI LAYANAN','POLI RAWAT JALAN',
+        'KEUANGAN','KESLING','MCU','SIMRS','KOMITE MEDIS','LAUNDRY',
+        'GIZI','FARMASI','FLAMBOYAN','MANAJEMEN','TATA USAHA','RUANG WADIR','CASEMIX','REKAM MEDIS',
+    ];
+
     $karyawan = Karyawan::query()
         ->when($request->filled('search'), function ($query) use ($request) {
             $search = $request->search;
@@ -77,12 +91,37 @@ public function karyawan(Request $request)
                   ->orWhere('ruangan', 'like', "%{$search}%");
             });
         })
+        ->when($request->filled('ruangan'), function ($query) use ($request) {
+            return $query->where('ruangan', $request->ruangan);
+        })
         ->orderBy('nama', 'asc')
         ->paginate(10)
         ->withQueryString();
 
-    return view('admin.karyawan', compact('authUser', 'karyawan', 'bidangs'));
+    return view('admin.karyawan', compact('authUser', 'karyawan', 'bidangs', 'daftarRuanganFilter'));
 }
+
+// public function karyawan(Request $request)
+// {
+//     $authUser = Auth::user();
+//     $bidangs = Bidang::all();
+
+//     $karyawan = Karyawan::query()
+//         ->when($request->filled('search'), function ($query) use ($request) {
+//             $search = $request->search;
+//             return $query->where(function ($q) use ($search) {
+//                 $q->where('nama', 'like', "%{$search}%")
+//                   ->orWhere('nip', 'like', "%{$search}%")
+//                   ->orWhere('jabatan', 'like', "%{$search}%")
+//                   ->orWhere('ruangan', 'like', "%{$search}%");
+//             });
+//         })
+//         ->orderBy('nama', 'asc')
+//         ->paginate(10)
+//         ->withQueryString();
+
+//     return view('admin.karyawan', compact('authUser', 'karyawan', 'bidangs'));
+// }
 
 //   public function store(Request $request)
 // {

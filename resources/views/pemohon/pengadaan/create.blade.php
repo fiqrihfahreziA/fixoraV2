@@ -158,15 +158,15 @@
 
                         <div class="col-md-4">
                             <label class="form-label fw-semibold small">
-                                bidang <span class="text-danger">*</span>
+                                Bidang <span class="text-danger">*</span>
                             </label>
                             <select name="bidang_id" class="form-select" required>
-                                <option value="">-- Pilih Bidang --</option>
+                                <option value="">-- Pilih barang --</option>
                                 @foreach($bidangs as $bidang)
                                     <option value="{{ $bidang->id }}">{{ $bidang->nama_bidang }}</option>
                                 @endforeach
                             </select>
-                            </div>
+                        </div>
 
                         <!-- Input manual kalau pilih "Lainnya" -->
                         <div class="col-md-4 d-none" id="wrapper_dasar_usulan_lainnya">
@@ -178,8 +178,8 @@
 
                         <!-- Nama Pengaju dengan Hidden ID -->
                         <div class="col-md-4">
-                            <input type="hidden" 
-                                   name="karyawan_id" 
+                            <input type="hidden"
+                                   name="karyawan_id"
                                    value="{{ $authUser->karyawan->id ?? '' }}">
                             <label class="form-label fw-semibold small mb-1">
                                 Nama Pengaju <span class="text-danger">*</span>
@@ -212,20 +212,6 @@
                                    readonly>
                         </div>
 
-                        <!-- BIDANG (readonly dari karyawan) -->
-                        <!-- <div class="col-md-4">
-                            <label class="form-label fw-semibold small mb-1">
-                                Bidang <span class="text-danger">*</span>
-                            </label>
-                            <input type="text"
-                                   class="form-control bg-light"
-                                   value="{{ $authUser->karyawan->bidang->nama_bidang ?? '-' }}"
-                                   readonly>
-                            <input type="hidden"
-                                   name="bidang_id"
-                                   value="{{ $authUser->karyawan->bidang_id ?? '' }}">
-                        </div> -->
-
                         <!-- Instalasi -->
                         <div class="col-md-4">
                             <label class="form-label fw-semibold small">Instalasi</label>
@@ -256,8 +242,8 @@
                             <label class="form-label fw-semibold small">
                                 Keterangan Barang Lama
                             </label>
-                            <textarea name="ket_barang_lama" 
-                                      class="form-control" 
+                            <textarea name="ket_barang_lama"
+                                      class="form-control"
                                       rows="2"
                                       placeholder="Jelaskan kondisi barang lama..."></textarea>
                         </div>
@@ -339,185 +325,7 @@
                     </div>
 
                     <div id="itemsContainer">
-                        <!-- Item pertama -->
-                        <div class="item-row card p-3 mb-3 bg-light">
-                            <div class="row g-3 align-items-end">
-                                <div class="col-md-3">
-                                    <label class="form-label fw-semibold small">
-                                        Nama Barang <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="text"
-                                    name="items[0][nama_barang]"
-                                    class="form-control item-required"
-                                    placeholder="Nama barang"
-                                    required>
-                                </div>
-
-                                <div class="col-md-2">
-                                    <label class="form-label fw-semibold small">Spesifikasi</label>
-                                    <input type="text"
-                                    name="items[0][spesifikasi]"
-                                    class="form-control"
-                                    placeholder="Spesifikasi">
-                                </div>
-
-                                <div class="col-md-2">
-                                    <label class="form-label fw-semibold small">Satuan</label>
-                                    <select name="items[0][satuan]" class="form-select">
-                                        <option value="Unit">Unit</option>
-                                        <option value="Buah">Buah</option>
-                                        <option value="Pcs">Pcs</option>
-                                        <option value="Box">Box</option>
-                                        <option value="Paket">Paket</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-1">
-                                    <label class="form-label fw-semibold small">
-                                        Jumlah <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="number"
-                                    name="items[0][jumlah]"
-                                    class="form-control item-required hitung-total"
-                                    placeholder="0"
-                                    min="1"
-                                    required
-                                    oninput="hitungTotalItem(this)">
-                                </div>
-
-                                <div class="col-md-2">
-                                    <label class="form-label fw-semibold small">
-                                        Estimasi Harga (Rp) <span class="text-danger">*</span>
-                                    </label>
-                                    <input type="number"
-                                        name="items[0][harga_satuan]"
-                                        class="form-control item-required hitung-total"
-                                        placeholder="0"
-                                        min="0"
-                                        required
-                                        oninput="hitungTotalItem(this)">
-                                </div>
-
-                                <div class="col-md-1">
-                                    <label class="form-label fw-semibold small">Total (Rp)</label>
-                                    <input type="text"
-                                        name="items[0][total]"
-                                        class="form-control bg-light total-harga"
-                                        value="0"
-                                        readonly>
-                                </div>
-
-                                <div class="col-md-1">
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-danger w-100 mt-4"
-                                            onclick="hapusItem(this)">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- BARIS KEDUA: Data Barang Tersedia -->
-                            <div class="row g-3 mt-3 pt-3 border-top">
-                                <div class="col-12">
-                                    <div class="form-check">
-                                        <input class="form-check-input" 
-                                            type="checkbox" 
-                                            name="items[0][ada_barang_tersedia]" 
-                                            id="barang_tersedia_0"
-                                            value="1"
-                                            onchange="toggleBarangTersedia(this, 0)">
-                                        <label class="form-check-label fw-semibold text-success" for="barang_tersedia_0">
-                                            <i class="bi bi-box-seam me-1"></i>
-                                            Ada Barang Tersedia (Centang jika ada barang yang sudah tersedia)
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <!-- Detail Barang Tersedia -->
-                                <div class="col-12" id="detail_barang_tersedia_0" style="display: none;">
-                                    <div class="row g-3">
-                                        <div class="col-md-4">
-                                            <label class="form-label fw-semibold small">
-                                                Nama Barang Tersedia <span class="text-danger">*</span>
-                                            </label>
-                                            <input type="text"
-                                                name="items[0][barang_tersedia][nama_barang]"
-                                                class="form-control"
-                                                placeholder="Nama barang yang sudah tersedia"
-                                                disabled>
-                                        </div>
-
-                                        <div class="col-md-2">
-                                            <label class="form-label fw-semibold small">
-                                                Jumlah Tersedia <span class="text-danger">*</span>
-                                            </label>
-                                            <input type="number"
-                                                name="items[0][barang_tersedia][jumlah]"
-                                                class="form-control"
-                                                placeholder="0"
-                                                min="0"
-                                                disabled>
-                                        </div>
-
-                                        <div class="col-md-3">
-                                            <label class="form-label fw-semibold small">
-                                                Tahun Perolehan <span class="text-danger">*</span>
-                                            </label>
-                                            <input type="number"
-                                                name="items[0][barang_tersedia][tahun_perolehan]"
-                                                class="form-control"
-                                                placeholder="2020"
-                                                min="1900"
-                                                max="{{ date('Y') }}"
-                                                disabled>
-                                        </div>
-
-                                        <div class="col-md-3">
-                                            <label class="form-label fw-semibold small">
-                                                Kondisi <span class="text-danger">*</span>
-                                            </label>
-                                            <select name="items[0][barang_tersedia][kondisi]" class="form-select" disabled>
-                                                <option value="">Pilih Kondisi</option>
-                                                <option value="Baik">Baik</option>
-                                                <option value="Cukup Baik">Cukup Baik</option>
-                                                <option value="Rusak Ringan">Rusak Ringan</option>
-                                                <option value="Rusak Berat">Rusak Berat</option>
-                                                <option value="Usang">Usang</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- BARIS KETIGA: Dokumen Upload per Item (toggle) -->
-                            <div class="row g-3 mt-3 pt-3 border-top">
-                                <div class="col-12">
-                                    <div class="form-check">
-                                        <input class="form-check-input" 
-                                            type="checkbox" 
-                                            name="items[0][ada_dokumen]" 
-                                            id="ada_dokumen_0"
-                                            value="1"
-                                            onchange="toggleDokumenItem(this, 0)">
-                                        <label class="form-check-label fw-semibold text-primary" for="ada_dokumen_0">
-                                            <i class="bi bi-paperclip me-1"></i>Upload Dokumen
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="col-12" id="detail_dokumen_0" style="display: none;">
-                                    <label class="form-label fw-semibold small">
-                                        Dokumen Upload
-                                    </label>
-                                    <input type="file"
-                                        name="items[0][dokumen_upload]"
-                                        class="form-control"
-                                        accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls"
-                                        disabled>
-                                    <small class="text-muted">Format: PDF, JPG, PNG, Excel (Max: 5MB)</small>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Item pertama (di-generate oleh JS saat load) -->
                     </div>
 
                     <!-- Ringkasan Total -->
@@ -554,9 +362,9 @@
                         <div class="col-md-6">
                             <div class="card p-3 border-0 bg-light h-100">
                                 <div class="form-check">
-                                    <input class="form-check-input" 
-                                        type="checkbox" 
-                                        name="ada_analisis_kebutuhan" 
+                                    <input class="form-check-input"
+                                        type="checkbox"
+                                        name="ada_analisis_kebutuhan"
                                         id="ada_analisis_kebutuhan"
                                         value="1"
                                         onchange="toggleDokumenPendukung(this, 'analisis_kebutuhan')">
@@ -579,9 +387,9 @@
                         <div class="col-md-6">
                             <div class="card p-3 border-0 bg-light h-100">
                                 <div class="form-check">
-                                    <input class="form-check-input" 
-                                        type="checkbox" 
-                                        name="ada_spesifikasi_teknis" 
+                                    <input class="form-check-input"
+                                        type="checkbox"
+                                        name="ada_spesifikasi_teknis"
                                         id="ada_spesifikasi_teknis"
                                         value="1"
                                         onchange="toggleDokumenPendukung(this, 'spesifikasi_teknis')">
@@ -604,9 +412,9 @@
                         <div class="col-md-6">
                             <div class="card p-3 border-0 bg-light h-100">
                                 <div class="form-check">
-                                    <input class="form-check-input" 
-                                           type="checkbox" 
-                                           name="ada_foto_barang" 
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="ada_foto_barang"
                                            id="ada_foto_barang"
                                            value="1"
                                            onchange="toggleDokumenPendukung(this, 'foto_barang')">
@@ -630,9 +438,9 @@
                         <div class="col-md-6">
                             <div class="card p-3 border-0 bg-light h-100">
                                 <div class="form-check">
-                                    <input class="form-check-input" 
-                                           type="checkbox" 
-                                           name="ada_penawaran_harga" 
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="ada_penawaran_harga"
                                            id="ada_penawaran_harga"
                                            value="1"
                                            onchange="toggleDokumenPendukung(this, 'penawaran_harga')">
@@ -655,9 +463,9 @@
                         <div class="col-md-6">
                             <div class="card p-3 border-0 bg-light h-100">
                                 <div class="form-check">
-                                    <input class="form-check-input" 
-                                           type="checkbox" 
-                                           name="ada_data_pengguna" 
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="ada_data_pengguna"
                                            id="ada_data_penggunaan"
                                            value="1"
                                            onchange="toggleDokumenPendukung(this, 'data_penggunaan')">
@@ -680,9 +488,9 @@
                         <div class="col-md-6">
                             <div class="card p-3 border-0 bg-light h-100">
                                 <div class="form-check">
-                                    <input class="form-check-input" 
-                                           type="checkbox" 
-                                           name="ada_dokumen_lainnya" 
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="ada_dokumen_lainnya"
                                            id="ada_dokumen_lainnya"
                                            value="1"
                                            onchange="toggleDokumenPendukung(this, 'dokumen_lainnya')">
@@ -783,18 +591,45 @@
 .step-indicator.active + .step-line{
     background:#0d6efd;
 }
+
+/* Textarea auto-resize untuk spesifikasi */
+.auto-resize {
+    resize: none;
+    overflow: hidden;
+    min-height: 38px;
+    line-height: 1.4;
+}
 </style>
 
 <script>
-let indeksItem = 1;
+let indeksItem = 0;
 let stepSekarang = 1;
 
 // =========================
-// TEMPLATE ITEM ROW
+// AUTO-RESIZE TEXTAREA SPESIFIKASI
+// =========================
+function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = (el.scrollHeight + 2) + 'px';
+}
+
+// Pasang listener auto-resize ke semua textarea.auto-resize
+function pasangAutoResize(container) {
+    const area = container || document;
+    area.querySelectorAll('textarea.auto-resize').forEach(t => {
+        autoResize(t);
+        t.removeEventListener('input', () => {});
+        t.addEventListener('input', function () { autoResize(this); });
+    });
+}
+
+// =========================
+// TEMPLATE ITEM ROW (TAMPILAN BARU, 2 BARIS + KEPEMILIKAN PER ITEM)
 // =========================
 function buatHTMLItemRow(index) {
     return `
-        <div class="row g-3 align-items-end">
+        <!-- BARIS 1: Nama Barang, Spesifikasi (full), Satuan, Jumlah, Harga, Total, Hapus -->
+        <div class="row g-3 align-items-start">
             <div class="col-md-3">
                 <label class="form-label fw-semibold small">
                     Nama Barang <span class="text-danger">*</span>
@@ -806,12 +641,13 @@ function buatHTMLItemRow(index) {
                        required>
             </div>
 
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <label class="form-label fw-semibold small">Spesifikasi</label>
-                <input type="text"
-                       name="items[${index}][spesifikasi]"
-                       class="form-control"
-                       placeholder="Spesifikasi">
+                <textarea name="items[${index}][spesifikasi]"
+                          class="form-control auto-resize"
+                          rows="1"
+                          placeholder="Spesifikasi lengkap (bisa panjang)"
+                          oninput="autoResize(this)"></textarea>
             </div>
 
             <div class="col-md-2">
@@ -861,11 +697,31 @@ function buatHTMLItemRow(index) {
             </div>
 
             <div class="col-md-1">
+                <label class="form-label fw-semibold small">&nbsp;</label>
                 <button type="button"
-                        class="btn btn-sm btn-outline-danger w-100 mt-4"
+                        class="btn btn-sm btn-outline-danger w-100"
                         onclick="hapusItem(this)">
                     <i class="bi bi-trash"></i>
                 </button>
+            </div>
+        </div>
+
+        <!-- BARIS KEPEMILIKAN PER ITEM -->
+            <!-- BARIS KEPEMILIKAN PER ITEM -->
+        <div class="row g-3 mt-2">
+            <div class="col-md-6">
+                <label class="form-label fw-semibold small">
+                    Kepemilikan Barang <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                    name="items[${index}][kepemilikan]"
+                    class="form-control item-required"
+                    placeholder="Contoh: milik ira, milik sendiri, milik RSUD..."
+                    required>
+                <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Tulis nama kepemilikan barang, contoh: <em>milik ira</em>
+                </small>
             </div>
         </div>
 
@@ -873,9 +729,9 @@ function buatHTMLItemRow(index) {
         <div class="row g-3 mt-3 pt-3 border-top">
             <div class="col-12">
                 <div class="form-check">
-                    <input class="form-check-input" 
-                           type="checkbox" 
-                           name="items[${index}][ada_barang_tersedia]" 
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="items[${index}][ada_barang_tersedia]"
                            id="barang_tersedia_${index}"
                            value="1"
                            onchange="toggleBarangTersedia(this, ${index})">
@@ -945,9 +801,9 @@ function buatHTMLItemRow(index) {
         <div class="row g-3 mt-3 pt-3 border-top">
             <div class="col-12">
                 <div class="form-check">
-                    <input class="form-check-input" 
-                           type="checkbox" 
-                           name="items[${index}][ada_dokumen]" 
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="items[${index}][ada_dokumen]"
                            id="ada_dokumen_${index}"
                            value="1"
                            onchange="toggleDokumenItem(this, ${index})">
@@ -983,6 +839,7 @@ function tambahItem() {
     itemRow.innerHTML = buatHTMLItemRow(indeksItem);
 
     container.appendChild(itemRow);
+    pasangAutoResize(itemRow);
     indeksItem++;
     perbaruiTotalItem();
     simpanDataForm();
@@ -997,6 +854,7 @@ function tambahItemTanpaSimpan() {
     itemRow.innerHTML = buatHTMLItemRow(indeksItem);
 
     container.appendChild(itemRow);
+    pasangAutoResize(itemRow);
     indeksItem++;
 }
 
@@ -1006,7 +864,7 @@ function tambahItemTanpaSimpan() {
 function toggleBarangTersedia(checkbox, index) {
     const detailDiv = document.getElementById('detail_barang_tersedia_' + index);
     const inputs = detailDiv.querySelectorAll('input, select');
-    
+
     if (checkbox.checked) {
         detailDiv.style.display = 'block';
         inputs.forEach(input => input.disabled = false);
@@ -1080,18 +938,18 @@ function toggleDokumenPendukung(checkbox, fieldName) {
 // =========================
 function hitungTotalItem(element) {
     const row = element.closest('.item-row');
-    
+
     const jumlahInput = row.querySelector('input[name*="[jumlah]"]');
     const hargaInput = row.querySelector('input[name*="[harga_satuan]"]');
     const totalInput = row.querySelector('input[name*="[total]"]');
-    
+
     const jumlah = parseInt(jumlahInput.value) || 0;
     const harga = parseInt(hargaInput.value) || 0;
-    
+
     const total = jumlah * harga;
-    
+
     totalInput.value = formatRupiah(total);
-    
+
     hitungGrandTotal();
 }
 
@@ -1108,12 +966,12 @@ function formatRupiah(angka) {
 function hitungGrandTotal() {
     const totalInputs = document.querySelectorAll('.total-harga');
     let grandTotal = 0;
-    
+
     totalInputs.forEach(input => {
         const value = input.value.replace(/\./g, '');
         grandTotal += parseInt(value) || 0;
     });
-    
+
     document.getElementById('grandTotal').textContent = formatRupiah(grandTotal);
 }
 
@@ -1279,13 +1137,20 @@ function simpanDataForm() {
 // =========================
 function restoreDataForm() {
     const saved = sessionStorage.getItem('dataPengajuan');
-    if (!saved) return;
+
+    // Kalau tidak ada draft, buat 1 item default
+    if (!saved) {
+        tambahItemTanpaSimpan();
+        pasangAutoResize();
+        return;
+    }
 
     let data;
     try {
         data = JSON.parse(saved);
     } catch (e) {
         console.warn('Gagal parse dataPengajuan', e);
+        tambahItemTanpaSimpan();
         return;
     }
 
@@ -1334,6 +1199,9 @@ function restoreDataForm() {
                 el.checked = el.value === data[name];
             } else {
                 el.value = data[name];
+                if (el.classList.contains('auto-resize')) {
+                    autoResize(el);
+                }
             }
         });
     });
@@ -1358,6 +1226,7 @@ function restoreDataForm() {
             hitungTotalItem(jumlahInput);
         }
     });
+    pasangAutoResize();
     perbaruiTotalItem();
 }
 

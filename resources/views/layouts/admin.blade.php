@@ -7,6 +7,7 @@
      <link rel="icon" href="{{ asset('gambar/rsmz.png') }}" type="image/png">
     <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+      @stack('styles')
 </head>
 <body>
     <!-- Navbar -->
@@ -58,5 +59,6 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+     @stack('scripts')
 </body>
 </html>

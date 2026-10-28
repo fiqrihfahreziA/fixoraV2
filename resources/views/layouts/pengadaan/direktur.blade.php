@@ -247,9 +247,13 @@
                         <i class="bi bi-chevron-down user-caret"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-glass dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-person-circle"></i> Profile Saya</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Pengaturan</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-bell"></i> Notifikasi <span class="badge bg-danger rounded-pill ms-auto">3</span></a></li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('direktur.profile.karyawan.edit') }}">
+                                <i class="bi bi-person-circle"></i> Profile Saya
+                            </a>
+                        </li>
+                        {{-- <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Pengaturan</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-bell"></i> Notifikasi <span class="badge bg-danger rounded-pill ms-auto">3</span></a></li> --}}
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}" class="d-block">

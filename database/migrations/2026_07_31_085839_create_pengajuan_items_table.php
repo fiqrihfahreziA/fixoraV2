@@ -23,6 +23,7 @@ return new class extends Migration
             $table->unsignedInteger('jumlah_disetujui')->nullable();
             $table->unsignedBigInteger('harga_disetujui')->nullable();
             $table->decimal('harga_satuan', 15, 2);
+            $table->string('kepemilikan')->nullable();
             
             $table->timestamps();
         });

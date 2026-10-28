@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('pengajuans', function (Blueprint $table) {
+        Schema::table('pengajuan_items', function (Blueprint $table) {
             // 1. Tambahkan kolomnya dulu
             // $table->unsignedBigInteger('id_acc_kabidPelayanan')->nullable()->after('status');
             // $table->unsignedBigInteger('id_acc_kabidPenunjang')->nullable()->after('id_acc_kabidPelayanan');
@@ -23,7 +23,7 @@ return new class extends Migration
             //       ->references('id')->on('karyawans')
             //       ->onDelete('set null')
             //       ->onUpdate('cascade');
-        $table->string('no_surat')->nullable();
+            $table->string('kepemilikan')->nullable();
             //    $table->timestamp('selesai_at')->nullable();
         });
     }

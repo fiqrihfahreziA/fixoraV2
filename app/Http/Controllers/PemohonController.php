@@ -36,6 +36,89 @@ class PemohonController extends Controller
         ]);
     }
 
+      public function editprofile()
+    {
+        $authUser = Auth::user();
+
+        // Daftar ruangan (sama seperti di admin)
+        $daftarRuangan = [
+            'CSSD/LAUNDRY','CODE BLUE','CSSD','DIREKTUR','UNIT HEMODIALISIS',
+            'PENUNJANG','RUANG FLAMBOYAN','IGD','IPAL','INSTALASI HEMODIALISA',
+            'INSTALASI BEDAH SENTRAL (IBS)','INSTALASI PEMELIHARAAN SARANA',
+            'LABORATORIUM','RADIOLOGI','RUANG BOUGENVILE','RUANG SAKURA',
+            'RUANG CEMPAKA','RUANG MATAHARI','RUANG MAWAR','RUANG MELATI',
+            'RUANG ANGGREK','RUANG KENANGA','RUANG DAHLIA','RUANG TULIP',
+            'Recovery Room (RR)','BRONKOSKOPI RUANGAN','RUANG GRAHA UTAMA',
+            'RUANG TERATAI','RUANG TRANSIT','PPI LAYANAN','POLI RAWAT JALAN',
+            'KEUANGAN','KESLING','MCU','SIMRS','KOMITE MEDIS','LAUNDRY',
+            'GIZI','FARMASI','FLAMBOYAN','MANAJEMEN',
+        ];
+
+        $daftarJabatan = [
+            'Administrator','Direktur','Wakil Direktur',
+            'Kepala Bidang','Kepala Ruangan','Staff'
+        ];
+
+        return view('profile.karyawan.edit', compact('authUser', 'daftarRuangan', 'daftarJabatan'));
+    }
+
+    /**
+     * Update profile karyawan.
+     */
+  public function updateprofile(Request $request)
+{
+    $user = Auth::user();
+    $karyawan = $user->karyawan; // Ambil data relasi karyawan
+
+    $validated = $request->validate([
+        'nama'    => 'required|string|max:255',
+        // Validasi NIP: cek unique di tabel karyawans, kecuali milik user ini sendiri
+        'nip'     => 'nullable|string',
+        'ruangan' => 'required|string|max:100',
+        'ttd'     => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
+
+    // 1. UPDATE TABEL USERS (Hanya kolom name)
+    $user->update([
+        'name' => $validated['nama'],
+    ]);
+
+    // 2. PERSIAPAN DATA UNTUK TABEL KARYAWANS
+    $dataKaryawan = [
+        'nama'    => $validated['nama'],
+        'nip'     => $validated['nip'],
+        'ruangan' => $validated['ruangan'],
+    ];
+
+    // Handle upload TTD
+    if ($request->hasFile('ttd')) {
+        // Hapus TTD lama di tabel karyawan jika ada
+        if ($karyawan && $karyawan->ttd && Storage::disk('public')->exists('ttd/' . $karyawan->ttd)) {
+            Storage::disk('public')->delete('ttd/' . $karyawan->ttd);
+        }
+
+        // Simpan TTD baru
+        $file = $request->file('ttd');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $file->storeAs('ttd', $filename, 'public');
+        
+        $dataKaryawan['ttd'] = $filename;
+    }
+
+    // 3. SIMPAN KE TABEL KARYAWANS
+    if ($karyawan) {
+        // Jika data karyawan sudah ada, update
+        $karyawan->update($dataKaryawan);
+    } else {
+        // Jika belum ada, buat baru dan hubungkan ke user
+        $user->karyawan()->create($dataKaryawan);
+    }
+
+    return redirect()
+        ->route('pemohon.pengadaan')
+        ->with('success', 'Profile dan data Karyawan berhasil diperbarui.');
+}
+
     //    public function Showpermintaan()
     // {
     //             $authUser = Auth::user();
@@ -778,6 +861,7 @@ public function create()
     
     return view('pemohon.pengadaan.create', compact('bidangs', 'authUser'));
 }
+
 public function storePengadaan(Request $request)
 {
     Log::info('📤 DATA MASUK:', $request->all());
@@ -807,6 +891,7 @@ public function storePengadaan(Request $request)
         'items.*.spesifikasi'    => 'nullable|string',
         'items.*.satuan'         => 'nullable|string',
         'items.*.dokumen_upload' => 'nullable|file|mimes:pdf,jpg,jpeg,png,xlsx,xls|max:5120',
+        'items.*.kepemilikan'    => 'nullable|string|max:150',
 
         'data_kerusakan'            => 'nullable|file|mimes:pdf|max:5120',
         'analisis_kebutuhan'        => 'nullable|file|mimes:pdf,doc,docx,xlsx,xls|max:5120',
@@ -944,6 +1029,7 @@ public function storePengadaan(Request $request)
                 'harga_satuan'     => $item['harga_satuan'],
                 'harga'            => $totalItem,
                 'jumlah_disetujui' => $item['jumlah'],
+                'kepemilikan'      => $item['kepemilikan'],
                 'dokumen_upload'   => $dokumenUploadPath,
             ]);
 

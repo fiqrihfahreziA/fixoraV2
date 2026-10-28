@@ -59,6 +59,7 @@ Route::middleware(['auth', 'role:atasan'])
 
         Route::put('/pengadaan/{id}/update-item', [AtasanController::class, 'updateItem'])
             ->name('pengadaan.updateItem');
-
+        Route::get('/profile-saya', [direkturController::class, 'editprofile'])->name('profile.karyawan.edit');
+         Route::put('/profile-saya', [direkturController::class, 'updateprofile'])->name('profile.karyawan.update');
     });
 

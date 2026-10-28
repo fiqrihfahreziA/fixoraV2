@@ -1,3 +1,4 @@
+
 @extends('layouts.pengadaan.pemohon')
 
 @section('content')
@@ -99,6 +100,18 @@
                                    required>
                         </div>
 
+                        <!-- KATEGORI: Pemeliharaan / Pengadaan -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold small">
+                                Kategori <span class="text-danger">*</span>
+                            </label>
+                            <select name="kategori" id="kategori" class="form-select" required>
+                                <option value="">Pilih Kategori</option>
+                                <option value="pemeliharaan">Pemeliharaan</option>
+                                <option value="pengadaan">Pengadaan</option>
+                            </select>
+                        </div>
+
                         <!-- Pilih Barjas -->
                         <div class="col-md-3">
                             <label class="form-label fw-semibold small">Jenis</label>
@@ -114,16 +127,6 @@
                         <div class="col-md-3 d-none" id="wrapper_barjas_lainnya">
                             <label class="form-label fw-semibold small">Barjas Lainnya</label>
                             <input type="text" name="barajas_lainnya" class="form-control" placeholder="Masukkan barjas lainnya...">
-                        </div>
-
-                        <!-- KATEGORI (muncul kalau Jenis = Barang / Jasa) -->
-                        <div class="col-md-3 d-none" id="wrapper_kategori">
-                            <label class="form-label fw-semibold small">
-                                Kategori <span class="text-danger">*</span>
-                            </label>
-                            <select name="kategori" id="kategoriSelect" class="form-select">
-                                <option value="">-- Pilih Kategori --</option>
-                            </select>
                         </div>
 
                         <!-- Tahun Anggaran -->
@@ -153,6 +156,18 @@
                                 <option value="lainnya">Lainnya...</option>
                             </select>
                         </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small">
+                                bidang <span class="text-danger">*</span>
+                            </label>
+                            <select name="bidang_id" class="form-select" required>
+                                <option value="">-- Pilih Bidang --</option>
+                                @foreach($bidangs as $bidang)
+                                    <option value="{{ $bidang->id }}">{{ $bidang->nama_bidang }}</option>
+                                @endforeach
+                            </select>
+                            </div>
 
                         <!-- Input manual kalau pilih "Lainnya" -->
                         <div class="col-md-4 d-none" id="wrapper_dasar_usulan_lainnya">
@@ -197,6 +212,20 @@
                                    value="{{ $authUser->karyawan->nip ?? '' }}"
                                    readonly>
                         </div>
+
+                        <!-- BIDANG (readonly dari karyawan) -->
+                        <!-- <div class="col-md-4">
+                            <label class="form-label fw-semibold small mb-1">
+                                Bidang <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control bg-light"
+                                   value="{{ $authUser->karyawan->bidang->nama_bidang ?? '-' }}"
+                                   readonly>
+                            <input type="hidden"
+                                   name="bidang_id"
+                                   value="{{ $authUser->karyawan->bidang_id ?? '' }}">
+                        </div> -->
 
                         <!-- Instalasi -->
                         <div class="col-md-4">

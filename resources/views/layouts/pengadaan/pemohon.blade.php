@@ -411,7 +411,7 @@
             <ul class="navbar-nav ms-4 me-auto">
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center gap-2 {{ request()->is('pemohon/permintaan*') ? 'active' : '' }}"
-                       href="#">
+                       href="{{ route('pemohon.pengadaan') }}">
                         <i class="bi bi-box"></i>
                         Permintaan Barang
                     </a>
@@ -445,9 +445,8 @@
                     </a>
                     <ul class="dropdown-menu dropdown-glass dropdown-menu-end">
                         <li>
-                            <a class="dropdown-item" href="#">
-                                <i class="bi bi-person-circle"></i>
-                                Profile Saya
+                            <a class="dropdown-item" href="{{ route('pemohon.profile.karyawan.edit') }}">
+                                <i class="bi bi-person-circle"></i> Profile Saya
                             </a>
                         </li>
                         <li>

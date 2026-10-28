@@ -31,6 +31,8 @@ Route::middleware(['auth', 'role:keuangan'])
         Route::get('/report/pengadaan', [KeuanganController::class, 'reportPengadaan'])->name('reportPengadaan');
         Route::get('/pengadaan/export', [KeuanganController::class, 'exportExcel'])
             ->name('export.csv');
+        Route::get('/profile-saya', [KpaController::class, 'editprofile'])->name('profile.karyawan.edit');
+         Route::put('/profile-saya', [KpaController::class, 'updateprofile'])->name('profile.karyawan.update');
 
     });
 
