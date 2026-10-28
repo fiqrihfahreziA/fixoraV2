@@ -121,6 +121,7 @@ return new class extends Migration
             $table->timestamp('acc_kabidPenunjang_at')->nullable();
             $table->string('log_acc_kabidPelayanan')->nullable(); //
             $table->string('log_acc_kabidPenunjang')->nullable(); //
+             $table->string('no_surat')->nullable();
             
               
              $table->timestamps();

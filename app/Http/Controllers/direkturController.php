@@ -35,71 +35,6 @@ class direkturController extends Controller
         ]);
     }
 
-    //   public function showpengadaan(Request $request)
-    // {
-    //     $authUser = Auth::user();
-        
-    //     // Ambil query pencarian
-    //     $search = $request->input('search');
-    //     $statusFilter = $request->input('status');
-
-    //     /**
-    //      * ============================
-    //      * QUERY DASAR PENGADAAN (SEMUA)
-    //      * TAMPILKAN SEMUA STATUS KECUALI:
-    //      * - draft, revisi, diajukan, disetujui_koordinator
-    //      * ============================
-    //      */
-    //     $query = Pengajuan::with(['items', 'karyawan', 'bidang'])
-    //         ->whereNotIn('status', ['diajukan', 'draft', 'revisi', 'disetujui_koordinator', 'disetujui_kabid','perlu survei perbaikan','menunggu_keuangan','menunggu_kpa'])
-    //         ->when($search, function ($q) use ($search) {
-    //             $q->where(function ($query) use ($search) {
-    //                 $query->where('no_pengajuan', 'like', "%{$search}%")
-    //                     ->orWhere('dasar_usulan', 'like', "%{$search}%")
-    //                     ->orWhereHas('items', function ($itemQuery) use ($search) {
-    //                         $itemQuery->where('nama_barang', 'like', "%{$search}%")
-    //                             ->orWhere('spesifikasi', 'like', "%{$search}%");
-    //                     });
-    //             });
-    //         })
-    //         ->when($statusFilter, function ($q) use ($statusFilter) {
-    //             $q->where('status', $statusFilter);
-    //         });
-
-    //     /**
-    //      * ============================
-    //      * DATA UNTUK TABEL SEMUA PENGAJUAN
-    //      * ============================
-    //      */
-    //     $allPengajuan = clone $query;
-    //     $allPengajuan = $allPengajuan->orderBy('created_at', 'desc')
-    //         ->paginate(10)
-    //         ->appends($request->all());
-
-    //     /**
-    //      * ============================
-    //      * STATISTIK DASHBOARD
-    //      * ============================
-    //      */
-    //     $stats = [
-    //         'total' => Pengajuan::whereNotIn('status', ['diajukan', 'draft', 'revisi', 'disetujui_koordinator'])->count(),
-    //         'draft' => Pengajuan::where('status', 'draft')->count(),
-    //         'diajukan' => Pengajuan::where('status', 'diajukan')->count(),
-    //         'disetujui' => Pengajuan::where('status', 'disetujui')->count(),
-    //         'ditolak' => Pengajuan::where('status', 'ditolak')->count(),
-    //         'menunggu_direktur' => Pengajuan::where('status', 'menunggu_direktur')->count(),
-    //         'disetujui_kabid' => Pengajuan::where('status', 'disetujui_kabid')->count(),
-    //     ];
-
-    //     return view('direktur.pengadaan.pengadaan', compact(
-    //         'authUser',
-    //         'allPengajuan',
-    //         'search',
-    //         'statusFilter',
-    //         'stats'
-    //     ));
-    // }
-
     public function showpengadaan(Request $request)
 {
     $authUser = Auth::user();
@@ -392,26 +327,111 @@ class direkturController extends Controller
      * ============================================
      */
 
-     public function setujui(Request $request, $id)
+//      public function setujui(Request $request, $id)
+// {
+//     $request->validate([
+//         // 'status_verifikasi' => 'required|in:disetujui_koordinator,ditolak,revisi',
+//         // 'catatan_verifikasi' => 'required|string|min:5',
+//         'direktur_id' => 'required'
+//     ]);
+    
+//     $pengajuan = Pengajuan::findOrFail($id);
+//     $pengajuan->update([
+//         'status' => 'disetujui',
+//         'log_status_direktur' => 'disetujui',
+//         'total_disetujui_direktur' => $pengajuan->total_disetujui,
+//         // 'total_disetujui_direktur' => $pengajuan->total_disetujui,
+//         'direktur_id' =>  $request->direktur_id,
+//         'disetujui_direktur_at' => now(),
+//         'catatan_direktur' => request('catatan_direktur')
+//     ]);
+//     return redirect()->route('direktur.pengadaan')->with('success', 'Pengajuan berhasil diverifikasi (anggaran tersedia penuh).');
+// }
+
+public function setujui(Request $request, $id)
 {
     $request->validate([
-        // 'status_verifikasi' => 'required|in:disetujui_koordinator,ditolak,revisi',
-        // 'catatan_verifikasi' => 'required|string|min:5',
         'direktur_id' => 'required'
     ]);
-    
+
     $pengajuan = Pengajuan::findOrFail($id);
+
+    // Bagian yang tetap
+    $prefix      = '445';
+    $kodeStatis  = '434.203.100.02';
+    $tahun       = now()->year;
+
+    // Cari nomor terakhir KHUSUS tahun ini (untuk ambil counter-nya)
+    $lastPengajuan = Pengajuan::whereNotNull('no_surat')
+        ->where('no_surat', 'like', $prefix . '/%/' . $kodeStatis . '/' . $tahun)
+        ->orderByDesc('id')
+        ->first();
+
+    // Ambil counter dari format: 445/<counter>/434.203.100.02/2026
+    if ($lastPengajuan && preg_match('#^' . $prefix . '/(\d+)/#', $lastPengajuan->no_surat, $matches)) {
+        $newCounter = (int) $matches[1] + 1;
+    } else {
+        $newCounter = 1; // mulai dari 1 tiap tahun
+    }
+
+    // Format counter (contoh: 1, 2, 3 ... atau bisa pakai pad: 001, 002)
+    $noSurat = $prefix . '/' . $newCounter . '/' . $kodeStatis . '/' . $tahun;
+    // hasil: 445/1/434.203.100.02/2026
+
     $pengajuan->update([
         'status' => 'disetujui',
         'log_status_direktur' => 'disetujui',
         'total_disetujui_direktur' => $pengajuan->total_disetujui,
-        // 'total_disetujui_direktur' => $pengajuan->total_disetujui,
-        'direktur_id' =>  $request->direktur_id,
+        'direktur_id' => $request->direktur_id,
+        'no_surat' => $noSurat,
         'disetujui_direktur_at' => now(),
-        'catatan_direktur' => request('catatan_direktur')
+        'catatan_direktur' => $request->catatan_direktur
     ]);
-    return redirect()->route('direktur.pengadaan')->with('success', 'Pengajuan berhasil diverifikasi (anggaran tersedia penuh).');
+
+    return redirect()->route('direktur.pengadaan')
+        ->with('success', 'Pengajuan berhasil diverifikasi. No Surat: ' . $noSurat);
 }
+
+// public function setujui(Request $request, $id)
+// {
+//     $request->validate([
+//         'direktur_id' => 'required'
+//     ]);
+
+//     $pengajuan = Pengajuan::findOrFail($id);
+
+//     // Tahun otomatis tahun sekarang
+//     $tahun = now()->year;
+//     $kodeStatis = '434.203.100.02/' . $tahun;
+
+//     // Cari nomor terakhir KHUSUS tahun ini (biar reset tiap tahun)
+//     $lastPengajuan = Pengajuan::whereNotNull('no_surat')
+//         ->where('no_surat', 'like', '%/' . $kodeStatis)
+//         ->orderByDesc('id')
+//         ->first();
+
+//     $lastNumber = 445; // default awal tiap tahun
+//     if ($lastPengajuan && preg_match('/^(\d+)\//', $lastPengajuan->no_surat, $matches)) {
+//         $lastNumber = (int) $matches[1];
+//     }
+
+//     $noSurat = ($lastNumber + 1) . '/' . $kodeStatis;
+//     // contoh hasil: 446/434.203.100.02/2026
+
+//     $pengajuan->update([
+//         'status' => 'disetujui',
+//         'log_status_direktur' => 'disetujui',
+//         'total_disetujui_direktur' => $pengajuan->total_disetujui,
+//         'direktur_id' => $request->direktur_id,
+//         'no_surat' => $noSurat,
+//         'disetujui_direktur_at' => now(),
+//         'catatan_direktur' => $request->catatan_direktur
+//     ]);
+
+//     return redirect()->route('direktur.pengadaan')
+//         ->with('success', 'Pengajuan berhasil diverifikasi. No Surat: ' . $noSurat);
+// }
+
    
     public function tunda(Request $request, $id)
     {

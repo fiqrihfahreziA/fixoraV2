@@ -86,18 +86,15 @@
             font-weight: bold;
             text-decoration: underline;
             letter-spacing: 0.5px;
-            position: relative;        /* TAMBAHAN: untuk posisi nomor surat */
         }
-        /* TAMBAHAN: Style nomor surat di kanan */
-        .header-doc-number {
-            position: absolute;
-            right: 0;
-            bottom: 0;
-            font-size: 10pt;
-            font-weight: normal;
-            text-decoration: none;
-            letter-spacing: 0;
-            color: #1a1a1a;
+
+        /* === NOMOR SURAT (TENGAH) === */
+        .doc-number {
+            text-align: center;
+            font-size: 11pt;
+            font-weight: bold;
+            margin: 10px 0 14px 0;
+            letter-spacing: 0.3px;
         }
 
         /* === SECTION TITLE === */
@@ -390,14 +387,15 @@
                 <img src="{{ asset('gambar/rsmz.png') }}" alt="Logo RSUD">
             </div>
         </div>
-        <!-- ===== TAMBAHAN: NOMOR SURAT DI HEADER ===== -->
+        <!-- ===== JUDUL DOKUMEN ===== -->
         <div class="header-doc-title">
             FORMULIR PERENCANAAN PENGADAAN / PEMELIHARAAN BARANG
-            <span class="header-doc-number">
-                No Surat: {{ $pengajuan->nomor_surat ?? '..... / ..... / .....' }}
-            </span>
         </div>
-        <!-- ===== END TAMBAHAN ===== -->
+    </div>
+
+    <!-- ===== NOMOR SURAT (TENGAH, SEBELUM IDENTITAS) ===== -->
+    <div class="doc-number">
+        NO. SURAT : {{ $pengajuan->no_surat ?? '..... / ..... / .....' }}
     </div>
 
     <!-- ===== A. IDENTITAS PENGUSUL ===== -->
@@ -903,9 +901,9 @@
     </div>
 
     <!-- ===== FOOTER ===== -->
-    <div class="footer-print">
+    {{-- <div class="footer-print">
         Dicetak pada : {{ date('d F Y H:i:s') }} &nbsp;|&nbsp; Dokumen ini adalah cetakan resmi dari sistem FixoraV2
-    </div>
+    </div> --}}
 
 </div>
 <!-- ===== END FRAME UTAMA ===== -->

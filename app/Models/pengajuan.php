@@ -76,6 +76,7 @@ class pengajuan extends Model
     'acc_kabidPenunjang_at',
     'log_acc_kabidPenunjang',
     'selesai_at',
+    'no_surat',
     
  
 
