@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\bidang;
+use App\Models\Bidang;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Karyawan;

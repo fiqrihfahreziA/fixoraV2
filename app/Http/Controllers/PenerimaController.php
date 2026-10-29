@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\bidang;
+use App\Models\Bidang;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use App\Models\Karyawan;
 use App\Models\detail_barang;
 use App\Models\barang_tersedia;
-use App\Models\pengajuan;
-use App\Models\pengajuan_item;
+use App\Models\Pengajuan;
+use App\Models\Pengajuan_item;
 use Illuminate\Support\Facades\DB; 
 use App\Models\RequestModel;
 use App\Models\Penerima;

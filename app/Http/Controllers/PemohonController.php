@@ -10,11 +10,11 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use App\Models\bidang;
+use App\Models\Bidang;
 use App\Models\detail_barang;
 use App\Models\barang_tersedia;
-use App\Models\pengajuan;
-use App\Models\pengajuan_item;
+use App\Models\Pengajuan;
+use App\Models\Pengajuan_item;
 use Illuminate\Support\Facades\DB; 
 use App\Models\RequestModel;
 use Illuminate\Support\Facades\Auth;
@@ -1020,7 +1020,7 @@ public function storePengadaan(Request $request)
                 $dokumenUploadPath = $file->storeAs('pengajuan/item_dokumen', $fileName, 'public');
             }
 
-            $pengajuanItem = pengajuan_item::create([
+            $pengajuanItem = Pengajuan_item::create([
                 'pengajuan_id'     => $pengajuan->id,
                 'nama_barang'      => $item['nama_barang'],
                 'spesifikasi'      => $item['spesifikasi'] ?? null,
@@ -1745,7 +1745,7 @@ public function updatePengadaan(Request $request, $id)
         Log::info('✅ PENGAJUAN UPDATED:', $pengajuan->toArray());
 
         // HAPUS ITEMS LAMA + BARANG TERSEDIA (cascade)
-        $oldItems = pengajuan_item::where('pengajuan_id', $pengajuan->id)->get();
+        $oldItems = Pengajuan_item::where('pengajuan_id', $pengajuan->id)->get();
         foreach ($oldItems as $oldItem) {
             // Hapus dokumen upload item lama
             if ($oldItem->dokumen_upload && Storage::disk('public')->exists($oldItem->dokumen_upload)) {
@@ -1768,7 +1768,7 @@ public function updatePengadaan(Request $request, $id)
                 $dokumenUploadPath = $file->storeAs('pengajuan/item_dokumen', $fileName, 'public');
             }
 
-            $pengajuanItem = pengajuan_item::create([
+            $pengajuanItem = Pengajuan_item::create([
                 'pengajuan_id'     => $pengajuan->id,
                 'nama_barang'      => $item['nama_barang'],
                 'spesifikasi'      => $item['spesifikasi'] ?? null,

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Pengadaan;
 
 use App\Http\Controllers\Controller;
-use App\Models\pengajuan;
-use App\Models\pengajuan_item;
+use App\Models\Pengajuan;
+use App\Models\Pengajuan_item;
 use App\Models\barang_tersedia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
