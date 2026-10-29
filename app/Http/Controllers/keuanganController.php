@@ -481,7 +481,7 @@ public function tolak(Request $request, $id)
         ];
 
         // AMBIL DATA ATASAN
-        $atasans = karyawan::whereIn('id', function($query) {
+        $atasans = Karyawan::whereIn('id', function($query) {
             $query->select('atasan_id')
                   ->from('pengajuans')
                   ->whereNotNull('atasan_id');

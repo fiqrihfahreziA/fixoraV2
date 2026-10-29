@@ -89,42 +89,42 @@ public function items()
 
     public function karyawan()
     {
-        return $this->belongsTo(karyawan::class);
+        return $this->belongsTo(Karyawan::class);
     }
 
     public function bidang()
     {
-        return $this->belongsTo(bidang::class);
+        return $this->belongsTo(Bidang::class);
     }
 
     public function penerima()
     {
-        return $this->belongsTo(karyawan::class, 'penerima_id',);
+        return $this->belongsTo(Karyawan::class, 'penerima_id',);
     }
 
     public function atasan()
     {
-        return $this->belongsTo(karyawan::class, 'atasan_id');
+        return $this->belongsTo(Karyawan::class, 'atasan_id');
     }
 
     public function ppk()
     {
-        return $this->belongsTo(karyawan::class, 'ppk_id');
+        return $this->belongsTo(Karyawan::class, 'ppk_id');
     }
 
     
     public function keuangan()
     {
-        return $this->belongsTo(karyawan::class, 'id_keuangan');
+        return $this->belongsTo(Karyawan::class, 'id_keuangan');
     }
     
     public function kpaa()
     {
-        return $this->belongsTo(karyawan::class, 'kpa_id');
+        return $this->belongsTo(Karyawan::class, 'kpa_id');
     }
     public function direktur()
     {
-        return $this->belongsTo(karyawan::class, 'direktur_id');
+        return $this->belongsTo(Karyawan::class, 'direktur_id');
     }
 
     public function lampiran()

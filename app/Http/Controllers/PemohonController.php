@@ -1556,7 +1556,7 @@ public function edittt($id)
         ->whereIn('status', ['draft', 'revisi']) // <-- TAMBAHKAN 'revisi'
         ->findOrFail($id);
     
-    $bidangs = bidang::all();
+    $bidangs = Bidang::all();
 
     return view('pemohon.pengadaan.edit', compact('pengajuan', 'bidangs', 'authUser'));
 }

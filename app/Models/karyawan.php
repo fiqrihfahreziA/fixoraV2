@@ -31,17 +31,17 @@ class karyawan extends Model
 
       public function bidang()
     {
-        return $this->belongsTo(bidang::class, 'bidang_id');
+        return $this->belongsTo(Bidang::class, 'bidang_id');
     }
 
       public function pengajuans()
     {
-        return $this->hasMany(pengajuan::class, 'atasan_id');
+        return $this->hasMany(Pengajuan::class, 'atasan_id');
     }
 
      public function pengajuanKaryawan()
     {
-        return $this->hasMany(pengajuan::class, 'karyawan_id');
+        return $this->hasMany(Pengajuan::class, 'karyawan_id');
     }
 
     /**
@@ -49,7 +49,7 @@ class karyawan extends Model
      */
     public function pengajuanPenerima()
     {
-        return $this->hasMany(pengajuan::class, 'penerima_id');
+        return $this->hasMany(Pengajuan::class, 'penerima_id');
     }
 
     /**
@@ -57,7 +57,7 @@ class karyawan extends Model
      */
     public function pengajuanDirektur()
     {
-        return $this->hasMany(pengajuan::class, 'direktur_id');
+        return $this->hasMany(Pengajuan::class, 'direktur_id');
     }
 
     /**
@@ -65,7 +65,7 @@ class karyawan extends Model
      */
     public function pengajuanKeuangan()
     {
-        return $this->hasMany(pengajuan::class, 'id_keuangan');
+        return $this->hasMany(Pengajuan::class, 'id_keuangan');
     }
 
 

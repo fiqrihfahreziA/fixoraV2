@@ -249,7 +249,7 @@ public function destroy($id)
 
 public function laporan(){
     $authUser = Auth::user();
-    $bidangs = bidang::all();
+    $bidangs = Bidang::all();
 
     return view('penerima.laporan', [
         'authuser' =>$authUser,
@@ -929,7 +929,7 @@ public function chartpengadaan(Request $request)
     $ruangan = $authUser->karyawan->ruangan ?? null;
     
     // Ambil bidang untuk filter
-    $bidangs = bidang::all();
+    $bidangs = Bidang::all();
 
     // Ambil query pencarian & filter
     $search = $request->input('search');
@@ -1501,7 +1501,7 @@ public function verifikasi(Request $request, $id)
         ];
 
         // AMBIL DATA ATASAN
-        $atasans = karyawan::whereIn('id', function($query) {
+        $atasans = Karyawan::whereIn('id', function($query) {
             $query->select('atasan_id')
                   ->from('pengajuans')
                   ->whereNotNull('atasan_id');

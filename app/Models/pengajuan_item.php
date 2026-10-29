@@ -14,7 +14,7 @@ class pengajuan_item extends Model
     
      public function pengajuan()
     {
-        return $this->belongsTo(pengajuan::class);
+        return $this->belongsTo(Pengajuan::class);
     }
 
     public function barangTersedia()
