@@ -912,7 +912,7 @@ public function storePengadaan(Request $request)
         }
 
         $noPengajuan = 'PGD-' . date('Ymd') . '-' . str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
-        while (pengajuan::where('no_pengajuan', $noPengajuan)->exists()) {
+        while (Pengajuan::where('no_pengajuan', $noPengajuan)->exists()) {
             $noPengajuan = 'PGD-' . date('Ymd') . '-' . str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
         }
 
@@ -977,7 +977,7 @@ public function storePengadaan(Request $request)
         // ============================
         // CREATE PENGAJUAN
         // ============================
-        $pengajuan = pengajuan::create([
+        $pengajuan = Pengajuan::create([
             'karyawan_id'          => $request->karyawan_id,
             'bidang_id'            => $request->bidang_id,
             'tanggal_pengajuan'    => $request->tanggal_pengajuan,
@@ -1522,7 +1522,7 @@ public function submit($id)
         $authUser = Auth::user();
         $karyawanId = $authUser->karyawan->id ?? null;
         
-        $pengajuan = pengajuan::where('karyawan_id', $karyawanId)
+        $pengajuan = Pengajuan::where('karyawan_id', $karyawanId)
             ->whereIn('status', ['draft', 'revisi'])
             ->findOrFail($id);
 
@@ -1551,7 +1551,7 @@ public function edittt($id)
     $authUser = Auth::user();
     $karyawanId = $authUser->karyawan->id ?? null;
     
-    $pengajuan = pengajuan::with(['items', 'items.barangTersedia'])
+    $pengajuan = Pengajuan::with(['items', 'items.barangTersedia'])
         ->where('karyawan_id', $karyawanId)
         ->whereIn('status', ['draft', 'revisi']) // <-- TAMBAHKAN 'revisi'
         ->findOrFail($id);

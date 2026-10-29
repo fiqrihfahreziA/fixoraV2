@@ -488,7 +488,7 @@ public function tolak(Request $request, $id)
         })->get();
 
         // AMBIL TAHUN
-        $tahuns = pengajuan::selectRaw('DISTINCT YEAR(tanggal_pengajuan) as tahun')
+        $tahuns = Pengajuan::selectRaw('DISTINCT YEAR(tanggal_pengajuan) as tahun')
                     ->whereNotNull('tanggal_pengajuan')
                     ->orderBy('tahun', 'desc')
                     ->pluck('tahun')
@@ -501,7 +501,7 @@ public function tolak(Request $request, $id)
         $atasanIdFilter = $request->input('atasan_id');
 
         // QUERY UNTUK PREVIEW
-        $query = pengajuan::with([
+        $query = Pengajuan::with([
             'bidang',
             'items',
             'karyawan',
@@ -572,7 +572,7 @@ public function tolak(Request $request, $id)
         // ==========================================================
         // QUERY DATA
         // ==========================================================
-        $query = pengajuan::with([
+        $query = Pengajuan::with([
             'bidang',
             'items',
             'karyawan',

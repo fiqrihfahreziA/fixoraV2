@@ -944,7 +944,7 @@ public function chartpengadaan(Request $request)
      * QUERY DASAR PENGADAAN
      * ============================
      */
-    $query = pengajuan::with(['items', 'karyawan', 'bidang'])
+    $query = Pengajuan::with(['items', 'karyawan', 'bidang'])
         ->where('status', '!=', 'draft')
         ->when($search, function ($q) use ($search) {
             $q->where(function ($query) use ($search) {
@@ -1349,7 +1349,7 @@ public function chartpengadaan(Request $request)
 {
     $authUser = Auth::user();
     
-    $pengajuan = pengajuan::with([
+    $pengajuan = Pengajuan::with([
         'karyawan',
         'bidang',
         'items',
@@ -1368,7 +1368,7 @@ public function verifikasi(Request $request, $id)
     ]);
 
     try {
-        $pengajuan = pengajuan::findOrFail($id);
+        $pengajuan = Pengajuan::findOrFail($id);
         
         $statusMap = [
             'disetujui_koordinator' => 'disetujui_koordinator',
@@ -1508,7 +1508,7 @@ public function verifikasi(Request $request, $id)
         })->get();
 
         // AMBIL TAHUN
-        $tahuns = pengajuan::selectRaw('DISTINCT YEAR(tanggal_pengajuan) as tahun')
+        $tahuns = Pengajuan::selectRaw('DISTINCT YEAR(tanggal_pengajuan) as tahun')
                     ->whereNotNull('tanggal_pengajuan')
                     ->orderBy('tahun', 'desc')
                     ->pluck('tahun')
@@ -1521,7 +1521,7 @@ public function verifikasi(Request $request, $id)
         $atasanIdFilter = $request->input('atasan_id');
 
         // QUERY UNTUK PREVIEW
-        $query = pengajuan::with([
+        $query = Pengajuan::with([
             'bidang',
             'items',
             'karyawan',
@@ -1753,7 +1753,7 @@ public function exportExcel(Request $request)
     // ==========================================================
     // QUERY DATA
     // ==========================================================
-    $query = pengajuan::with([
+    $query = Pengajuan::with([
         'bidang',
         'items',
         'karyawan',
@@ -2545,7 +2545,7 @@ public function exportExcel(Request $request)
         }
 
         // ===== 3. TOP BARANG =====
-        $topBarangQuery = pengajuan_item::query()
+        $topBarangQuery = Pengajuan_item::query()
             ->join('pengajuans', 'pengajuan_items.pengajuan_id', '=', 'pengajuans.id')
             ->where('pengajuans.status', '!=', 'draft')
             ->where('pengajuans.status', '!=', 'ditolak');

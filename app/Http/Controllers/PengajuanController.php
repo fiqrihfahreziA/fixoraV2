@@ -62,7 +62,7 @@ class PengajuanController extends Controller
                 $total = $itemData['jumlah'] * $itemData['harga_satuan'];
                 $totalPengajuan += $total;
 
-                $item = pengajuan_item::create([
+                $item = Pengajuan_item::create([
                     'pengajuan_id' => $pengajuan->id,
                     'nama_barang' => $itemData['nama_barang'],
                     'spesifikasi' => $itemData['spesifikasi'] ?? null,

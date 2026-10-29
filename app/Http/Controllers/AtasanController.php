@@ -511,7 +511,7 @@ public function pengadaanshow(Request $request)
 {
     $authUser = Auth::user();
     
-    $pengajuan = pengajuan::with([
+    $pengajuan = Pengajuan::with([
         'karyawan',
         'bidang',
         'items',
@@ -958,7 +958,7 @@ public function reportPengadaan(Request $request)
         })->get();
 
         // AMBIL TAHUN
-        $tahuns = pengajuan::selectRaw('DISTINCT YEAR(tanggal_pengajuan) as tahun')
+        $tahuns = Pengajuan::selectRaw('DISTINCT YEAR(tanggal_pengajuan) as tahun')
                     ->whereNotNull('tanggal_pengajuan')
                     ->orderBy('tahun', 'desc')
                     ->pluck('tahun')
@@ -971,7 +971,7 @@ public function reportPengadaan(Request $request)
         $atasanIdFilter = $request->input('atasan_id');
 
         // QUERY UNTUK PREVIEW
-        $query = pengajuan::with([
+        $query = Pengajuan::with([
             'bidang',
             'items',
             'karyawan',
@@ -1042,7 +1042,7 @@ public function reportPengadaan(Request $request)
         // ==========================================================
         // QUERY DATA
         // ==========================================================
-        $query = pengajuan::with([
+        $query = Pengajuan::with([
             'bidang',
             'items',
             'karyawan',
@@ -1623,7 +1623,7 @@ public function reportPengadaan(Request $request)
  */
 public function editItem($id)
 {
-    $pengajuan = pengajuan::with('items')->findOrFail($id);
+    $pengajuan = Pengajuan::with('items')->findOrFail($id);
 
     return view('patasan.pengadaan.edit_item', compact('pengajuan'));
 }
@@ -1633,7 +1633,7 @@ public function editItem($id)
  */
 public function updateItem(Request $request, $id)
 {
-    $pengajuan = pengajuan::findOrFail($id);
+    $pengajuan = Pengajuan::findOrFail($id);
 
     $request->validate([
         'items'                => 'required|array|min:1',
@@ -1656,7 +1656,7 @@ public function updateItem(Request $request, $id)
 
             if (!empty($itemData['id'])) {
                 // Update item lama
-                $item = pengajuan_item::where('pengajuan_id', $pengajuan->id)
+                $item = Pengajuan_item::where('pengajuan_id', $pengajuan->id)
                     ->findOrFail($itemData['id']);
 
                 $item->update([
@@ -1670,7 +1670,7 @@ public function updateItem(Request $request, $id)
                 $idsFromRequest[] = $item->id;
             } else {
                 // Create item baru
-                $newItem = pengajuan_item::create([
+                $newItem = Pengajuan_item::create([
                     'pengajuan_id'     => $pengajuan->id,
                     'nama_barang'      => $itemData['nama_barang'],
                     'spesifikasi'      => $itemData['spesifikasi'] ?? null,
@@ -1685,7 +1685,7 @@ public function updateItem(Request $request, $id)
         }
 
         // Hapus item yang tidak ada di request (user hapus)
-        pengajuan_item::where('pengajuan_id', $pengajuan->id)
+        Pengajuan_item::where('pengajuan_id', $pengajuan->id)
             ->whereNotIn('id', $idsFromRequest)
             ->delete();
 
