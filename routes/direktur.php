@@ -36,7 +36,7 @@ Route::middleware(['auth', 'role:direktur'])
             ->name('export.csv');
              Route::get('/profile-saya', [direkturController::class, 'editprofile'])->name('profile.karyawan.edit');
          Route::put('/profile-saya', [direkturController::class, 'updateprofile'])->name('profile.karyawan.update');
-      
+        Route::get('/chart', [direkturController::class, 'chart'])->name('chart');
 
     });
 

@@ -1020,7 +1020,7 @@ public function storePengadaan(Request $request)
                 $dokumenUploadPath = $file->storeAs('pengajuan/item_dokumen', $fileName, 'public');
             }
 
-            $pengajuanItem = Pengajuan_item::create([
+            $pengajuanItem = pengajuan_item::create([
                 'pengajuan_id'     => $pengajuan->id,
                 'nama_barang'      => $item['nama_barang'],
                 'spesifikasi'      => $item['spesifikasi'] ?? null,
@@ -1745,7 +1745,7 @@ public function updatePengadaan(Request $request, $id)
         Log::info('✅ PENGAJUAN UPDATED:', $pengajuan->toArray());
 
         // HAPUS ITEMS LAMA + BARANG TERSEDIA (cascade)
-        $oldItems = Pengajuan_item::where('pengajuan_id', $pengajuan->id)->get();
+        $oldItems = pengajuan_item::where('pengajuan_id', $pengajuan->id)->get();
         foreach ($oldItems as $oldItem) {
             // Hapus dokumen upload item lama
             if ($oldItem->dokumen_upload && Storage::disk('public')->exists($oldItem->dokumen_upload)) {
@@ -1768,7 +1768,7 @@ public function updatePengadaan(Request $request, $id)
                 $dokumenUploadPath = $file->storeAs('pengajuan/item_dokumen', $fileName, 'public');
             }
 
-            $pengajuanItem = Pengajuan_item::create([
+            $pengajuanItem = pengajuan_item::create([
                 'pengajuan_id'     => $pengajuan->id,
                 'nama_barang'      => $item['nama_barang'],
                 'spesifikasi'      => $item['spesifikasi'] ?? null,

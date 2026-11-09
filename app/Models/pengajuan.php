@@ -84,7 +84,7 @@ class pengajuan extends Model
 
 public function items()
     {
-        return $this->hasMany(pengajuan_item::class);
+        return $this->hasMany(Pengajuan_item::class);
     }
 
     public function karyawan()

@@ -10,7 +10,7 @@ use App\Models\Karyawan;
 use App\Models\detail_barang;
 use App\Models\RequestModel;
 use App\Models\Penerima;
-use App\Models\pengajuan_item;
+use App\Models\Pengajuan_item;
 use App\Models\Bidang;
 use App\Models\Pengajuan;
 use App\Models\App\Models\barang_tersedia;

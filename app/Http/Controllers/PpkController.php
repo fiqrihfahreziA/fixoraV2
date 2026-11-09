@@ -506,7 +506,7 @@ public function index(Request $request)
     }
 
     return redirect()
-        ->route('pemohon.pengadaan')
+        ->route('ppk.dashboard')
         ->with('success', 'Profile dan data Karyawan berhasil diperbarui.');
 }
 

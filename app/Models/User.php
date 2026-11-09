@@ -31,12 +31,12 @@ class User extends Authenticatable
 
       public function karyawan()
     {
-        return $this->belongsTo(karyawan::class);
+        return $this->belongsTo(Karyawan::class);
     }
 
         public function bidang()
     {
-        return $this->belongsTo(bidang::class);
+        return $this->belongsTo(Bidang::class);
     }
 
     

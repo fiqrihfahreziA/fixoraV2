@@ -11,7 +11,7 @@ use App\Models\requests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -19,13 +19,60 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 class AdminController extends Controller
 {
     public function index()
-    {
-        $authUser = Auth::user();
+{
+    $authUser = Auth::user();
+ 
+    // ---- Angka utama ----
+    $jumlahPengguna   = User::count();
+    $penggunaAktif    = User::where('is_active', true)->count();
+    $penggunaNonaktif = $jumlahPengguna - $penggunaAktif;
+ 
+    $jumlahKaryawan   = Karyawan::count();
+    $jumlahBidang     = Bidang::count();
+    $jumlahRuangan    = Karyawan::whereNotNull('ruangan')->distinct()->count('ruangan');
+ 
+    // ---- Data yang perlu perhatian ----
+    $karyawanTanpaAkun = Karyawan::doesntHave('pengguna')->count();
+    $karyawanTanpaTtd  = Karyawan::where(function ($q) {
+        $q->whereNull('ttd')->orWhere('ttd', '');
+    })->count();
+ 
+    // ---- Grafik ----
+    // [role => jumlah], urut dari terbanyak
+    $perRole = User::select('role', DB::raw('COUNT(*) as total'))
+        ->groupBy('role')
+        ->orderByDesc('total')
+        ->pluck('total', 'role');
+ 
+    // [ruangan => jumlah], 6 teratas
+    $topRuangan = Karyawan::select('ruangan', DB::raw('COUNT(*) as total'))
+        ->whereNotNull('ruangan')
+        ->groupBy('ruangan')
+        ->orderByDesc('total')
+        ->limit(6)
+        ->pluck('total', 'ruangan');
+ 
+    // ---- Daftar terbaru (pakai id agar aman walau tidak ada kolom timestamp) ----
+    $akunTerbaru     = User::with('karyawan')->latest('id')->limit(5)->get();
+    $karyawanTerbaru = Karyawan::latest('id')->limit(5)->get();
+ 
+    return view('admin.dashboard', compact(
+        'authUser',
+        'jumlahPengguna', 'penggunaAktif', 'penggunaNonaktif',
+        'jumlahKaryawan', 'jumlahBidang', 'jumlahRuangan',
+        'karyawanTanpaAkun', 'karyawanTanpaTtd',
+        'perRole', 'topRuangan',
+        'akunTerbaru', 'karyawanTerbaru'
+    ));
+        }
+    // public function index()
+    // {
+    //     $authUser = Auth::user();
 
-    return view('admin.dashboard', [
-        'authUser'     => $authUser,
-    ]);
-    }
+    // return view('admin.dashboard', [
+    //     'authUser'     => $authUser,
+    // ]);
+    // }
 
     // public function karyawan()
     // {
@@ -263,7 +310,7 @@ public function akun(Request $request)
         ->orderBy('nama', 'asc')
         ->get();
 
-        $bidang = bidang::all();
+        $bidang = Bidang::all();
 
     return view('admin.akun', [
         'authUser'      => $authUser,

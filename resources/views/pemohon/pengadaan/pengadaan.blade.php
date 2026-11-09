@@ -136,7 +136,7 @@
                 </div>
 
                 <!-- FILTER KATEGORI -->
-                <div class="col-md-2">
+                <!-- <div class="col-md-2">
                     <label class="form-label fw-semibold small text-muted">
                         <i class="bi bi-tag me-1"></i> Kategori
                     </label>
@@ -145,7 +145,7 @@
                         <option value="pemeliharaan" {{ request('kategori') == 'pemeliharaan' ? 'selected' : '' }}>Pemeliharaan</option>
                         <option value="pengadaan" {{ request('kategori') == 'pengadaan' ? 'selected' : '' }}>Pengadaan</option>
                     </select>
-                </div>
+                </div> -->
 
                 <div class="col-md-3">
                     <label class="form-label fw-semibold small text-muted">

@@ -158,10 +158,10 @@
 
                         <div class="col-md-4">
                             <label class="form-label fw-semibold small">
-                                Bidang <span class="text-danger">*</span>
+                                type Usulan <span class="text-danger">*</span>
                             </label>
                             <select name="bidang_id" class="form-select" required>
-                                <option value="">-- Pilih barang --</option>
+                                <option value="">-- Pilih usulan --</option>
                                 @foreach($bidangs as $bidang)
                                     <option value="{{ $bidang->id }}">{{ $bidang->nama_bidang }}</option>
                                 @endforeach

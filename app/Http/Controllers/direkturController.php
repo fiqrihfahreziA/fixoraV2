@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Models\Bidang;
@@ -11,7 +12,7 @@ use App\Models\detail_barang;
 use App\Models\barang_tersedia;
 use App\Models\Pengajuan;
 use App\Models\Pengajuan_item;
-use App\Models\Karyawan;
+use App\Models\karyawan;
 use Illuminate\Support\Facades\DB; 
 use App\Models\RequestModel;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +22,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+
 
 
 class direkturController extends Controller
@@ -162,6 +164,7 @@ class direkturController extends Controller
         'countPemeliharaan'
     ));
 }
+
  public function editprofile()
     {
         $authUser = Auth::user();
@@ -1365,6 +1368,218 @@ public function preview()
 
         return $statuses[$status] ?? $status;
     }
+
+
+        private const EXCLUDE_STATUS = ['draft'];
+
+    /** Pengelompokan status untuk doughnut & rasio. Sisanya masuk "Lainnya". */
+    private const BUCKETS = [
+        'disetujui'         => ['label' => 'Disetujui',         'status' => ['disetujui', 'selesai']],
+        'ditolak'           => ['label' => 'Ditolak',           'status' => ['ditolak']],
+        'menunggu_direktur' => ['label' => 'Menunggu Direktur', 'status' => ['menunggu_direktur']],
+        'menunggu_keuangan' => ['label' => 'Menunggu Keuangan', 'status' => ['menunggu_keuangan', 'menunggu_kpa']],
+    ];
+
+    public function chart(Request $request)
+    {
+        // ---------- Filter ----------
+        $listTahun = Pengajuan::query()
+            ->whereNotNull('tanggal_pengajuan')
+            ->whereNotIn('status', self::EXCLUDE_STATUS)
+            ->selectRaw('YEAR(tanggal_pengajuan) as tahun')
+            ->distinct()
+            ->orderByDesc('tahun')
+            ->pluck('tahun')
+            ->map(fn ($t) => (int) $t);
+
+        if (! $listTahun->contains(now()->year)) {
+            $listTahun->prepend(now()->year);
+        }
+
+        $tahun = (int) $request->input('tahun', now()->year);
+        if (! $listTahun->contains($tahun)) {
+            $tahun = now()->year;
+        }
+
+        $kategori = in_array($request->input('kategori'), ['pengadaan', 'pemeliharaan'], true)
+            ? $request->input('kategori')
+            : null;
+
+        // ---------- Status (doughnut + rasio + KPI) ----------
+        $statusCounts = $this->base($tahun, $kategori)
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $total = (int) $statusCounts->sum();
+
+        $statusChart = [];
+        $assigned    = 0;
+        foreach (self::BUCKETS as $key => $bucket) {
+            $value = (int) collect($bucket['status'])->sum(fn ($s) => (int) ($statusCounts[$s] ?? 0));
+            $assigned += $value;
+            $statusChart[] = ['key' => $key, 'label' => $bucket['label'], 'value' => $value];
+        }
+        $statusChart[] = ['key' => 'lainnya', 'label' => 'Lainnya', 'value' => max($total - $assigned, 0)];
+
+        $disetujui = $statusChart[0]['value'];
+        $ditolak   = $statusChart[1]['value'];
+        $diproses  = max($total - $disetujui - $ditolak, 0);
+        $pct       = fn ($n) => $total > 0 ? round($n / $total * 100, 1) : 0;
+
+        // ---------- KPI ----------
+        $byKategori = $this->base($tahun, null)
+            ->selectRaw('kategori, COUNT(*) as total')
+            ->groupBy('kategori')
+            ->pluck('total', 'kategori');
+
+        $prevTotal = $this->base($tahun - 1, $kategori)->count();
+        $growth    = $prevTotal > 0 ? round(($total - $prevTotal) / $prevTotal * 100, 1) : null;
+
+        $kpi = [
+            'total'        => $total,
+            'pengadaan'    => (int) ($byKategori['pengadaan'] ?? 0),
+            'pemeliharaan' => (int) ($byKategori['pemeliharaan'] ?? 0),
+            'disetujui'    => $disetujui,
+            'ditolak'      => $ditolak,
+            'diproses'     => $diproses,
+            'prevTotal'    => $prevTotal,
+            'growth'       => $growth,
+            'rasio'        => [
+                'disetujui' => $pct($disetujui),
+                'ditolak'   => $pct($ditolak),
+                'diproses'  => $pct($diproses),
+            ],
+        ];
+
+        // ---------- Per bidang (Top 10) ----------
+        $perBidang = $this->base($tahun, $kategori)
+            ->selectRaw('bidang_id, COUNT(*) as total')
+            ->groupBy('bidang_id')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        $namaBidang = Bidang::whereKey($perBidang->pluck('bidang_id')->filter())->get()
+            ->mapWithKeys(fn ($b) => [$b->getKey() => $this->namaBidang($b)]);
+
+        // ---------- Top 10 barang paling banyak diminta ----------
+        // Nama tabel & kolom relasi diambil dari relasi items() agar tidak perlu ditebak.
+        $rel       = (new Pengajuan)->items();
+        $itemTable = $rel->getRelated()->getTable();
+
+        $topBarang = $this->base($tahun, $kategori)
+            ->join($itemTable, $rel->getQualifiedForeignKeyName(), '=', $rel->getQualifiedParentKeyName())
+            ->selectRaw("LOWER(TRIM({$itemTable}.nama_barang)) as kunci, MIN({$itemTable}.nama_barang) as label, COUNT(*) as total")
+            // Kalau tabel item punya kolom jumlah/qty dan ingin dihitung per unit:
+            // ->selectRaw("... SUM({$itemTable}.jumlah) as total")
+            ->groupBy('kunci')
+            ->orderByDesc('total')
+            ->limit(10)
+            ->get();
+
+        // ---------- Total per tahun (semua tahun, pengadaan vs pemeliharaan) ----------
+        $perTahunRows = Pengajuan::query()
+            ->whereNotIn('status', self::EXCLUDE_STATUS)
+            ->whereNotNull('tanggal_pengajuan')
+            ->selectRaw('YEAR(tanggal_pengajuan) as tahun, kategori, COUNT(*) as total')
+            ->groupBy('tahun', 'kategori')
+            ->get();
+
+        $tahunLabels = $perTahunRows->pluck('tahun')->unique()->sort()->values();
+
+        // ---------- Pengajuan terbaru ----------
+        $terbaru = Pengajuan::with('bidang')
+            ->whereNotIn('status', self::EXCLUDE_STATUS)
+            ->orderByDesc('created_at')
+            ->limit(6)
+            ->get()
+            ->map(fn ($p) => [
+                'no'       => $p->no_pengajuan,
+                'bidang'   => $this->namaBidang($p->bidang),
+                'kategori' => $p->kategori,
+                'status'   => ucwords(str_replace('_', ' ', (string) $p->status)),
+                'bucket'   => $this->bucketOf($p->status),
+                'tanggal'  => $p->tanggal_pengajuan
+                    ? Carbon::parse($p->tanggal_pengajuan)->translatedFormat('d M Y')
+                    : '-',
+            ]);
+
+        // ---------- Data untuk Chart.js ----------
+        $chart = [
+            'tahun'      => $tahun,
+            'tahunLalu'  => $tahun - 1,
+            'tren'       => [
+                'now'  => $this->perBulan($tahun, $kategori),
+                'prev' => $this->perBulan($tahun - 1, $kategori),
+            ],
+            'status'     => $statusChart,
+            'bidang'     => [
+                'labels' => $perBidang->map(fn ($r) => $namaBidang[$r->bidang_id] ?? 'Tanpa bidang')->values(),
+                'values' => $perBidang->pluck('total')->map(fn ($v) => (int) $v)->values(),
+            ],
+            'kategori'   => [
+                'pengadaan'    => $this->perBulan($tahun, 'pengadaan'),
+                'pemeliharaan' => $this->perBulan($tahun, 'pemeliharaan'),
+            ],
+            'barang'     => [
+                'labels' => $topBarang->pluck('label')->values(),
+                'values' => $topBarang->pluck('total')->map(fn ($v) => (int) $v)->values(),
+            ],
+            'perTahun'   => [
+                'labels'       => $tahunLabels,
+                'pengadaan'    => $tahunLabels->map(fn ($t) => (int) $perTahunRows->where('tahun', $t)->where('kategori', 'pengadaan')->sum('total'))->values(),
+                'pemeliharaan' => $tahunLabels->map(fn ($t) => (int) $perTahunRows->where('tahun', $t)->where('kategori', 'pemeliharaan')->sum('total'))->values(),
+            ],
+        ];
+
+        return view('direktur.pengadaan.chart', compact('tahun', 'kategori', 'listTahun', 'kpi', 'chart', 'terbaru'));
+    }
+
+    /** Query dasar: bukan draft, di tahun terpilih, dan (opsional) satu kategori. */
+    private function base(int $tahun, ?string $kategori)
+    {
+        $t = (new Pengajuan)->getTable();
+
+        return Pengajuan::query()
+            ->whereNotIn("{$t}.status", self::EXCLUDE_STATUS)
+            ->whereYear("{$t}.tanggal_pengajuan", $tahun)
+            ->when($kategori, fn ($q) => $q->where("{$t}.kategori", $kategori));
+    }
+
+    /** Jumlah pengajuan per bulan (indeks 0 = Januari ... 11 = Desember). */
+    private function perBulan(int $tahun, ?string $kategori): array
+    {
+        $rows = $this->base($tahun, $kategori)
+            ->selectRaw('MONTH(tanggal_pengajuan) as bulan, COUNT(*) as total')
+            ->groupBy('bulan')
+            ->pluck('total', 'bulan');
+
+        return array_map(fn ($m) => (int) ($rows[$m] ?? 0), range(1, 12));
+    }
+
+    private function bucketOf(?string $status): string
+    {
+        foreach (self::BUCKETS as $key => $bucket) {
+            if (in_array($status, $bucket['status'], true)) {
+                return $key;
+            }
+        }
+
+        return 'lainnya';
+    }
+
+    /** Sesuaikan jika nama kolom di tabel bidang bukan nama_bidang / nama. */
+    private function namaBidang($bidang): string
+    {
+        if (! $bidang) {
+            return '-';
+        }
+
+        return $bidang->nama_bidang ?? $bidang->nama ?? ('Bidang #' . $bidang->getKey());
+    }
+
+
 
 
 }
