@@ -1519,63 +1519,134 @@ private function uploadFile($request, $fieldName, $folderName)
 }
 
 
-    public function submit($id)
-    {
-        try {
-            $authUser = Auth::user();
-            $karyawanId = $authUser->karyawan->id ?? null;
+public function submit($id)
+{
+    try {
+        $authUser = Auth::user();
+        $karyawanId = $authUser->karyawan->id ?? null;
 
-            $pengajuan = Pengajuan::where('karyawan_id', $karyawanId)
-                ->whereIn('status', ['draft', 'revisi'])
-                ->findOrFail($id);
+        $pengajuan = Pengajuan::where('karyawan_id', $karyawanId)
+            ->whereIn('status', ['draft', 'revisi'])
+            ->findOrFail($id);
 
-            // Ubah status pengajuan
-            $pengajuan->update([
-                'status' => 'diajukan',
-                'diajukan_at' => now(),
-            ]);
+        // Ubah status pengajuan
+        $pengajuan->update([
+            'status' => 'diajukan',
+            'diajukan_at' => now(),
+        ]);
 
-            // Ambil semua akun Penerima yang sudah terhubung Telegram
-            $penerimas = User::where('role', 'penerima')
-                ->whereNotNull('telegram_chat_id')
-                ->get();
+        // Ambil akun Penerima berdasarkan role atau role2
+        // Hanya yang sudah terhubung Telegram
+        $penerimas = User::where(function ($query) {
+                $query->where('role', 'penerima')
+                      ->orWhere('role2', 'penerima');
+            })
+            ->whereNotNull('telegram_chat_id')
+            ->get();
 
-            $token = config('services.telegram.bot_token');
+        $token = config('services.telegram.bot_token');
 
-            // Kirim notifikasi Telegram
-            if ($token) {
-                foreach ($penerimas as $penerima) {
-                    try {
-                        Http::timeout(15)->post(
-                            "https://api.telegram.org/bot{$token}/sendMessage",
-                            [
-                                'chat_id' => $penerima->telegram_chat_id,
-                                'text' => "📢 PENGAJUAN BARU\n\n"
-                                    . "Pemohon: {$authUser->name}\n"
-                                    . "Status: DIAJUKAN\n\n"
-                                    . "Silakan buka aplikasi Fixora untuk memeriksa pengajuan.",
-                            ]
-                        );
-                    } catch (\Exception $e) {
-                        Log::error('Gagal mengirim notifikasi Telegram: ' . $e->getMessage());
+        // Kirim notifikasi Telegram
+        if ($token) {
+            foreach ($penerimas as $penerima) {
+                try {
+                    $response = Http::timeout(15)->post(
+                        "https://api.telegram.org/bot{$token}/sendMessage",
+                        [
+                            'chat_id' => $penerima->telegram_chat_id,
+                            'text' => "📢 PENGAJUAN BARU\n\n"
+                                . "Pemohon: {$authUser->name}\n"
+                                . "Status: DIAJUKAN\n\n"
+                                . "Silakan buka aplikasi Fixora untuk memeriksa pengajuan.",
+                        ]
+                    );
+
+                    if (!$response->successful()) {
+                        Log::error('Gagal mengirim Telegram ke Penerima', [
+                            'penerima_id' => $penerima->id,
+                            'response' => $response->body(),
+                        ]);
                     }
+
+                } catch (\Exception $e) {
+                    Log::error('Gagal mengirim notifikasi Telegram: ' . $e->getMessage());
                 }
             }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Pengajuan berhasil diajukan!'
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Gagal mengajukan pengajuan: ' . $e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Pengajuan berhasil diajukan!'
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error('Gagal mengajukan pengajuan: ' . $e->getMessage());
+
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage()
+        ], 500);
     }
+}
+
+
+    // public function submit($id)
+    // {
+    //     try {
+    //         $authUser = Auth::user();
+    //         $karyawanId = $authUser->karyawan->id ?? null;
+
+    //         $pengajuan = Pengajuan::where('karyawan_id', $karyawanId)
+    //             ->whereIn('status', ['draft', 'revisi'])
+    //             ->findOrFail($id);
+
+    //         // Ubah status pengajuan
+    //         $pengajuan->update([
+    //             'status' => 'diajukan',
+    //             'diajukan_at' => now(),
+    //         ]);
+
+    //         // Ambil semua akun Penerima yang sudah terhubung Telegram
+    //         $penerimas = User::where('role', 'penerima')
+    //             ->whereNotNull('telegram_chat_id')
+    //             ->get();
+
+    //         $token = config('services.telegram.bot_token');
+
+    //         // Kirim notifikasi Telegram
+    //         if ($token) {
+    //             foreach ($penerimas as $penerima) {
+    //                 try {
+    //                     Http::timeout(15)->post(
+    //                         "https://api.telegram.org/bot{$token}/sendMessage",
+    //                         [
+    //                             'chat_id' => $penerima->telegram_chat_id,
+    //                             'text' => "📢 PENGAJUAN BARU\n\n"
+    //                                 . "Pemohon: {$authUser->name}\n"
+    //                                 . "Status: DIAJUKAN\n\n"
+    //                                 . "Silakan buka aplikasi Fixora untuk memeriksa pengajuan.",
+    //                         ]
+    //                     );
+    //                 } catch (\Exception $e) {
+    //                     Log::error('Gagal mengirim notifikasi Telegram: ' . $e->getMessage());
+    //                 }
+    //             }
+    //         }
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Pengajuan berhasil diajukan!'
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         Log::error('Gagal mengajukan pengajuan: ' . $e->getMessage());
+
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
 
 // public function submit($id)

@@ -23,6 +23,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Traits\StatusTrait; 
+use Illuminate\Support\Facades\Http;
 
 
 class AtasanController extends Controller
@@ -560,7 +561,6 @@ public function verifikasi(Request $request, $id)
 
         if ($isAlatKesehatan) {
 
-            // KHUSUS ALAT KESEHATAN
             if ($authUser->subrole === 'kabid_pelayanan') {
 
                 $data['id_acc_kabidPelayanan'] = $request->atasan_id;
@@ -588,7 +588,6 @@ public function verifikasi(Request $request, $id)
 
         } else {
 
-            // SELAIN ALAT KESEHATAN
             $data['id_acc_kabidPenunjang'] = $request->atasan_id;
 
             if ($isDitolak) {
@@ -600,7 +599,7 @@ public function verifikasi(Request $request, $id)
             }
         }
 
-        // Hanya set tanggal jika status disetujui atau survei
+        // Tanggal persetujuan
         if (in_array($request->status_verifikasi, ['disetujui_kabid', 'survei'])) {
             $data['disetujui_kabid_at'] = now();
         } else {
@@ -610,11 +609,59 @@ public function verifikasi(Request $request, $id)
         // Update pengajuan
         $pengajuan->update($data);
 
+        // =====================================
+        // NOTIFIKASI TELEGRAM KE ROLE PPK
+        // =====================================
+
+        if ($request->status_verifikasi === 'disetujui_kabid') {
+
+            // Cari PPK berdasarkan role atau role2
+            // Hanya user yang sudah menghubungkan Telegram
+            $ppks = User::where(function ($query) {
+                    $query->where('role', 'ppk')
+                          ->orWhere('role2', 'ppk');
+                })
+                ->whereNotNull('telegram_chat_id')
+                ->get();
+
+            $token = config('services.telegram.bot_token');
+
+            if ($token) {
+                foreach ($ppks as $ppk) {
+                    try {
+                        $response = Http::timeout(15)->post(
+                            "https://api.telegram.org/bot{$token}/sendMessage",
+                            [
+                                'chat_id' => $ppk->telegram_chat_id,
+                                'text' => "📢 PENGAJUAN DISETUJUI KABID\n\n"
+                                    . "Ada pengajuan yang telah disetujui oleh Kepala Bidang.\n\n"
+                                    . "Status: DISETUJUI KABID\n"
+                                    . "Catatan: {$request->catatan_verifikasi}\n\n"
+                                    . "Silakan buka aplikasi Fixora untuk pemeriksaan selanjutnya."
+                            ]
+                        );
+
+                        if (!$response->successful()) {
+                            Log::error('Gagal mengirim Telegram ke PPK', [
+                                'ppk_id' => $ppk->id,
+                                'response' => $response->body(),
+                            ]);
+                        }
+
+                    } catch (\Exception $e) {
+                        Log::error('Error Telegram PPK: ' . $e->getMessage());
+                    }
+                }
+            }
+        }
+
         return redirect()
             ->route('atasan.pengadaan')
             ->with('success', '✅ Pengajuan berhasil diverifikasi!');
 
     } catch (\Exception $e) {
+
+        Log::error('Gagal verifikasi Atasan: ' . $e->getMessage());
 
         return back()
             ->withInput()
@@ -635,10 +682,10 @@ public function verifikasi(Request $request, $id)
 //         $pengajuan = Pengajuan::findOrFail($id);
 //         $authUser  = Auth::user();
 
-//         // sesuaikan nama field & value bidangnya
+//         // Cek bidang alat kesehatan
 //         $isAlatKesehatan = $pengajuan->bidang->nama_bidang === 'alat kesehatan';
 
-//         // Mapping status untuk konsistensi
+//         // Mapping status
 //         $statusMap = [
 //             'disetujui_kabid' => 'disetujui_kabid',
 //             'ditolak'         => 'ditolak_bidang',
@@ -655,34 +702,59 @@ public function verifikasi(Request $request, $id)
 //             'log_status_atasan' => $newStatus,
 //         ];
 
+//         // Tentukan apakah pengajuan ditolak
+//         $isDitolak = $request->status_verifikasi === 'ditolak';
+
 //         if ($isAlatKesehatan) {
-//             // --- Khusus alat kesehatan: pakai subrole ---
+
+//             // KHUSUS ALAT KESEHATAN
 //             if ($authUser->subrole === 'kabid_pelayanan') {
-//                 $data['id_acc_kabidPelayanan']  = $request->atasan_id;
-//                 $data['acc_kabidPelayanan_at']  = now();
-//                 $data['log_acc_kabidPelayanan'] = 'disetujui oleh kabid pelayanan';
+
+//                 $data['id_acc_kabidPelayanan'] = $request->atasan_id;
+
+//                 if ($isDitolak) {
+//                     $data['acc_kabidPelayanan_at'] = null;
+//                     $data['log_acc_kabidPelayanan'] = null;
+//                 } else {
+//                     $data['acc_kabidPelayanan_at'] = now();
+//                     $data['log_acc_kabidPelayanan'] = 'disetujui oleh kabid pelayanan';
+//                 }
 
 //             } elseif ($authUser->subrole === 'kabid_penunjang') {
-//                 $data['id_acc_kabidPenunjang']  = $request->atasan_id;
-//                 $data['acc_kabidPenunjang_at']  = now();
-//                 $data['log_acc_kabidPenunjang'] = 'disetujui oleh kabid penunjang';
 
-//             } else {
-//                 // Subrole lain / tidak dikenali: tidak mengisi kolom ACC khusus
+//                 $data['id_acc_kabidPenunjang'] = $request->atasan_id;
+
+//                 if ($isDitolak) {
+//                     $data['acc_kabidPenunjang_at'] = null;
+//                     $data['log_acc_kabidPenunjang'] = null;
+//                 } else {
+//                     $data['acc_kabidPenunjang_at'] = now();
+//                     $data['log_acc_kabidPenunjang'] = 'disetujui oleh kabid penunjang';
+//                 }
 //             }
+
 //         } else {
-//             // --- Selain alat kesehatan: tetap isi log_acc_kabidPenunjang ---
-//             // tanpa peduli subrole-nya apa (kabid tanpa subrole tetap bisa)
-//             $data['id_acc_kabidPenunjang']  = $request->atasan_id;
-//             $data['acc_kabidPenunjang_at']  = now();
-//             $data['log_acc_kabidPenunjang'] = 'disetujui oleh kabid penunjang';
+
+//             // SELAIN ALAT KESEHATAN
+//             $data['id_acc_kabidPenunjang'] = $request->atasan_id;
+
+//             if ($isDitolak) {
+//                 $data['acc_kabidPenunjang_at'] = null;
+//                 $data['log_acc_kabidPenunjang'] = null;
+//             } else {
+//                 $data['acc_kabidPenunjang_at'] = now();
+//                 $data['log_acc_kabidPenunjang'] = 'disetujui oleh kabid penunjang';
+//             }
 //         }
 
-//         // Hanya set tanggal jika statusnya disetujui
+//         // Hanya set tanggal jika status disetujui atau survei
 //         if (in_array($request->status_verifikasi, ['disetujui_kabid', 'survei'])) {
 //             $data['disetujui_kabid_at'] = now();
+//         } else {
+//             $data['disetujui_kabid_at'] = null;
 //         }
 
+//         // Update pengajuan
 //         $pengajuan->update($data);
 
 //         return redirect()
@@ -690,12 +762,12 @@ public function verifikasi(Request $request, $id)
 //             ->with('success', '✅ Pengajuan berhasil diverifikasi!');
 
 //     } catch (\Exception $e) {
+
 //         return back()
 //             ->withInput()
 //             ->with('error', '❌ Gagal verifikasi: ' . $e->getMessage());
 //     }
 // }
-
 
    public function chartIndex(Request $request)
     {
