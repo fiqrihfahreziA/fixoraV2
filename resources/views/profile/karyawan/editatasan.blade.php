@@ -30,6 +30,32 @@
                 <div class="card-body">
 
                     <form action="{{ route('atasan.profile.karyawan.update') }}" method="POST" enctype="multipart/form-data">
+                        
+                        {{-- NOTIFIKASI TELEGRAM --}}
+                        <div class="alert alert-info mt-4">
+                            <h6 class="fw-bold">
+                                <i class="bi bi-telegram"></i> Notifikasi Telegram
+                            </h6>
+
+                            @if($authUser->telegram_chat_id)
+                                <p class="mb-2 text-success">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    Telegram sudah terhubung.
+                                </p>
+                            @else
+                                <p class="mb-2">
+                                    Hubungkan Telegram agar menerima pemberitahuan
+                                    ketika pengajuan disetujui oleh Penerima.
+                                </p>
+
+                                <a href="{{ route('atasan.telegram.connect') }}"
+                                class="btn btn-info text-white">
+                                    <i class="bi bi-telegram"></i>
+                                    Hubungkan Telegram
+                                </a>
+                            @endif
+                        </div>
+
                         @csrf
                         @method('PUT')
 

@@ -1359,53 +1359,135 @@ public function chartpengadaan(Request $request)
     return view('penerima.pengadaan.show', compact('pengajuan', 'authUser'));
 }
 
-public function verifikasi(Request $request, $id)
-{
-    $request->validate([
-        'status_verifikasi' => 'required|in:disetujui_koordinator,ditolak,revisi,survei',
-        'catatan_verifikasi' => 'required|string|min:5',
-        'penerima_id' => 'required'
-    ]);
-
-    try {
-        $pengajuan = Pengajuan::findOrFail($id);
-        
-        $statusMap = [
-            'disetujui_koordinator' => 'disetujui_koordinator',
-            'ditolak' => 'ditolak',
-            'revisi' => 'revisi',
-            'survei' => 'perlu survei perbaikan'
-            
-        ];
-        
-        // Mapping untuk log_penerima (CUKUP STATUS SAJA)
-        $logMap = [
-            'disetujui_koordinator' => 'disetujui',
-            'ditolak' => 'ditolak',
-            'revisi' => 'revisi',
-            'survei' => 'perlu survei perbaikan'
-        ];
-        
-        $newStatus = $statusMap[$request->status_verifikasi];
-        
-        $pengajuan->update([
-            'status' => $newStatus,
-            'penerima_id' => $request->penerima_id,
-            'catatan_unit' => $request->catatan_verifikasi,
-            'diterima_at' => $request->status_verifikasi == 'disetujui_koordinator' ? now() : null,
-            'log_status_penerima' => $newStatus, // ✅ CUKUP STATUS
+    public function verifikasi(Request $request, $id)
+    {
+        $request->validate([
+            'status_verifikasi' => 'required|in:disetujui_koordinator,ditolak,revisi,survei',
+            'catatan_verifikasi' => 'required|string|min:5',
+            'penerima_id' => 'required'
         ]);
 
-        return redirect()
-            ->route('penerima.chartp')
-            ->with('success', '✅ Pengajuan berhasil diverifikasi!');
+        try {
+            $pengajuan = Pengajuan::findOrFail($id);
 
-    } catch (\Exception $e) {
-        return back()
-            ->withInput()
-            ->with('error', '❌ Gagal verifikasi: ' . $e->getMessage());
+            $statusMap = [
+                'disetujui_koordinator' => 'disetujui_koordinator',
+                'ditolak' => 'ditolak',
+                'revisi' => 'revisi',
+                'survei' => 'perlu survei perbaikan'
+            ];
+
+            $newStatus = $statusMap[$request->status_verifikasi];
+
+            // Simpan perubahan status pengajuan
+            $pengajuan->update([
+                'status' => $newStatus,
+                'penerima_id' => $request->penerima_id,
+                'catatan_unit' => $request->catatan_verifikasi,
+                'diterima_at' => $request->status_verifikasi == 'disetujui_koordinator'
+                    ? now()
+                    : null,
+                'log_status_penerima' => $newStatus,
+            ]);
+
+            // Kirim notifikasi hanya jika disetujui koordinator
+            if ($request->status_verifikasi == 'disetujui_koordinator') {
+
+                // Cari semua akun Atasan yang sudah terhubung Telegram
+                $atasans = User::where('role', 'atasan')
+                    ->whereNotNull('telegram_chat_id')
+                    ->get();
+
+                $token = config('services.telegram.bot_token');
+
+                if ($token) {
+                    foreach ($atasans as $atasan) {
+                        try {
+                            $response = Http::timeout(15)->post(
+                                "https://api.telegram.org/bot{$token}/sendMessage",
+                                [
+                                    'chat_id' => $atasan->telegram_chat_id,
+                                    'text' => "📢 PENGAJUAN DISETUJUI PENERIMA\n\n"
+                                        . "Ada pengajuan yang telah disetujui oleh Penerima.\n"
+                                        . "Status: DISETUJUI KOORDINATOR\n\n"
+                                        . "Catatan: {$request->catatan_verifikasi}\n\n"
+                                        . "Silakan buka aplikasi Fixora untuk melakukan pemeriksaan selanjutnya."
+                                ]
+                            );
+
+                            if (!$response->successful()) {
+                                Log::error('Telegram gagal mengirim ke Atasan', [
+                                    'atasan_id' => $atasan->id,
+                                    'response' => $response->body()
+                                ]);
+                            }
+
+                        } catch (\Exception $e) {
+                            Log::error('Gagal mengirim Telegram ke Atasan: ' . $e->getMessage());
+                        }
+                    }
+                }
+            }
+
+            return redirect()
+                ->route('penerima.chartp')
+                ->with('success', '✅ Pengajuan berhasil diverifikasi!');
+
+        } catch (\Exception $e) {
+            Log::error('Gagal verifikasi pengajuan: ' . $e->getMessage());
+
+            return back()
+                ->withInput()
+                ->with('error', '❌ Gagal verifikasi: ' . $e->getMessage());
+        }
     }
-}
+// public function verifikasi(Request $request, $id)
+// {
+//     $request->validate([
+//         'status_verifikasi' => 'required|in:disetujui_koordinator,ditolak,revisi,survei',
+//         'catatan_verifikasi' => 'required|string|min:5',
+//         'penerima_id' => 'required'
+//     ]);
+
+//     try {
+//         $pengajuan = Pengajuan::findOrFail($id);
+        
+//         $statusMap = [
+//             'disetujui_koordinator' => 'disetujui_koordinator',
+//             'ditolak' => 'ditolak',
+//             'revisi' => 'revisi',
+//             'survei' => 'perlu survei perbaikan'
+            
+//         ];
+        
+//         // Mapping untuk log_penerima (CUKUP STATUS SAJA)
+//         $logMap = [
+//             'disetujui_koordinator' => 'disetujui',
+//             'ditolak' => 'ditolak',
+//             'revisi' => 'revisi',
+//             'survei' => 'perlu survei perbaikan'
+//         ];
+        
+//         $newStatus = $statusMap[$request->status_verifikasi];
+        
+//         $pengajuan->update([
+//             'status' => $newStatus,
+//             'penerima_id' => $request->penerima_id,
+//             'catatan_unit' => $request->catatan_verifikasi,
+//             'diterima_at' => $request->status_verifikasi == 'disetujui_koordinator' ? now() : null,
+//             'log_status_penerima' => $newStatus, // ✅ CUKUP STATUS
+//         ]);
+
+//         return redirect()
+//             ->route('penerima.chartp')
+//             ->with('success', '✅ Pengajuan berhasil diverifikasi!');
+
+//     } catch (\Exception $e) {
+//         return back()
+//             ->withInput()
+//             ->with('error', '❌ Gagal verifikasi: ' . $e->getMessage());
+//     }
+// }
 
 
 // public function reportPengadaan(Request $request)

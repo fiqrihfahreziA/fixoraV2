@@ -6,7 +6,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\AtasanController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
-
+use App\Http\Controllers\TelegramController;
 
 // Route::get('/admin/login', function () {
 //     return view('auth.admin-login');
@@ -60,6 +60,15 @@ Route::middleware(['auth', 'role:atasan'])
         Route::put('/pengadaan/{id}/update-item', [AtasanController::class, 'updateItem'])
             ->name('pengadaan.updateItem');
         Route::get('/profile-saya', [AtasanController::class, 'editprofile'])->name('profile.karyawan.edit');
-         Route::put('/profile-saya', [AtasanController::class, 'updateprofile'])->name('profile.karyawan.update');
-    });
+        Route::put('/profile-saya', [AtasanController::class, 'updateprofile'])->name('profile.karyawan.update');
+        Route::get('/telegram/connect', [
+            \App\Http\Controllers\TelegramController::class,
+            'connect'
+        ])->name('telegram.connect');
 
+         });
+
+Route::post('/telegram/webhook', [
+    TelegramController::class,
+    'webhook'
+])->name('telegram.webhook');

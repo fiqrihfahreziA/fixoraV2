@@ -36,6 +36,29 @@
                 </div>
                 <div class="card-body">
 
+                    {{-- Hubungkan Telegram --}}
+                    <div class="alert alert-info">
+                        <h6 class="fw-bold">
+                            <i class="bi bi-telegram"></i> Notifikasi Telegram
+                        </h6>
+
+                        @if($authUser->telegram_chat_id)
+                            <p class="mb-2 text-success">
+                                <i class="bi bi-check-circle-fill"></i>
+                                Telegram sudah terhubung.
+                            </p>
+                        @else
+                            <p class="mb-2">
+                                Hubungkan Telegram agar kamu menerima pemberitahuan
+                                ketika status pengajuan berubah.
+                            </p>
+
+                            <a href="{{ route('penerima.telegram.connect') }}"
+                            class="btn btn-info text-white">
+                                <i class="bi bi-telegram"></i> Hubungkan Telegram
+                            </a>
+                        @endif
+                    </div>
                     <form action="{{ route('penerima.profile.karyawan.update') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')

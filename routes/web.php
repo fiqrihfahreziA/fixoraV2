@@ -9,7 +9,7 @@ use App\Http\Controllers\AtasanController;
 use App\Http\Controllers\PemohonController;
 use App\Http\Controllers\DualroleController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-
+use App\Http\Controllers\TelegramController;
 
 Route::get('/p', function () {
     return view('welcome');
@@ -100,7 +100,10 @@ Route::middleware(['auth', 'dual.role:keuangan'])
        
     });
 
-
+Route::post('/telegram/webhook', [
+    TelegramController::class,
+    'webhook'
+])->name('telegram.webhook');
 // Route::middleware(['auth', 'role:pemohon'])->get('/pemohon', [PemohonController::class, 'index']);
 // Route::middleware(['auth', 'role:penerima'])->get('/penerima', [PenerimaController::class, 'index']);
 // Route::middleware(['auth', 'role:atasan'])->get('/atasan', [AtasanController::class, 'index']);

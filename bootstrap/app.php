@@ -20,7 +20,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
         'dual.role' => DualRoleMiddleware::class,
     ]);
-
+    
+     // Pengecualian CSRF khusus webhook Telegram
+    $middleware->validateCsrfTokens(except: [
+        'telegram/webhook',
+    ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

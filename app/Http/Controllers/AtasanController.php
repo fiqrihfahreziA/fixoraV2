@@ -522,6 +522,7 @@ public function pengadaanshow(Request $request)
 }
 
 
+
 public function verifikasi(Request $request, $id)
 {
     $request->validate([
@@ -534,10 +535,10 @@ public function verifikasi(Request $request, $id)
         $pengajuan = Pengajuan::findOrFail($id);
         $authUser  = Auth::user();
 
-        // sesuaikan nama field & value bidangnya
+        // Cek bidang alat kesehatan
         $isAlatKesehatan = $pengajuan->bidang->nama_bidang === 'alat kesehatan';
 
-        // Mapping status untuk konsistensi
+        // Mapping status
         $statusMap = [
             'disetujui_kabid' => 'disetujui_kabid',
             'ditolak'         => 'ditolak_bidang',
@@ -554,34 +555,59 @@ public function verifikasi(Request $request, $id)
             'log_status_atasan' => $newStatus,
         ];
 
+        // Tentukan apakah pengajuan ditolak
+        $isDitolak = $request->status_verifikasi === 'ditolak';
+
         if ($isAlatKesehatan) {
-            // --- Khusus alat kesehatan: pakai subrole ---
+
+            // KHUSUS ALAT KESEHATAN
             if ($authUser->subrole === 'kabid_pelayanan') {
-                $data['id_acc_kabidPelayanan']  = $request->atasan_id;
-                $data['acc_kabidPelayanan_at']  = now();
-                $data['log_acc_kabidPelayanan'] = 'disetujui oleh kabid pelayanan';
+
+                $data['id_acc_kabidPelayanan'] = $request->atasan_id;
+
+                if ($isDitolak) {
+                    $data['acc_kabidPelayanan_at'] = null;
+                    $data['log_acc_kabidPelayanan'] = null;
+                } else {
+                    $data['acc_kabidPelayanan_at'] = now();
+                    $data['log_acc_kabidPelayanan'] = 'disetujui oleh kabid pelayanan';
+                }
 
             } elseif ($authUser->subrole === 'kabid_penunjang') {
-                $data['id_acc_kabidPenunjang']  = $request->atasan_id;
-                $data['acc_kabidPenunjang_at']  = now();
-                $data['log_acc_kabidPenunjang'] = 'disetujui oleh kabid penunjang';
 
-            } else {
-                // Subrole lain / tidak dikenali: tidak mengisi kolom ACC khusus
+                $data['id_acc_kabidPenunjang'] = $request->atasan_id;
+
+                if ($isDitolak) {
+                    $data['acc_kabidPenunjang_at'] = null;
+                    $data['log_acc_kabidPenunjang'] = null;
+                } else {
+                    $data['acc_kabidPenunjang_at'] = now();
+                    $data['log_acc_kabidPenunjang'] = 'disetujui oleh kabid penunjang';
+                }
             }
+
         } else {
-            // --- Selain alat kesehatan: tetap isi log_acc_kabidPenunjang ---
-            // tanpa peduli subrole-nya apa (kabid tanpa subrole tetap bisa)
-            $data['id_acc_kabidPenunjang']  = $request->atasan_id;
-            $data['acc_kabidPenunjang_at']  = now();
-            $data['log_acc_kabidPenunjang'] = 'disetujui oleh kabid penunjang';
+
+            // SELAIN ALAT KESEHATAN
+            $data['id_acc_kabidPenunjang'] = $request->atasan_id;
+
+            if ($isDitolak) {
+                $data['acc_kabidPenunjang_at'] = null;
+                $data['log_acc_kabidPenunjang'] = null;
+            } else {
+                $data['acc_kabidPenunjang_at'] = now();
+                $data['log_acc_kabidPenunjang'] = 'disetujui oleh kabid penunjang';
+            }
         }
 
-        // Hanya set tanggal jika statusnya disetujui
+        // Hanya set tanggal jika status disetujui atau survei
         if (in_array($request->status_verifikasi, ['disetujui_kabid', 'survei'])) {
             $data['disetujui_kabid_at'] = now();
+        } else {
+            $data['disetujui_kabid_at'] = null;
         }
 
+        // Update pengajuan
         $pengajuan->update($data);
 
         return redirect()
@@ -589,11 +615,13 @@ public function verifikasi(Request $request, $id)
             ->with('success', '✅ Pengajuan berhasil diverifikasi!');
 
     } catch (\Exception $e) {
+
         return back()
             ->withInput()
             ->with('error', '❌ Gagal verifikasi: ' . $e->getMessage());
     }
 }
+
 
 // public function verifikasi(Request $request, $id)
 // {
@@ -606,6 +634,9 @@ public function verifikasi(Request $request, $id)
 //     try {
 //         $pengajuan = Pengajuan::findOrFail($id);
 //         $authUser  = Auth::user();
+
+//         // sesuaikan nama field & value bidangnya
+//         $isAlatKesehatan = $pengajuan->bidang->nama_bidang === 'alat kesehatan';
 
 //         // Mapping status untuk konsistensi
 //         $statusMap = [
@@ -624,91 +655,33 @@ public function verifikasi(Request $request, $id)
 //             'log_status_atasan' => $newStatus,
 //         ];
 
-//         // Isi kolom sesuai subrole yang login
-//         if ($authUser->subrole === 'kabid_pelayanan') {
-//             $data['id_acc_kabidPelayanan']  = $request->atasan_id;
-//             $data['acc_kabidPelayanan_at']  = now();
-//             $data['log_acc_kabidPelayanan'] = 'disetujui oleh kabid pelayanan';
+//         if ($isAlatKesehatan) {
+//             // --- Khusus alat kesehatan: pakai subrole ---
+//             if ($authUser->subrole === 'kabid_pelayanan') {
+//                 $data['id_acc_kabidPelayanan']  = $request->atasan_id;
+//                 $data['acc_kabidPelayanan_at']  = now();
+//                 $data['log_acc_kabidPelayanan'] = 'disetujui oleh kabid pelayanan';
 
-//         } elseif ($authUser->subrole === 'kabid_penunjang') {
+//             } elseif ($authUser->subrole === 'kabid_penunjang') {
+//                 $data['id_acc_kabidPenunjang']  = $request->atasan_id;
+//                 $data['acc_kabidPenunjang_at']  = now();
+//                 $data['log_acc_kabidPenunjang'] = 'disetujui oleh kabid penunjang';
+
+//             } else {
+//                 // Subrole lain / tidak dikenali: tidak mengisi kolom ACC khusus
+//             }
+//         } else {
+//             // --- Selain alat kesehatan: tetap isi log_acc_kabidPenunjang ---
+//             // tanpa peduli subrole-nya apa (kabid tanpa subrole tetap bisa)
 //             $data['id_acc_kabidPenunjang']  = $request->atasan_id;
 //             $data['acc_kabidPenunjang_at']  = now();
 //             $data['log_acc_kabidPenunjang'] = 'disetujui oleh kabid penunjang';
-
-//         } else {
-//             // Subrole lain / tidak dikenali: tidak mengisi kolom ACC khusus
 //         }
 
 //         // Hanya set tanggal jika statusnya disetujui
 //         if (in_array($request->status_verifikasi, ['disetujui_kabid', 'survei'])) {
 //             $data['disetujui_kabid_at'] = now();
 //         }
-
-//         $pengajuan->update($data);
-
-//         return redirect()
-//             ->route('atasan.pengadaan')
-//             ->with('success', '✅ Pengajuan berhasil diverifikasi!');
-
-//     } catch (\Exception $e) {
-//         return back()
-//             ->withInput()
-//             ->with('error', '❌ Gagal verifikasi: ' . $e->getMessage());
-//     }
-// }
-
-// public function verifikasi(Request $request, $id)
-// {
-    
-//     $request->validate([
-//         'status_verifikasi' => 'required|in:disetujui_kabid,ditolak,revisi,survei',
-//         'catatan_verifikasi' => 'required|string|min:5',
-//         'atasan_id' => 'required',
-//     ]);
-
-//     try {
-//         $pengajuan = pengajuan::findOrFail($id);
-//          $authUser = Auth::user();
-        
-//         // Mapping status untuk konsistensi
-//         $statusMap = [
-//             'disetujui_kabid' => 'disetujui_kabid',
-//             'ditolak' => 'ditolak_bidang',
-//             'revisi' => 'revisi_bidang',
-//             'survei' => 'sesuai standard',
-//         ];
-        
-//         // Mapping untuk log (CUKUP STATUS SAJA)
-//         $logMap = [
-//             'disetujui_kabid' => 'disetujui_bidang',
-//             'ditolak' => 'ditolak_bidang',
-//             'revisi' => 'revisi_bidang',
-//             'survei' => 'sesuai standard'
-//             ];
-        
-//         $newStatus = $statusMap[$request->status_verifikasi];
-        
-//         $data = [
-//             'status' => $newStatus,
-//             'atasan_id' => $request->atasan_id,
-//             'catatan_bidang' => $request->catatan_verifikasi,
-//             'log_status_atasan' => $newStatus, // ✅ CUKUP STATUS\
-//         ];
-
-//          //  Jika yang login adalah kabid pelayanan, simpan id user-nya
-//         if ($authUser->subrole === 'kabid_pelayanan') {
-//             $data['id_acc_kabidPelayanan'] = $request->atasan_id;
-//             $data['acc_kabidPelayanan_at'] = now();
-//             $data['log_acc_kabidPelayanan'] = 'disetujui oleh kabid pelayanan';
-//         }
-
-//         // Hanya set tanggal jika statusnya disetujui
-//         if (in_array($request->status_verifikasi, ['disetujui_kabid','survei'])) {
-//             $data['disetujui_kabid_at'] = now();
-//         }
-//         // if ($request->status_verifikasi == 'disetujui_kabid') {
-//         //     $data['disetujui_kabid_at'] = now();
-//         // }
 
 //         $pengajuan->update($data);
 

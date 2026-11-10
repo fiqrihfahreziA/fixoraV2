@@ -6,7 +6,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\AtasanController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\direkturController;
-
+use App\Http\Controllers\TelegramController;
 // Route::get('/admin/login', function () {
 //     return view('auth.admin-login');
 // })->name('admin.login');
@@ -40,3 +40,7 @@ Route::middleware(['auth', 'role:direktur'])
 
     });
 
+Route::post('/telegram/webhook', [
+    TelegramController::class,
+    'webhook'
+])->name('telegram.webhook');

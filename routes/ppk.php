@@ -9,7 +9,7 @@ use App\Http\Controllers\AtasanController;
 use App\Http\Controllers\PpkController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Auth;
-
+use App\Http\Controllers\TelegramController;
 
 
 // Route::get('/admin/login', function () {
@@ -34,3 +34,7 @@ Route::middleware(['auth', 'role:ppk'])
 
     });
 
+Route::post('/telegram/webhook', [
+    TelegramController::class,
+    'webhook'
+])->name('telegram.webhook');

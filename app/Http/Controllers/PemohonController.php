@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 
-
+use App\Services\TelegramService;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -17,7 +17,9 @@ use App\Models\Pengajuan;
 use App\Models\Pengajuan_item;
 use Illuminate\Support\Facades\DB; 
 use App\Models\RequestModel;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
+
 
 class PemohonController extends Controller
 {
@@ -1516,35 +1518,95 @@ private function uploadFile($request, $fieldName, $folderName)
     return null;
 }
 
-public function submit($id)
-{
-    try {
-        $authUser = Auth::user();
-        $karyawanId = $authUser->karyawan->id ?? null;
-        
-        $pengajuan = Pengajuan::where('karyawan_id', $karyawanId)
-            ->whereIn('status', ['draft', 'revisi'])
-            ->findOrFail($id);
 
-        $pengajuan->update([
-            'status' => 'diajukan',
-            'diajukan_at' => now(),
-        ]);
+    public function submit($id)
+    {
+        try {
+            $authUser = Auth::user();
+            $karyawanId = $authUser->karyawan->id ?? null;
 
-        // ✅ PASTIKAN RETURN JSON
-        return response()->json([
-            'success' => true,
-            'message' => 'Pengajuan berhasil diajukan!'
-        ]);
+            $pengajuan = Pengajuan::where('karyawan_id', $karyawanId)
+                ->whereIn('status', ['draft', 'revisi'])
+                ->findOrFail($id);
 
-    } catch (\Exception $e) {
-        // ✅ PASTIKAN RETURN JSON
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage()
-        ], 500);
+            // Ubah status pengajuan
+            $pengajuan->update([
+                'status' => 'diajukan',
+                'diajukan_at' => now(),
+            ]);
+
+            // Ambil semua akun Penerima yang sudah terhubung Telegram
+            $penerimas = User::where('role', 'penerima')
+                ->whereNotNull('telegram_chat_id')
+                ->get();
+
+            $token = config('services.telegram.bot_token');
+
+            // Kirim notifikasi Telegram
+            if ($token) {
+                foreach ($penerimas as $penerima) {
+                    try {
+                        Http::timeout(15)->post(
+                            "https://api.telegram.org/bot{$token}/sendMessage",
+                            [
+                                'chat_id' => $penerima->telegram_chat_id,
+                                'text' => "📢 PENGAJUAN BARU\n\n"
+                                    . "Pemohon: {$authUser->name}\n"
+                                    . "Status: DIAJUKAN\n\n"
+                                    . "Silakan buka aplikasi Fixora untuk memeriksa pengajuan.",
+                            ]
+                        );
+                    } catch (\Exception $e) {
+                        Log::error('Gagal mengirim notifikasi Telegram: ' . $e->getMessage());
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pengajuan berhasil diajukan!'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Gagal mengajukan pengajuan: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
-}
+
+
+// public function submit($id)
+// {
+//     try {
+//         $authUser = Auth::user();
+//         $karyawanId = $authUser->karyawan->id ?? null;
+        
+//         $pengajuan = Pengajuan::where('karyawan_id', $karyawanId)
+//             ->whereIn('status', ['draft', 'revisi'])
+//             ->findOrFail($id);
+
+//         $pengajuan->update([
+//             'status' => 'diajukan',
+//             'diajukan_at' => now(),
+//         ]);
+
+//         // ✅ PASTIKAN RETURN JSON
+//         return response()->json([
+//             'success' => true,
+//             'message' => 'Pengajuan berhasil diajukan!'
+//         ]);
+
+//     } catch (\Exception $e) {
+//         // ✅ PASTIKAN RETURN JSON
+//         return response()->json([
+//             'success' => false,
+//             'message' => $e->getMessage()
+//         ], 500);
+//     }
+// }
     
 public function edittt($id)
 {

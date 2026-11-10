@@ -9,7 +9,7 @@ use App\Http\Controllers\AtasanController;
 use App\Http\Controllers\PemohonController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Auth;
-
+use App\Http\Controllers\TelegramController;
 
 
 // Route::get('/admin/login', function () {
@@ -94,6 +94,21 @@ Route::middleware(['auth', 'role:penerima'])
     Route::get('/report/pengadaan', [PenerimaController::class, 'reportPengadaan'])->name('reportPengadaan');
 
     Route::get('/chartss/pengadaan', [PenerimaController::class, 'chartspengadaan'])->name('chartPengadaan');
+    Route::get('/telegram/connect', [
+        \App\Http\Controllers\TelegramController::class,
+        'connect'
+    ])->name('telegram.connect');
 
+    Route::get('/telegram/test', [
+    \App\Http\Controllers\TelegramController::class,
+    'test'
+])->name('telegram.test');
     });
 
+
+Route::post('/telegram/webhook', [
+    \App\Http\Controllers\TelegramController::class,
+    'webhook'
+])->withoutMiddleware([
+    \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class
+]);

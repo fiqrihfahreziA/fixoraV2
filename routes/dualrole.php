@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DualroleController;
-
+use App\Http\Controllers\TelegramController;
 /*
 |--------------------------------------------------------------------------
 | MULTIROLE — Atasan dengan role tambahan
@@ -42,4 +42,7 @@ Route::middleware(['auth', 'dual.role:keuangan'])
     ->group(function () {
         Route::get('/atasan', [DualroleController::class, 'atasan'])->name('atasan');
         Route::get('/keuangan', [DualroleController::class, 'keuangan'])->name('keuangan');
-    });
+    });Route::post('/telegram/webhook', [
+    TelegramController::class,
+    'webhook'
+])->name('telegram.webhook');

@@ -30,6 +30,7 @@
         'tersedia layak dan diutamakan' => 'success',
         'tidak direkomendasikan' => 'danger',
         'ditolak' => 'danger',
+        'ditolak_bidang' => 'danger',
         'selesai' => 'success',
     ];
 
@@ -58,6 +59,7 @@
         'tersedia layak dan diutamakan' => 'Tersedia Layak & Diutamakan',
         'tidak direkomendasikan' => 'Tidak Direkomendasikan',
         'ditolak' => 'Ditolak',
+        'ditolak_bidang' => 'Ditolak',
         'selesai' => 'Selesai',
     ];
 

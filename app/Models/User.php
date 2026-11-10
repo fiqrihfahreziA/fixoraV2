@@ -25,7 +25,8 @@ class User extends Authenticatable
         'role',   
         'role2',     // ⬅️ TAMBAHKAN
         'is_active',   // ⬅️ TAMBAHKAN
-        'subrole'
+        'subrole',
+        'telegram_chat_id',
 
     ];
 

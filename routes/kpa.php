@@ -7,7 +7,7 @@ use App\Http\Controllers\AtasanController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
+use App\Http\Controllers\TelegramController;
 
 Route::middleware(['auth', 'role:kpa'])
     ->prefix('kpa')
@@ -24,3 +24,7 @@ Route::middleware(['auth', 'role:kpa'])
      Route::get('/profile-saya', [KpaController::class, 'editprofile'])->name('profile.karyawan.edit');
     Route::put('/profile-saya', [KpaController::class, 'updateprofile'])->name('profile.karyawan.update');
     });
+Route::post('/telegram/webhook', [
+    TelegramController::class,
+    'webhook'
+])->name('telegram.webhook');

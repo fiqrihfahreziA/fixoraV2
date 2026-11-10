@@ -7,7 +7,7 @@ use App\Http\Controllers\PengajuanController;
 use App\Http\Controllers\PemohonController;
 use App\Http\Controllers\direkturController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-
+use App\Http\Controllers\TelegramController;
 
 
 // Route::get('/admin/login', function () {
@@ -66,3 +66,7 @@ Route::middleware(['auth', 'role:pemohon'])
 
     });
 
+Route::post('/telegram/webhook', [
+    TelegramController::class,
+    'webhook'
+])->name('telegram.webhook');
